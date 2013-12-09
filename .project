@@ -10,6 +10,7 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+<<<<<<< HEAD
 		<buildCommand>
 			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
 			<arguments>
@@ -18,6 +19,10 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+=======
+	</buildSpec>
+	<natures>
+>>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>

@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+<<<<<<< HEAD
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
 	<classpathentry kind="src" path="data"/>
+=======
+	<classpathentry kind="src" path="data"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_21/jre/lib/jfxrt.jar"/>
+>>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 	<classpathentry kind="lib" path="D:/Eclipse/Libraries/zip4j_1.3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

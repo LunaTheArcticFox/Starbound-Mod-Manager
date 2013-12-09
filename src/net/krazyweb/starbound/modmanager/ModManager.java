@@ -44,7 +44,11 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
 		
+<<<<<<< HEAD
 		primaryStage.setTitle("Starbound Mod Manager");
+=======
+		primaryStage.setTitle("Starbound Mod Manager - Development Version");
+>>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 		
 		Configuration.load(primaryStage);
 		loadMods();
@@ -518,7 +522,11 @@ public class ModManager extends Application {
 			case "Linux (64-Bit)":
 				
 				try {
+<<<<<<< HEAD
 					rt.exec(Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "\\ ") + File.separator + "linux64" + File.separator + "launch_starbound.sh");
+=======
+					rt.exec(Configuration.starboundFolder.getAbsolutePath() + File.separator + "linux64" + File.separator + "launch_starbound.sh");
+>>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -528,7 +536,11 @@ public class ModManager extends Application {
 			case "Mac OS":
 				
 				try {
+<<<<<<< HEAD
 					rt.exec("open " + Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "\\ ") + File.separator + "Starbound.app");
+=======
+					rt.exec("open" + Configuration.starboundFolder.getAbsolutePath() + File.separator + "Starbound.app");
+>>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
