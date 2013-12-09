@@ -53,13 +53,6 @@ public class Configuration {
 			backupFolder.mkdir();
 		}
 		
-<<<<<<< HEAD
-		if (!modsFolder.exists()) {
-			modsFolder.mkdir();
-		}
-		
-=======
->>>>>>> 502a3760c9fb3663e4ca94ee8e1b84cfceadf33c
 		File playerBackup = new File(backupFolder.getAbsolutePath() + File.separator + "player");
 		File universeBackup = new File(backupFolder.getAbsolutePath() + File.separator + "universe");
 		
