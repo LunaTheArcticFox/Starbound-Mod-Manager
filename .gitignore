@@ -1,5 +1,8 @@
-bin
-backups
-mods
+/bin
+/backups
+/mods
+/backups
 .settings
+.classpath
+.project
 config.ini
