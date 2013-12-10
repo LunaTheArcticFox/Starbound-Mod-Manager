@@ -378,55 +378,30 @@ public class Configuration {
 		
 		Collections.reverse(installedMods);
 		
-		ArrayList<String> bootstrapData = new ArrayList<String>();
-
-		try {
-			
-			BufferedReader config = new BufferedReader(new FileReader(Configuration.bootstrapFile));
-			String line;
-			
-			while ((line = config.readLine()) != null) {
-				bootstrapData.add(line);
-			}
-			
-			config.close();
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 		try {
 			
 			FileWriter bootstrapOutput = new FileWriter(Configuration.bootstrapFile);
-			boolean writingAssets = false;
 			
-			for (String line : bootstrapData) {
-				
-				if (!writingAssets && !line.isEmpty()) {
-					if (line.contains("\"../assets\"") && installedMods.size() > 0) {
-						bootstrapOutput.append("    \"../assets\"," + "\r\n");
-					} else {
-						bootstrapOutput.append(line + "\r\n");
-					}
-				} else if (line.contains("],")) {
-					writingAssets = false;
-					bootstrapOutput.append(line + "\r\n");
-				}
-					
-				if (line.contains("\"../assets\"")) {
-					writingAssets = true;
-					for (int i = 0; i < installedMods.size(); i++) {
-						bootstrapOutput.append("    \"../" + Configuration.modsInstallFolder.getName() + "/" + installedMods.get(i).name + "\"");
-						if (i != installedMods.size() - 1) {
-							bootstrapOutput.append(",");
-						}
-						bootstrapOutput.append("\r\n");
-					}
-				}
-				
+			bootstrapOutput.append("{\r\n");
+			bootstrapOutput.append("  \"assetSources\" : [\r\n");
+
+			if (installedMods.size() == 0) {
+				bootstrapOutput.append("    \"../assets\"\r\n");
+			} else {
+				bootstrapOutput.append("    \"../assets\",\r\n");
 			}
+
+			for (int i = 0; i < installedMods.size(); i++) {
+				bootstrapOutput.append("    \"../" + Configuration.modsInstallFolder.getName() + "/" + installedMods.get(i).name + "\"");
+				if (i != installedMods.size() - 1) {
+					bootstrapOutput.append(",");
+				}
+				bootstrapOutput.append("\r\n");
+			}
+
+			bootstrapOutput.append("  ],\r\n");
+			bootstrapOutput.append("  \"storageDirectory\" : \"..\"\r\n");
+			bootstrapOutput.append("}\r\n");
 			
 			bootstrapOutput.close();
 			
