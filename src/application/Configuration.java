@@ -112,6 +112,8 @@ public class Configuration {
 		fileTypesToIgnore.add(".ogg");
 		fileTypesToIgnore.add(".lua");
 		fileTypesToIgnore.add(".ttf");
+		fileTypesToIgnore.add(".dat");
+		fileTypesToIgnore.add(".json");
 		
 	}
 	

@@ -250,6 +250,10 @@ public class Mod {
 			fileConflicts.retainAll(mod.filesModified);
 		}
 		
+		if (fileConflicts.isEmpty()) {
+			return;
+		}
+		
 		System.out.println(fileConflicts);
 		
 		//Delete and re-create the patches folder.
@@ -265,6 +269,7 @@ public class Mod {
 		for (String s : Configuration.fileTypesToIgnore) {
 			for (String file : fileConflicts) {
 				if (file.endsWith(s)) {
+					System.out.println("Removed: " + file);
 					toRemove.add(file);
 				}
 			}
@@ -305,6 +310,8 @@ public class Mod {
 				}
 				
 			}
+			
+			new File(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + file).getParent()).mkdirs();
 			
 			PrintWriter out = new PrintWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + file));
 			out.print(originalFile);

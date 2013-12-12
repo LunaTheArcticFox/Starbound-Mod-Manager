@@ -44,7 +44,7 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		
-		primaryStage.setTitle("Starbound Mod Manager - Version 1.3");
+		primaryStage.setTitle("Starbound Mod Manager - Version 1.3.2");
 		
 		Configuration.load(primaryStage);
 		loadMods();
