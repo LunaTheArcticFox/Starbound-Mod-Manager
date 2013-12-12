@@ -74,7 +74,6 @@ public class Configuration {
 		}
 		
 		switch (systemType) {
-			default:
 			case "Windows":
 				bootstrapFile = new File(starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "bootstrap.config");
 				break;

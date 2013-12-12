@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -240,21 +241,29 @@ public class Mod {
 		}
 		
 		//Find all conflicting files in currently installed mods.
-		HashSet<String> fileConflicts = new HashSet<String>();
+		HashMap<String, Integer> fileConflictsTemp = new HashMap<String, Integer>();
 		
 		for (Mod mod : installedMods) {
-			fileConflicts.addAll(mod.filesModified);
+			for (String file : mod.filesModified) {
+				if (fileConflictsTemp.containsKey(file)) {
+					fileConflictsTemp.put(file, fileConflictsTemp.get(file) + 1);
+				} else {
+					fileConflictsTemp.put(file, 1);
+				}
+			}
 		}
 		
-		for (Mod mod : installedMods) {
-			fileConflicts.retainAll(mod.filesModified);
+		HashSet<String> fileConflicts = new HashSet<String>();
+		
+		for (String s : fileConflictsTemp.keySet()) {
+			if (fileConflictsTemp.get(s) > 1) {
+				fileConflicts.add(s);
+			}
 		}
 		
 		if (fileConflicts.isEmpty()) {
 			return;
 		}
-		
-		System.out.println(fileConflicts);
 		
 		//Delete and re-create the patches folder.
 		if (Configuration.modsPatchesFolder.exists()) {
@@ -289,6 +298,7 @@ public class Mod {
 			for (Mod mod : installedMods) {
 				if (mod.filesModified.contains(file)) {
 					currentMods.add(mod);
+					System.out.println(file + " ;;; " + mod.name);
 				}
 			}
 			
@@ -302,6 +312,8 @@ public class Mod {
 				Mod mod = currentMods.get(i);
 				
 				if (i != currentMods.size() - 1) {
+					
+					System.out.println(mod.name);
 					LinkedList<Diff> diff = dpm.diff_main(originalFile, FileHelper.fileToString(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.name + File.separator + file)));
 					LinkedList<Patch> patches = dpm.patch_make(diff);
 					patchesToApply.addAll(patches);
