@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.Configuration.KeyValuePair;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,6 +22,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
 
@@ -44,7 +44,7 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		
-		primaryStage.setTitle("Starbound Mod Manager");
+		primaryStage.setTitle("Starbound Mod Manager - Version 1.3");
 		
 		Configuration.load(primaryStage);
 		loadMods();
@@ -208,7 +208,7 @@ public class ModManager extends Application {
 		
 		for (int i = 0; i < mods.size(); i++) {
 			
-			Mod mod = mods.get(i);
+			final Mod mod = mods.get(i);
 			
 			ArrayList<String> list1 = new ArrayList<String>(mod.filesModified);
 			
@@ -221,10 +221,18 @@ public class ModManager extends Application {
 				ArrayList<String> list2 = new ArrayList<String>(mods.get(ii).filesModified);
 				list2.retainAll(list1);
 				
+				ArrayList<String> toRemove = new ArrayList<String>();
+				
+				for (String s : list2) {
+					if (s.endsWith(".txt") || s.endsWith(".json")) {
+						toRemove.add(s);
+					}
+				}
+				
+				list2.removeAll(toRemove);
+				
 				if (list2.size() > 0) {
 					mod.setConflicted(true);
-					Tooltip t = new Tooltip("This mod has conflicts with '" + mods.get(ii).name + "'.\nThis version of the mod manager does not support conflict resolution.\nThat feature is planned for a future release.\nYou may still install this mod, but be warned that it may not work.");
-					Tooltip.install(mod.container, t);
 				}
 				
 			}
@@ -238,8 +246,6 @@ public class ModManager extends Application {
 	}
 	
 	private void addNewMod(Stage primaryStage) {
-		
-		new FXDialogueConfirm("Please locate your the mod you wish to add.").show();
 		
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select Mod File");
@@ -456,7 +462,17 @@ public class ModManager extends Application {
 			return;
 		}
 		
-		selectedMod.uninstall();
+		ArrayList<Mod> installedMods = new ArrayList<Mod>();
+		
+		for (Mod mod : mods) {
+			if (mod.installed) {
+				installedMods.add(mod);
+			}
+		}
+		
+		installedMods.remove(selectedMod);
+		
+		selectedMod.uninstall(installedMods);
 
 		installButton.setText("Install Mod");
 		installButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -467,14 +483,6 @@ public class ModManager extends Application {
 			}
 			
 		});
-		
-		ArrayList<Mod> installedMods = new ArrayList<Mod>();
-		
-		for (Mod mod : mods) {
-			if (mod.installed) {
-				installedMods.add(mod);
-			}
-		}
 		
 		Configuration.updateBootstrap(installedMods);
 		
@@ -518,7 +526,7 @@ public class ModManager extends Application {
 			case "Linux (64-Bit)":
 				
 				try {
-					rt.exec(Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "\\ ") + File.separator + "linux64" + File.separator + "launch_starbound.sh");
+					rt.exec(Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "_") + File.separator + "linux64" + File.separator + "launch_starbound.sh");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -528,7 +536,7 @@ public class ModManager extends Application {
 			case "Mac OS":
 				
 				try {
-					rt.exec("open " + Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "\\ ") + File.separator + "Starbound.app");
+					rt.exec("open " + Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "_") + File.separator + "Starbound.app");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

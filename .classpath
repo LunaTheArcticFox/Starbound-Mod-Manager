@@ -4,5 +4,10 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_45"/>
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/Eclipse/Libraries/zip4j_1.3.1.jar"/>
+	<classpathentry kind="lib" path="D:/Eclipse/Libraries/jsonio/json-io-2.3.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/Eclipse/Libraries/jsonio/json-io-2.3.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

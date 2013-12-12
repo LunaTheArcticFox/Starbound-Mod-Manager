@@ -4,9 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -20,9 +23,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import name.fraser.neil.plaintext.diff_match_patch;
+import name.fraser.neil.plaintext.diff_match_patch.Diff;
+import name.fraser.neil.plaintext.diff_match_patch.Patch;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
+
+import com.cedarsoftware.util.io.JsonReader;
 
 public class Mod {
 	
@@ -125,7 +133,7 @@ public class Mod {
 		
 	}
 	
-	public void uninstall() {
+	public void uninstall(final ArrayList<Mod> installedMods) {
 		
 		if (!installed) {
 			return;
@@ -157,29 +165,21 @@ public class Mod {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			try {
-				
-				FileWriter bootstrapOutput = new FileWriter(Configuration.bootstrapFile);
-				
-				for (String line : bootstrapData) {
-					
-					if (!line.contains(name)) {
-						bootstrapOutput.append(line + "\r\n");
-					}
-					
-				}
-				
-				bootstrapOutput.close();
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		
 		}
 
 		Configuration.addProperty("mods", file, "false");
 		installed = false;
+		
+		try {
+			createModPatch(installedMods);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		installedMods.remove(this);
+		
+		Configuration.updateBootstrap(installedMods);
 
 		updateStyles();
 		
@@ -198,22 +198,124 @@ public class Mod {
 				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name + File.separator + "assets");
 			}
 			
-			File f = new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name + File.separator + "mod.dat");
-			
-			if (f.exists()) {
-				FileHelper.deleteFile(f);
+			for (File f : new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name).listFiles()) {
+				
+				if (f.isDirectory()) {
+					continue;
+				}
+				
+				if (f.getName().endsWith(".txt") || f.getName().endsWith(".json") || f.getName().endsWith(".dat")) {
+					FileHelper.deleteFile(f);
+				}
+				
 			}
 			
 		} catch (ZipException | IOException e) {
 			e.printStackTrace();
 		}
 		
-		Configuration.updateBootstrap(installedMods);
-		
 		Configuration.addProperty("mods", file, "true");
 		installed = true;
 
 		updateStyles();
+		
+		try {
+			createModPatch(installedMods);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Configuration.updateBootstrap(installedMods);
+		
+	}
+	
+	private void createModPatch(final ArrayList<Mod> installedMods) throws IOException {
+		
+		if (installedMods.size() <= 1) {
+			//No patches needed, delete the patches folder.
+			if (Configuration.modsPatchesFolder.exists()) {
+				FileHelper.deleteFile(Configuration.modsPatchesFolder);
+			}
+			return;
+		}
+		
+		//Find all conflicting files in currently installed mods.
+		HashSet<String> fileConflicts = new HashSet<String>();
+		
+		for (Mod mod : installedMods) {
+			fileConflicts.addAll(mod.filesModified);
+		}
+		
+		for (Mod mod : installedMods) {
+			fileConflicts.retainAll(mod.filesModified);
+		}
+		
+		System.out.println(fileConflicts);
+		
+		//Delete and re-create the patches folder.
+		if (Configuration.modsPatchesFolder.exists()) {
+			FileHelper.deleteFile(Configuration.modsPatchesFolder);
+		}
+		
+		Configuration.modsPatchesFolder.mkdir();
+		
+		HashSet<String> toRemove = new HashSet<String>();
+		
+		//Purge ignored file extensions.
+		for (String s : Configuration.fileTypesToIgnore) {
+			for (String file : fileConflicts) {
+				if (file.endsWith(s)) {
+					toRemove.add(file);
+				}
+			}
+		}
+		
+		fileConflicts.removeAll(toRemove);
+		
+		//For each file, get each mod that edits that file.
+		//Then get the original file and all mods' files and merge them.
+		//Finally, save the merged file in the patched directory.
+		ArrayList<Mod> currentMods = new ArrayList<Mod>();
+		
+		for (String file : fileConflicts) {
+			
+			currentMods.clear();
+			
+			for (Mod mod : installedMods) {
+				if (mod.filesModified.contains(file)) {
+					currentMods.add(mod);
+				}
+			}
+			
+			String originalFile = FileHelper.fileToString(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file));
+			
+			diff_match_patch dpm = new diff_match_patch();
+			LinkedList<Patch> patchesToApply = new LinkedList<Patch>();
+			
+			for (int i = 0; i < currentMods.size(); i++) {
+				
+				Mod mod = currentMods.get(i);
+				
+				if (i != currentMods.size() - 1) {
+					LinkedList<Diff> diff = dpm.diff_main(originalFile, FileHelper.fileToString(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.name + File.separator + file)));
+					LinkedList<Patch> patches = dpm.patch_make(diff);
+					patchesToApply.addAll(patches);
+				} else {
+					originalFile = (String) dpm.patch_apply(patchesToApply, FileHelper.fileToString(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.name + File.separator + file)))[0];
+				}
+				
+			}
+			
+			PrintWriter out = new PrintWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + file));
+			out.print(originalFile);
+			out.flush();
+			out.close();
+			
+		}
+		
+		new FXDialogueConfirm("Patch generated for conflicting mods.").show();
+		
+		//Add the patch to the bootstrap.config at the bottom for highest precedence.
 		
 	}
 	
@@ -222,10 +324,10 @@ public class Mod {
 		try {
 			
 			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + file);
-			modArchive.extractFile("mod.dat", new File("").getAbsolutePath());
+			modArchive.extractFile("mod.json", new File("").getAbsolutePath());
 			
 		} catch (ZipException e) {
-			System.err.println("Could not locate mod.dat in '" + file + "'. Using archive name instead.");
+			System.err.println("Could not locate mod.json in '" + file + "'. Using archive name instead.");
 		}
 
 		try {
@@ -239,8 +341,10 @@ public class Mod {
 			}
 			
 			for (Object o : modArchive.getFileHeaders()) {
-				if (!((FileHeader) o).isDirectory() && !((FileHeader) o).getFileName().equals("mod.dat")) {
-					filesModified.add(((FileHeader) o).getFileName().replace("assets/", ""));
+				if (!((FileHeader) o).isDirectory()) {
+					if (!((FileHeader) o).getFileName().endsWith(".txt") && !((FileHeader) o).getFileName().endsWith(".json") && !((FileHeader) o).getFileName().endsWith(".dat")) {
+						filesModified.add(((FileHeader) o).getFileName().replace("assets/", ""));
+					}
 				}
 			}
 			
@@ -250,28 +354,27 @@ public class Mod {
 		
 		try {
 			
-			BufferedReader dat = new BufferedReader(new FileReader("mod.dat"));
-			String line;
+			Map<?, ?> map = JsonReader.jsonToMaps(FileHelper.fileToJSON(new File("mod.json")));
 			
-			while ((line = dat.readLine()) != null) {
+			for (Object e : map.keySet()) {
 				
-				if (line.startsWith("name:")) {
-					name = line.replace("name:", "");
-				} else if (line.startsWith("author:")) {
-					author = line.replace("author:", "");
-				} else if (line.startsWith("version:")) {
-					version = line.replace("version:", "");
+				String value = e.toString();
+				
+				if (value.equals("name")) {
+					name = map.get(e).toString();
+				} else if (value.equals("author")) {
+					author = map.get(e).toString();
+				} else if (value.equals("version")) {
+					version = map.get(e).toString();
 				}
 				
 			}
-			
-			dat.close();
 			
 		} catch (IOException e) {
 		}
 		
 		try {
-			FileHelper.deleteFile(new File("mod.dat"));
+			FileHelper.deleteFile(new File("mod.json"));
 		} catch (IOException e) {
 		}
 		

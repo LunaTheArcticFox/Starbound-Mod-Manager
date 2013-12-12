@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -36,6 +37,9 @@ public class Configuration {
 	public static File starboundFolder;
 	public static File bootstrapFile;
 	public static File modsInstallFolder;
+	public static File modsPatchesFolder;
+
+	public static HashSet<String> fileTypesToIgnore;
 	
 	public static void load(Stage primaryStage) {
 		
@@ -48,6 +52,7 @@ public class Configuration {
 		backupFolder = new File(getProperty("backupfolder", "null"));
 		starboundFolder = new File(getProperty("gamefolder", "null"));
 		modsInstallFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods");
+		modsPatchesFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods" + File.separator + "patches");
 		
 		if (!backupFolder.exists()) {
 			backupFolder.mkdir();
@@ -100,6 +105,13 @@ public class Configuration {
 				}
 			}
 		}
+		
+		fileTypesToIgnore = new HashSet<String>();
+		fileTypesToIgnore.add(".png");
+		fileTypesToIgnore.add(".wav");
+		fileTypesToIgnore.add(".ogg");
+		fileTypesToIgnore.add(".lua");
+		fileTypesToIgnore.add(".ttf");
 		
 	}
 	
@@ -395,6 +407,11 @@ public class Configuration {
 				bootstrapOutput.append("    \"../" + Configuration.modsInstallFolder.getName() + "/" + installedMods.get(i).name + "\"");
 				if (i != installedMods.size() - 1) {
 					bootstrapOutput.append(",");
+				} else {
+					if (modsPatchesFolder.exists()) {
+						bootstrapOutput.append(",");
+						bootstrapOutput.append("\r\n    \"../" + Configuration.modsInstallFolder.getName() + "/" + Configuration.modsPatchesFolder.getName() + "\"");
+					}
 				}
 				bootstrapOutput.append("\r\n");
 			}

@@ -1,8 +1,10 @@
 package application;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,6 +101,42 @@ public class FileHelper {
 
 	public static void copyFolder(String src, String dest) throws IOException {
 		copyFolder(new File(src), new File(dest));
+	}
+	
+	public static String fileToString(File file) throws IOException {
+		
+		String output = "";
+		BufferedReader in = new BufferedReader(new FileReader(file));
+		
+		String line;
+		
+		while ((line = in.readLine()) != null) {
+			output += line + "\r\n";
+		}
+		
+		in.close();
+		
+		return output;
+		
+	}
+	
+	public static String fileToJSON(File file) throws IOException {
+		
+		String output = "";
+		BufferedReader in = new BufferedReader(new FileReader(file));
+		
+		String line;
+		
+		while ((line = in.readLine()) != null) {
+			if (!line.trim().startsWith("//")) {
+				output += line + "\r\n";
+			}
+		}
+		
+		in.close();
+		
+		return output;
+		
 	}
 	
 }
