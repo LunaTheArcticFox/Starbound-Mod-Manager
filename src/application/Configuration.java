@@ -7,8 +7,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 
 import javafx.stage.DirectoryChooser;
@@ -35,12 +38,13 @@ public class Configuration {
 	public static File modsFolder;
 	public static File backupFolder;
 	public static File starboundFolder;
-	public static File bootstrapFile;
 	public static File modsInstallFolder;
 	public static File modsPatchesFolder;
-
-	public static HashSet<String> fileTypesToIgnore;
 	
+	public static String gameVersionString;
+	
+	public static HashSet<String> fileTypesToIgnore;
+
 	public static void load(Stage primaryStage) {
 		
 		if (!configFile.exists()) {
@@ -53,6 +57,35 @@ public class Configuration {
 		starboundFolder = new File(getProperty("gamefolder", "null"));
 		modsInstallFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods");
 		modsPatchesFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods" + File.separator + "patches");
+		
+		File starboundLog = new File(starboundFolder.getAbsolutePath() + File.separator + "starbound.log");
+		
+		if (starboundLog.exists()) {
+			
+			try {
+				
+				BufferedReader reader = new BufferedReader(new FileReader(starboundLog));
+				
+				String line = "";
+				
+				while ((line = reader.readLine()) != null) {
+					if (line.contains("Client version")) {
+						line = line.substring(line.indexOf("'") + 1);
+						line = line.substring(0, line.indexOf("'"));
+						gameVersionString = line;
+						break;
+					}
+				}
+				
+				reader.close();
+				
+			} catch (IOException e) {
+				Configuration.printException(e, "Getting game version from starbound log.");
+			}
+			
+		} else {
+			new FXDialogueConfirm("Please run Starbound once to enable version checking for mods.").show();
+		}
 		
 		if (!backupFolder.exists()) {
 			backupFolder.mkdir();
@@ -73,21 +106,6 @@ public class Configuration {
 			modsFolder.mkdir();
 		}
 		
-		switch (systemType) {
-			case "Windows":
-				bootstrapFile = new File(starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "bootstrap.config");
-				break;
-			case "Linux (32-Bit)":
-				bootstrapFile = new File(starboundFolder.getAbsolutePath() + File.separator + "linux32" + File.separator + "bootstrap.config");
-				break;
-			case "Linux (64-Bit)":
-				bootstrapFile = new File(starboundFolder.getAbsolutePath() + File.separator + "linux64" + File.separator + "bootstrap.config");
-				break;
-			case "Mac OS":
-				bootstrapFile = new File(starboundFolder.getAbsolutePath() + File.separator + "Starbound.app" + File.separator + "Contents" + File.separator + "MacOS" + File.separator + "bootstrap.config");
-				break;
-		}
-		
 		ArrayList<File> modFiles = new ArrayList<File>();
 		FileHelper.listFiles(getProperty("modsfolder", "null"), modFiles);
 		
@@ -106,13 +124,11 @@ public class Configuration {
 		}
 		
 		fileTypesToIgnore = new HashSet<String>();
-		fileTypesToIgnore.add(".png");
-		fileTypesToIgnore.add(".wav");
-		fileTypesToIgnore.add(".ogg");
-		fileTypesToIgnore.add(".lua");
-		fileTypesToIgnore.add(".ttf");
-		fileTypesToIgnore.add(".dat");
-		fileTypesToIgnore.add(".json");
+        fileTypesToIgnore.add(".png");
+        fileTypesToIgnore.add(".wav");
+        fileTypesToIgnore.add(".ogg");
+        fileTypesToIgnore.add(".lua");
+        fileTypesToIgnore.add(".ttf");
 		
 	}
 	
@@ -151,7 +167,7 @@ public class Configuration {
 			writer.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Writing config file.");
 		}
 		
 		if (!new File(getProperty("modsfolder", "null")).exists()) {
@@ -184,10 +200,8 @@ public class Configuration {
 			
 			config.close();
 			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Reading previous config data.");
 		}
 		
 		try {
@@ -229,7 +243,7 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Updating config data.");
 		}
 		
 	}
@@ -249,10 +263,8 @@ public class Configuration {
 			
 			config.close();
 			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Reading config data.");
 		}
 		
 		try {
@@ -272,7 +284,7 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Updating config data.");
 		}
 		
 	}
@@ -294,10 +306,8 @@ public class Configuration {
 			
 			config.close();
 			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Getting property from config: " + key);
 		}
 		
 		if (value != null) {
@@ -334,10 +344,8 @@ public class Configuration {
 			
 			config.close();
 			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Getting all properties in header: " + header);
 		}
 		
 		return values;
@@ -359,10 +367,8 @@ public class Configuration {
 			
 			config.close();
 			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Reading config data.");
 		}
 		
 		try {
@@ -382,50 +388,57 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Removing config property.");
 		}
 		
 	}
 	
-	public static void updateBootstrap(ArrayList<Mod> installedMods) {
+	public static void printException(Exception e) {
+		printException(e, "");
+	}
+	
+	public static void printException(Exception e, String extraInfo) {
 		
-		Collections.reverse(installedMods);
+		File exceptionLog = new File("errors.log");
+		
+		String existingLog = "";
+		
+		if (exceptionLog.exists()) {
+			try {
+				existingLog += FileHelper.fileToString(exceptionLog);
+				existingLog += "\r\n";
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
 		
 		try {
 			
-			FileWriter bootstrapOutput = new FileWriter(Configuration.bootstrapFile);
+			PrintWriter p = new PrintWriter(exceptionLog);
 			
-			bootstrapOutput.append("{\r\n");
-			bootstrapOutput.append("  \"assetSources\" : [\r\n");
-
-			if (installedMods.size() == 0) {
-				bootstrapOutput.append("    \"../assets\"\r\n");
-			} else {
-				bootstrapOutput.append("    \"../assets\",\r\n");
+			if (!existingLog.isEmpty()) {
+				p.append(existingLog);
 			}
-
-			for (int i = 0; i < installedMods.size(); i++) {
-				bootstrapOutput.append("    \"../" + Configuration.modsInstallFolder.getName() + "/" + installedMods.get(i).name + "\"");
-				if (i != installedMods.size() - 1) {
-					bootstrapOutput.append(",");
-				} else {
-					if (modsPatchesFolder.exists()) {
-						bootstrapOutput.append(",");
-						bootstrapOutput.append("\r\n    \"../" + Configuration.modsInstallFolder.getName() + "/" + Configuration.modsPatchesFolder.getName() + "\"");
-					}
-				}
-				bootstrapOutput.append("\r\n");
+			
+			DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy 'at' HH:mm:ss");
+			Date date = new Date();
+			
+			p.append("==============\r\n\r\n[" + dateFormat.format(date) + "]\r\n");
+			p.append("[Mod Manager Version: " + ModManager.versionString + "]\r\n\r\n");
+			
+			if (!extraInfo.isEmpty()) {
+				p.append("[" + extraInfo + "]\r\n\r\n");
 			}
-
-			bootstrapOutput.append("  ],\r\n");
-			bootstrapOutput.append("  \"storageDirectory\" : \"..\"\r\n");
-			bootstrapOutput.append("}\r\n");
 			
-			bootstrapOutput.close();
+			e.printStackTrace(p);
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+			p.close();
+			
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
 		}
+		
+		e.printStackTrace();
 		
 	}
 	

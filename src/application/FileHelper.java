@@ -19,6 +19,10 @@ public class FileHelper {
 	
 	public static void deleteFile(File file) throws IOException {
 		
+		if (!file.exists()) {
+			return;
+		}
+		
 		if (file.isDirectory()) {
 			
 			File[] files = file.listFiles();

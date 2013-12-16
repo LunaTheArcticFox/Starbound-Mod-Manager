@@ -20,31 +20,47 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
-
+	
+	public static final int MAJOR_VERSION = 1;
+	public static final int MINOR_VERSION = 4;
+	public static final int PATCH_VERSION = 0;
+	
+	public static String versionString;
+	
 	public ArrayList<Mod> mods = new ArrayList<Mod>();
 	public Mod selectedMod = null;
 	
 	private Button installButton;
 	private Button addNewModButton;
+	private Button removeModButton;
 	private Button moveUpButton;
 	private Button moveDownButton;
 	private Button launchStarboundButton;
 	private ScrollPane modListWrapper;
 	private VBox modList;
+	private Text modInformation;
 	
 	public static void main(String[] args) {
-		launch(args);
+		try {
+			launch(args);
+		} catch (Exception e) {
+			Configuration.printException(e, "Uncaught Exception");
+			System.exit(-1);
+		}
 	}
 
 	@Override
 	public void start(final Stage primaryStage) {
 		
-		primaryStage.setTitle("Starbound Mod Manager - Version 1.3.4");
+		versionString = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;
+		
+		primaryStage.setTitle("Starbound Mod Manager - Version " + versionString);
 		
 		Configuration.load(primaryStage);
 		loadMods();
@@ -78,6 +94,18 @@ public class ModManager extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				addNewMod(primaryStage);
+			}
+			
+		});
+		
+		removeModButton = new Button("Delete Mod");
+		removeModButton.setDisable(true);
+		
+		removeModButton.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent e) {
+				deleteMod(primaryStage);
 			}
 			
 		});
@@ -121,7 +149,8 @@ public class ModManager extends Application {
 		leftButtons.add(addNewModButton, 0, 1, 2, 1);
 		leftButtons.add(moveUpButton, 0, 2, 1, 1);
 		leftButtons.add(moveDownButton, 1, 2, 1, 1);
-		leftButtons.add(launchStarboundButton, 0, 3, 2, 1);
+		leftButtons.add(removeModButton, 0, 3, 2, 1);
+		leftButtons.add(launchStarboundButton, 0, 4, 2, 1);
 		
 		leftButtons.setHgap(10);
 		leftButtons.setVgap(10);
@@ -134,6 +163,7 @@ public class ModManager extends Application {
 		
 		installButton.prefWidthProperty().bind(leftButtons.widthProperty());
 		addNewModButton.prefWidthProperty().bind(leftButtons.widthProperty());
+		removeModButton.prefWidthProperty().bind(leftButtons.widthProperty());
 		launchStarboundButton.prefWidthProperty().bind(leftButtons.widthProperty());
 		moveUpButton.prefWidthProperty().bind(leftButtons.widthProperty().divide(2).subtract(5));
 		moveDownButton.prefWidthProperty().bind(leftButtons.widthProperty().divide(2).subtract(5));
@@ -141,6 +171,7 @@ public class ModManager extends Application {
 		leftButtons.setMinWidth(150);
 		installButton.setMinHeight(75);
 		addNewModButton.setMinHeight(40);
+		removeModButton.setMinHeight(40);
 		moveUpButton.setMinHeight(40);
 		moveDownButton.setMinHeight(40);
 		launchStarboundButton.setMinHeight(80);
@@ -152,18 +183,27 @@ public class ModManager extends Application {
 		right.getChildren().add(modList);
 		modListWrapper.setContent(right);
 		
+		VBox temp = new VBox();
+		modInformation = new Text("Mod information will appear here when a mod is selected.");
+		temp.getChildren().add(modInformation);
+		VBox.setMargin(modInformation, new Insets(15, 0, 0, 15));
+		temp.prefWidthProperty().bind(leftButtons.widthProperty().multiply(1.5));
+		temp.setId("modInformation");
+		modInformation.setWrappingWidth(220);
+		
 		contents.setLeft(left);
 		contents.setCenter(modListWrapper);
-		BorderPane.setMargin(modListWrapper, new Insets(0, 0, 0, 15));
+		contents.setRight(temp);
+		BorderPane.setMargin(modListWrapper, new Insets(0, 15, 0, 15));
 		
 		Scene s = new Scene(contents);
 		s.getStylesheets().add(application.ModManager.class.getResource("styles.css").toExternalForm());
 		
 		primaryStage.setScene(s);
-		primaryStage.setWidth(Integer.parseInt(Configuration.getProperty("width", "800")));
-		primaryStage.setHeight(Integer.parseInt(Configuration.getProperty("height", "500")));
-		primaryStage.setMinWidth(Integer.parseInt(Configuration.getProperty("width", "800")));
-		primaryStage.setMinHeight(Integer.parseInt(Configuration.getProperty("height", "500")));
+		primaryStage.setWidth(Integer.parseInt(Configuration.getProperty("width", "950")));
+		primaryStage.setHeight(Integer.parseInt(Configuration.getProperty("height", "550")));
+		primaryStage.setMinWidth(Integer.parseInt(Configuration.getProperty("width", "950")));
+		primaryStage.setMinHeight(Integer.parseInt(Configuration.getProperty("height", "550")));
 		primaryStage.show();
 		
 	}
@@ -172,14 +212,18 @@ public class ModManager extends Application {
 
 		for (final KeyValuePair kvp : Configuration.getProperties("mods")) {
 			
-			final Mod m = new Mod(kvp.key, Boolean.parseBoolean(kvp.value));
+			final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
+			
+			if (m == null) {
+				continue;
+			}
 			
 			boolean modAlreadyExists = false;
 			
 			for (Mod mod : mods) {
-				if (mod.name.equals(m.name)) {
+				if (mod.internalName.equals(m.internalName)) {
 					modAlreadyExists = true;
-					System.out.println("Ignored duplicate mod '" + mod.name + "'. (" + m.file + ")");
+					System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
 				}
 			}
 			
@@ -201,7 +245,22 @@ public class ModManager extends Application {
 		}
 		
 		findConflicts();
+
+		ArrayList<Mod> installedMods = new ArrayList<Mod>();
 		
+		for (Mod mod : mods) {
+			if (mod.installed) {
+				installedMods.add(mod);
+			}
+		}
+		
+		for (Mod mod : installedMods) {
+			if (!Configuration.gameVersionString.equals(mod.gameVersion) && mod.installed) {
+				mod.uninstall(installedMods);
+				new FXDialogueConfirm("Mod \"" + mod.displayName + "\" is not compatible with your game's version and has been uninstalled automatically.\n\nPlease contact the creator of this mod for support.").show();
+			}
+		}
+			
 	}
 	
 	private void findConflicts() {
@@ -209,6 +268,8 @@ public class ModManager extends Application {
 		for (int i = 0; i < mods.size(); i++) {
 			
 			final Mod mod = mods.get(i);
+			
+			mod.conflicts = "";
 			
 			ArrayList<String> list1 = new ArrayList<String>(mod.filesModified);
 			
@@ -224,7 +285,7 @@ public class ModManager extends Application {
 				ArrayList<String> toRemove = new ArrayList<String>();
 				
 				for (String s : list2) {
-					if (s.endsWith(".txt") || s.endsWith(".json")) {
+					if (s.endsWith(".modinfo")) {
 						toRemove.add(s);
 					}
 				}
@@ -233,6 +294,7 @@ public class ModManager extends Application {
 				
 				if (list2.size() > 0) {
 					mod.setConflicted(true);
+					mod.conflicts += " - " + mods.get(ii).displayName + "\n";
 				}
 				
 			}
@@ -250,11 +312,22 @@ public class ModManager extends Application {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select Mod File");
 		
+		String initDir = Configuration.getProperty("modChooserFile", "null");
+		
+		if (!initDir.equals("null")) {
+			File f = new File(initDir);
+			if (f.exists()) {
+				fileChooser.setInitialDirectory(f);
+			}
+		}
+		
 		final List<File> modFiles = fileChooser.showOpenMultipleDialog(primaryStage);
 		
-		if (modFiles == null) {
+		if (modFiles == null || modFiles.size() == 0) {
 			return;
 		}
+		
+		Configuration.addProperty("paths", "modChooserFile", modFiles.get(0).getParent());
 		
 		for (File f : modFiles) {
 			
@@ -265,10 +338,19 @@ public class ModManager extends Application {
 				try {
 					FileHelper.copyFile(f, newFileLocation);
 				} catch (IOException e) {
-					e.printStackTrace();
+					Configuration.printException(e, "Copying mod archive when adding new mod.");
 				}
 				
-				final Mod m = new Mod(newFileLocation.getName(), false);
+				final Mod m = Mod.loadMod(newFileLocation.getName(), false);
+				
+				if (m == null) {
+					try {
+						FileHelper.deleteFile(newFileLocation);
+					} catch (IOException e1) {
+						Configuration.printException(e1, "Deleting a mod's archive when it's not valid when adding.");
+					}
+					continue;
+				}
 
 				modList.getChildren().add(m.container);
 				m.container.minWidthProperty().bind(modListWrapper.maxWidthProperty().subtract(16));
@@ -294,7 +376,49 @@ public class ModManager extends Application {
 		
 	}
 	
+	private void deleteMod(Stage primaryStage) {
+		
+		if (selectedMod == null) {
+			return;
+		}
+		
+		if (!new FXDialogueYesNo("Really delete \"" + selectedMod.displayName + "\"?\nThis action cannot be undone.").show()) {
+			return;
+		}
+
+		Configuration.removeProperty(selectedMod.file);
+		
+		try {
+			FileHelper.deleteFile(Configuration.modsFolder + File.separator + selectedMod.file);
+		} catch (IOException e) {
+			Configuration.printException(e, "Deleting a mod.");
+		}
+
+		ArrayList<Mod> installedMods = new ArrayList<Mod>();
+		
+		for (Mod mod : mods) {
+			if (mod.installed) {
+				installedMods.add(mod);
+			}
+		}
+		
+		if (selectedMod.installed || selectedMod.patched) {
+			installedMods.remove(selectedMod);
+			selectedMod.uninstall(installedMods);
+		}
+		
+		modList.getChildren().remove(selectedMod.container);
+		mods.remove(selectedMod);
+		
+		findConflicts();
+		
+	}
+	
 	private void moveModUp() {
+		
+		if (selectedMod == null) {
+			return;
+		}
 		
 		int firstIndex = mods.indexOf(selectedMod);
 		int secondIndex = firstIndex - 1;
@@ -323,19 +447,13 @@ public class ModManager extends Application {
 			Configuration.addProperty("mods", m.file, m.installed + "");
 		}
 		
-		ArrayList<Mod> installedMods = new ArrayList<Mod>();
-		
-		for (Mod mod : mods) {
-			if (mod.installed) {
-				installedMods.add(mod);
-			}
-		}
-		
-		Configuration.updateBootstrap(installedMods);
-		
 	}
 	
 	private void moveModDown() {
+		
+		if (selectedMod == null) {
+			return;
+		}
 		
 		int firstIndex = mods.indexOf(selectedMod);
 		int secondIndex = firstIndex + 1;
@@ -351,24 +469,18 @@ public class ModManager extends Application {
 		}
 		
 		modList.getChildren().clear();
+
+		for (Mod m : mods) {
+			m.setConflicted(false);
+		}
+		
+		findConflicts();
 		
 		for (Mod m : mods) {
 			modList.getChildren().add(m.container);
 			Configuration.removeProperty(m.file);
 			Configuration.addProperty("mods", m.file, m.installed + "");
 		}
-		
-		findConflicts();
-		
-		ArrayList<Mod> installedMods = new ArrayList<Mod>();
-		
-		for (Mod mod : mods) {
-			if (mod.installed) {
-				installedMods.add(mod);
-			}
-		}
-		
-		Configuration.updateBootstrap(installedMods);
 		
 	}
 	
@@ -383,7 +495,14 @@ public class ModManager extends Application {
 			}
 		}
 		
-		if (selectedMod.installed) {
+		removeModButton.setDisable(false);
+		
+		if (!Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
+			
+			installButton.setText("Install Mod");
+			installButton.setDisable(true);
+			
+		} else if (selectedMod.installed) {
 			
 			installButton.setText("Uninstall Mod");
 			installButton.setDisable(false);
@@ -393,13 +512,10 @@ public class ModManager extends Application {
 				@Override
 				public void handle(ActionEvent e) {
 					uninstallMod();
+					updateSelectedModInfo();
 				}
 				
 			});
-			
-		} else if (selectedMod.hasConflicts) {
-			
-			installButton.setText("Install Mod");
 			
 		} else {
 			
@@ -411,11 +527,37 @@ public class ModManager extends Application {
 				@Override
 				public void handle(ActionEvent e) {
 					installMod();
+					updateSelectedModInfo();
 				}
 				
 			});
 			
 		}
+		
+		updateSelectedModInfo();
+		
+	}
+	
+	public void updateSelectedModInfo() {
+		
+		String modInfoText = "";
+		
+		modInfoText += "Description:\n" + selectedMod.description + "\n";
+		
+		if (selectedMod.hasConflicts && Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
+			modInfoText += "\n\n\nThis mod has conflicts with the following mods:\n\n" + selectedMod.conflicts;
+			modInfoText += "\n\nThis mod may still be installed and the mod manager will attempt to merge the mods automatically.\n\nThis results in a successful merge most of the time and you should try it.";
+		}
+
+		if (!Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
+			modInfoText += "\n\nThis mod is outdated and must be updated before it can be installed.";
+		} else if (selectedMod.installed) {
+			modInfoText += "\n\nThis mod is currently installed.";
+		} else {
+			modInfoText += "\n\nThis mod has not been installed.";
+		}
+		
+		modInformation.setText(modInfoText);
 		
 	}
 	
@@ -445,6 +587,7 @@ public class ModManager extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				uninstallMod();
+				updateSelectedModInfo();
 			}
 			
 		});
@@ -480,11 +623,10 @@ public class ModManager extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				installMod();
+				updateSelectedModInfo();
 			}
 			
 		});
-		
-		Configuration.updateBootstrap(installedMods);
 		
 	}
 	
@@ -496,7 +638,7 @@ public class ModManager extends Application {
 			FileHelper.copyFolder(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "player"), new File(Configuration.backupFolder.getAbsolutePath() + File.separator + "player"));
 			FileHelper.copyFolder(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "universe"), new File(Configuration.backupFolder.getAbsolutePath() + File.separator + "universe"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Configuration.printException(e, "Backing up save data.");
 		}
 		
 		Runtime rt = Runtime.getRuntime() ;
@@ -508,7 +650,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec(Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "Starbound.exe");
 				} catch (IOException e) {
-					e.printStackTrace();
+					Configuration.printException(e, "Launching game on Windows.");
 				}
 				
 				break;
@@ -518,7 +660,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec(Configuration.starboundFolder.getAbsolutePath() + File.separator + "linux32" + File.separator + "launch_starbound.sh");
 				} catch (IOException e) {
-					e.printStackTrace();
+					Configuration.printException(e, "Launching game on Linux (32-Bit).");
 				}
 				
 				break;
@@ -528,7 +670,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec(Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "_") + File.separator + "linux64" + File.separator + "launch_starbound.sh");
 				} catch (IOException e) {
-					e.printStackTrace();
+					Configuration.printException(e, "Launching game on Linux (64-Bit).");
 				}
 				
 				break;
@@ -538,7 +680,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec("open " + Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "_") + File.separator + "Starbound.app");
 				} catch (IOException e) {
-					e.printStackTrace();
+					Configuration.printException(e, "Launching game on Mac OS.");
 				}
 				
 				break;

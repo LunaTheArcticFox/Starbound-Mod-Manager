@@ -1,15 +1,15 @@
 package application;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javafx.geometry.HPos;
@@ -31,6 +31,7 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 
+import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 
 public class Mod {
@@ -38,18 +39,24 @@ public class Mod {
 	private static final String installedImage = application.Mod.class.getResource("installed.png").toExternalForm();
 	private static final String notInstalledImage = application.Mod.class.getResource("notinstalled.png").toExternalForm();
 	private static final String conflictImage = application.Mod.class.getResource("conflict.png").toExternalForm();
-	//private static final String outdatedImage = Mod.class.getClassLoader().getResource("outdated.png").toExternalForm();
+	private static final String outdatedImage = application.Mod.class.getResource("outdated.png").toExternalForm();
 	
 	public ArrayList<String> filesModified = new ArrayList<String>();
 	public boolean installed = false;
 	public boolean selected = false;
 	public boolean hasConflicts = false;
-	public boolean hasAssetsFolder = false;
+	public boolean patched = false;
 	
 	public String file;
-	public String name;
+	public String modInfoName;
+	public String displayName;
+	public String internalName;
 	public String author;
 	public String version;
+	public String assetsPath;
+	public String gameVersion;
+	public String description;
+	public String conflicts;
 	
 	public VBox container;
 	public GridPane gridPane;
@@ -61,13 +68,7 @@ public class Mod {
 	
 	public int order = 0;
 	
-	public Mod(String file, boolean installed) {
-		
-		this.file = file;
-		this.installed = installed;
-		
-		load();
-		
+	private Mod() {
 	}
 	
 	public void setFile(String file) {
@@ -75,7 +76,7 @@ public class Mod {
 	}
 	
 	public void setName(String name) {
-		this.name = name;
+		this.internalName = name;
 	}
 	
 	public void setAuthor(String author) {
@@ -95,7 +96,15 @@ public class Mod {
 		modAuthor.getStyleClass().removeAll("not-installed-font-color", "installed-font-color", "conflicted-font-color");
 		gridPane.getChildren().remove(modStatus);
 		
-		if (hasConflicts && !installed) {
+		if (!Configuration.gameVersionString.equals(gameVersion)) {
+			gridPane.getStyleClass().add("outdated-mod-fill");
+			bottomStroke.getStyleClass().add("outdated-mod-stroke");
+			modName.getStyleClass().add("outdated-font-color");
+			modVersion.getStyleClass().add("outdated-font-color");
+			modAuthor.getStyleClass().add("outdated-font-color");
+			modStatus = new CenteredRegion(new ImageView(new Image(outdatedImage)));
+			gridPane.add(modStatus, 2, 0, 1, 2);
+		} else if (hasConflicts && !installed && !patched) {
 			gridPane.getStyleClass().add("conflicted-mod-fill");
 			bottomStroke.getStyleClass().add("conflicted-mod-stroke");
 			modName.getStyleClass().add("conflicted-font-color");
@@ -103,7 +112,7 @@ public class Mod {
 			modAuthor.getStyleClass().add("conflicted-font-color");
 			modStatus = new CenteredRegion(new ImageView(new Image(conflictImage)));
 			gridPane.add(modStatus, 2, 0, 1, 2);
-		} else if (installed) {
+		} else if (installed || patched) {
 			gridPane.getStyleClass().add("installed-mod-fill");
 			bottomStroke.getStyleClass().add("installed-mod-stroke");
 			modName.getStyleClass().add("installed-font-color");
@@ -136,52 +145,35 @@ public class Mod {
 	
 	public void uninstall(final ArrayList<Mod> installedMods) {
 		
+		patched = false;
+		
 		if (!installed) {
 			return;
-		}
-		
-		if(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name).exists()) {
-			
-			try {
-				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			ArrayList<String> bootstrapData = new ArrayList<String>();
-	
-			try {
-				
-				BufferedReader config = new BufferedReader(new FileReader(Configuration.bootstrapFile));
-				String line;
-				
-				while ((line = config.readLine()) != null) {
-					bootstrapData.add(line);
-				}
-				
-				config.close();
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		
 		}
 
 		Configuration.addProperty("mods", file, "false");
 		installed = false;
 		
-		try {
-			createModPatch(installedMods);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (conflictsWithInstalledMods(installedMods)) {
+		
+			try {
+				createModPatch(installedMods);
+			} catch (IOException e) {
+				Configuration.printException(e, "Creating mod patch.");
+			}
+		
 		}
 		
-		installedMods.remove(this);
+		if(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + internalName).exists()) {
+			
+			try {
+				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+			} catch (IOException e) {
+				Configuration.printException(e, "Deleting installed mod folder when uninstalling.");
+			}
 		
-		Configuration.updateBootstrap(installedMods);
-
+		}
+		
 		updateStyles();
 		
 	}
@@ -192,27 +184,10 @@ public class Mod {
 			
 			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + file);
 			
-			modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name);
+			modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
 			
-			if (hasAssetsFolder) {
-				FileHelper.copyFolder(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name + File.separator + "assets", Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name + File.separator);
-				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name + File.separator + "assets");
-			}
-			
-			for (File f : new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + name).listFiles()) {
-				
-				if (f.isDirectory()) {
-					continue;
-				}
-				
-				if (f.getName().endsWith(".txt") || f.getName().endsWith(".json") || f.getName().endsWith(".dat")) {
-					FileHelper.deleteFile(f);
-				}
-				
-			}
-			
-		} catch (ZipException | IOException e) {
-			e.printStackTrace();
+		} catch (ZipException e) {
+			Configuration.printException(e, "Extracting mod folder when installing.");
 		}
 		
 		Configuration.addProperty("mods", file, "true");
@@ -220,25 +195,69 @@ public class Mod {
 
 		updateStyles();
 		
-		try {
-			createModPatch(installedMods);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (conflictsWithInstalledMods(installedMods)) {
+			try {
+				createModPatch(installedMods);
+			} catch (IOException e) {
+				Configuration.printException(e, "Creating mod patch.");
+			}
 		}
 		
-		Configuration.updateBootstrap(installedMods);
+	}
+	
+	private boolean conflictsWithInstalledMods(final ArrayList<Mod> installedMods) {
+
+		ArrayList<Mod> tempModList = new ArrayList<Mod>(installedMods);
+		ArrayList<String> conflictingFiles = new ArrayList<String>();
+		
+		tempModList.remove(this);
+		
+		for (Mod mod : tempModList) {
+			conflictingFiles.addAll(mod.filesModified);
+		}
+		
+		conflictingFiles.retainAll(filesModified);
+		
+		return (conflictingFiles.size() != 0);
 		
 	}
 	
 	private void createModPatch(final ArrayList<Mod> installedMods) throws IOException {
 		
 		if (installedMods.size() <= 1) {
+			
 			//No patches needed, delete the patches folder.
 			if (Configuration.modsPatchesFolder.exists()) {
 				FileHelper.deleteFile(Configuration.modsPatchesFolder);
 			}
+			
+			for (Mod mod : installedMods) {
+				try {
+					ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
+					modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
+				} catch (ZipException e) {
+					Configuration.printException(e, "Last installed mod in patch gets put in its own folder again.");
+				}
+			}
+			
 			return;
+			
 		}
+		
+		Collections.reverse(installedMods);
+		
+		for (Mod mod : installedMods) {
+
+			try {
+				ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
+				modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
+			} catch (ZipException e) {
+				Configuration.printException(e, "Copying temporary folders and files for mod merging.");
+			}
+			
+		}
+		
+		HashSet<Mod> conflictingMods = new HashSet<Mod>();
 		
 		//Find all conflicting files in currently installed mods.
 		HashMap<String, Integer> fileConflictsTemp = new HashMap<String, Integer>();
@@ -261,7 +280,27 @@ public class Mod {
 			}
 		}
 		
+		HashSet<String> toRemove = new HashSet<String>();
+		
+		//Purge ignored file extensions.
+		for (String s : Configuration.fileTypesToIgnore) {
+	        for (String file : fileConflicts) {
+	        	
+	        	if (!new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file).exists()) {
+	        		toRemove.add(file);
+	        	}
+	        	
+	        	if (file.endsWith(s)) {
+                    toRemove.add(file);
+                }
+	        	
+	        }
+		}
+		 
+		fileConflicts.removeAll(toRemove);
+		
 		if (fileConflicts.isEmpty()) {
+			FileHelper.deleteFile(Configuration.modsPatchesFolder.getAbsolutePath());
 			return;
 		}
 		
@@ -271,20 +310,6 @@ public class Mod {
 		}
 		
 		Configuration.modsPatchesFolder.mkdir();
-		
-		HashSet<String> toRemove = new HashSet<String>();
-		
-		//Purge ignored file extensions.
-		for (String s : Configuration.fileTypesToIgnore) {
-			for (String file : fileConflicts) {
-				if (file.endsWith(s)) {
-					System.out.println("Removed: " + file);
-					toRemove.add(file);
-				}
-			}
-		}
-		
-		fileConflicts.removeAll(toRemove);
 		
 		//For each file, get each mod that edits that file.
 		//Then get the original file and all mods' files and merge them.
@@ -298,7 +323,7 @@ public class Mod {
 			for (Mod mod : installedMods) {
 				if (mod.filesModified.contains(file)) {
 					currentMods.add(mod);
-					System.out.println(file + " ;;; " + mod.name);
+					conflictingMods.add(mod);
 				}
 			}
 			
@@ -311,147 +336,308 @@ public class Mod {
 				
 				Mod mod = currentMods.get(i);
 				
+				String filePath = "";
+				
+				if (mod.assetsPath.isEmpty()) {
+					filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + file.replace("/", "\\");
+				} else {
+					filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + mod.assetsPath.substring(2) + File.separator + file.replace("/", "\\");
+				}
+				
 				if (i != currentMods.size() - 1) {
-					
-					System.out.println(mod.name);
-					LinkedList<Diff> diff = dpm.diff_main(originalFile, FileHelper.fileToString(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.name + File.separator + file)));
+					LinkedList<Diff> diff = dpm.diff_main(originalFile, FileHelper.fileToString(new File(filePath)));
 					LinkedList<Patch> patches = dpm.patch_make(diff);
 					patchesToApply.addAll(patches);
 				} else {
-					originalFile = (String) dpm.patch_apply(patchesToApply, FileHelper.fileToString(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.name + File.separator + file)))[0];
+					originalFile = (String) dpm.patch_apply(patchesToApply, FileHelper.fileToString(new File(filePath)))[0];
 				}
 				
 			}
 			
-			new File(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + file).getParent()).mkdirs();
+			new File(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file).getParent()).mkdirs();
 			
-			PrintWriter out = new PrintWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + file));
+			PrintWriter out = new PrintWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file));
 			out.print(originalFile);
 			out.flush();
 			out.close();
 			
 		}
 		
-		new FXDialogueConfirm("Patch generated for conflicting mods.").show();
+		for (Mod mod : conflictingMods) {
+			
+			try {
+				
+				FileHelper.deleteFile("tempFolder" + File.separator);
+				
+				ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
+				modArchive.extractAll(new File("tempFolder" + File.separator).getAbsolutePath());
+
+				ArrayList<File> files = new ArrayList<File>();
+				
+				if (mod.assetsPath.isEmpty()) {
+					FileHelper.listFiles("tempFolder" + File.separator, files);
+				} else {
+					FileHelper.listFiles("tempFolder" + File.separator + mod.assetsPath.substring(2), files);
+				}
+				
+				ArrayList<File> remove = new ArrayList<File>();
+				
+				String toFindPath = "";
+				
+				if (mod.assetsPath.isEmpty()) {
+					toFindPath = new File("tempFolder" + File.separator).getAbsolutePath() + File.separator;
+				} else {
+					toFindPath = new File("tempFolder" + File.separator + mod.assetsPath.substring(2)).getAbsolutePath() + File.separator;
+				}
+
+				for (File file : files) {
+					
+					String fileName = file.getAbsolutePath().substring(toFindPath.length());
+					fileName = fileName.replace("\\", "/");
+					
+					if (fileConflicts.contains(fileName)) {
+						remove.add(file);
+					}
+					
+				}
+				
+				files.removeAll(remove);
+				
+				for (File file : files) {
+					
+					String fileName = file.getAbsolutePath().substring(toFindPath.length());
+					
+					File outputFile = new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + fileName);
+					outputFile.getParentFile().mkdirs();
+					
+					FileHelper.copyFile(file, outputFile);
+					
+				}
+				
+			} catch (ZipException e) {
+				Configuration.printException(e, "Extracting mod folder when patching.");
+			}
+			
+			mod.updateStyles();
+			
+		}
+
+		for (Mod mod : conflictingMods) {
+			FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName);
+		}
 		
-		//Add the patch to the bootstrap.config at the bottom for highest precedence.
+		FileHelper.deleteFile("tempFolder" + File.separator);
+		
+		FileWriter writer = new FileWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + Configuration.modsPatchesFolder.getName() + ".modinfo"));
+		
+		writer.append(
+				"{\r\n" +
+				"  \"name\" : \"" + Configuration.modsPatchesFolder.getName() + "\",\r\n" +
+				"  \"version\" : \"" + Configuration.gameVersionString + "\",\r\n" +
+				"  \"path\" : \"./assets\",\r\n" +
+				"  \"metadata\" : {\r\n" +
+				"    \"name\" : \"A Test Mod\",\r\n" +
+				"    \"author\" : \"KrazyTheFox' Mod Manager\",\r\n" +
+				"    \"description\" : \"This is a patch of all conflicting mods. Do not modify by hand unless you know what you're doing.\",\r\n" +
+				"    \"support_url\" : \"http://community.playstarbound.com/index.php?threads/starbound-mod-manager.51639/\",\r\n" +
+				"    \"version\" : \"1.0\"\r\n" +
+				"  }\r\n" +
+				"}");
+		
+		writer.close();
+		
+		new FXDialogueConfirm("Patch generated for conflicting mods.").show();
 		
 	}
 	
-	private void load() {
+	@SuppressWarnings("rawtypes")
+	public static Mod loadMod(String fileName, boolean installed) {
+		
+		Mod mod = new Mod();
+		
+		mod.file = fileName;
+		mod.installed = installed;
+		
+		mod.modInfoName = "";
 		
 		try {
 			
-			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + file);
-			modArchive.extractFile("mod.json", new File("").getAbsolutePath());
-			
-		} catch (ZipException e) {
-			System.err.println("Could not locate mod.json in '" + file + "'. Using archive name instead.");
-		}
+			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
 
-		try {
-				
-			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + file);
-
-			for (Object o : modArchive.getFileHeaders()) {
-				if (((FileHeader) o).getFileName().equals("assets/")) {
-					hasAssetsFolder = true;
-				}
-			}
+			@SuppressWarnings("unchecked")
+			List<FileHeader> fileHeaders = modArchive.getFileHeaders();
 			
-			for (Object o : modArchive.getFileHeaders()) {
-				if (!((FileHeader) o).isDirectory()) {
-					if (!((FileHeader) o).getFileName().endsWith(".txt") && !((FileHeader) o).getFileName().endsWith(".json") && !((FileHeader) o).getFileName().endsWith(".dat")) {
-						filesModified.add(((FileHeader) o).getFileName().replace("assets/", ""));
-					}
+			for (FileHeader fileHeader : fileHeaders) {
+				if (fileHeader.getFileName().endsWith(".modinfo")) {
+					modArchive.extractFile(fileHeader, new File("").getAbsolutePath());
+					mod.modInfoName = fileHeader.getFileName();
 				}
 			}
 			
 		} catch (ZipException e) {
-			System.err.println("Could not read '" + file + "' contents.");
+			Configuration.printException(e, "Searching for mod info in archive: " + mod.file);
+		}
+		
+		if (mod.modInfoName.isEmpty()) {
+			new FXDialogueConfirm("Mod \"" + mod.file + "\" is missing a valid .modinfo file.\nPlease contact the creator of this mod for help.").show();
+			return null;
 		}
 		
 		try {
 			
-			Map<?, ?> map = JsonReader.jsonToMaps(FileHelper.fileToJSON(new File("mod.json")));
+			Map<?, ?> map = JsonReader.jsonToMaps(FileHelper.fileToJSON(new File(mod.modInfoName)));
 			
 			for (Object e : map.keySet()) {
 				
 				String value = e.toString();
 				
-				if (value.equals("name")) {
-					name = map.get(e).toString();
-				} else if (value.equals("author")) {
-					author = map.get(e).toString();
-				} else if (value.equals("version")) {
-					version = map.get(e).toString();
+				if (value.equalsIgnoreCase("name")) {
+					
+					mod.internalName = map.get(e).toString();
+					
+				} else if (value.equalsIgnoreCase("path")) {
+					
+					if (map.get(value).equals(".")) {
+						mod.assetsPath = "";
+					} else {
+						mod.assetsPath = map.get(value).toString();
+					}
+					
+				} else if (value.equalsIgnoreCase("version")) {
+					
+					mod.gameVersion = map.get(value).toString();
+					
+				} else if (value.equalsIgnoreCase("metadata")) {
+					
+					for (Object e2 : ((JsonObject) map.get(value)).entrySet()) {
+						
+						String metaValue = e2.toString();
+						
+						if (metaValue.split("=").length < 2) {
+							continue;
+						}
+						
+						String key = metaValue.split("=")[0];
+						String val = metaValue.split("=")[1];
+						
+						if (key.equalsIgnoreCase("author")) {
+							mod.author = val;
+						} else if (key.equalsIgnoreCase("version")) {
+							mod.version = val;
+						} else if (key.equalsIgnoreCase("displayname")) {
+							mod.displayName = val;
+						} else if (key.equalsIgnoreCase("description")) {
+							mod.description = val;
+						}
+						
+					}
+					
 				}
 				
 			}
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("Mod \"" + mod.file + "\" is missing a valid .modinfo file.\nPlease contact the creator of this mod for help.").show();
+			Configuration.printException(e, "Reading mod info file to JSON: " + mod.modInfoName);
+			return null;
+		}
+		
+		if (!mod.modInfoName.replace(".modinfo", "").equals(mod.internalName)) {
+			new FXDialogueConfirm("Mod \"" + mod.file + "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
+			return null;
 		}
 		
 		try {
-			FileHelper.deleteFile(new File("mod.json"));
+			FileHelper.deleteFile(new File(mod.modInfoName));
 		} catch (IOException e) {
+			Configuration.printException(e, "Deleting temporary .modinfo file.");
 		}
 		
-		if (name == null) {
-			name = file;
+		if (mod.displayName == null) {
+			mod.displayName = mod.file.substring(0, mod.file.indexOf(".zip"));
 		}
 		
-		if (version == null) {
-			version = "???";
+		if (mod.version == null) {
+			mod.version = "???";
 		}
 		
-		if (author == null) {
-			author = "???";
+		if (mod.author == null) {
+			mod.author = "???";
 		}
 		
-		container = new VBox();
+		try {
+			
+			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
+			
+			@SuppressWarnings("unchecked")
+			List<FileHeader> fileHeaders = modArchive.getFileHeaders();
+			
+			String fileToLookFor = "";
+			
+			if (!mod.assetsPath.isEmpty()) {
+				fileToLookFor = mod.assetsPath.substring(2) + "/";
+			}
+
+			for(FileHeader fileHeader : fileHeaders) {
+				if (!fileHeader.isDirectory() && fileHeader.getFileName().contains(fileToLookFor)) {
+					mod.filesModified.add(fileHeader.getFileName().substring(fileHeader.getFileName().indexOf(fileToLookFor) + fileToLookFor.length()));
+				}
+			}
+			
+		} catch (ZipException e) {
+			Configuration.printException(e, "Locating assets folder in archive.");
+		}
 		
-		gridPane = new GridPane();
-		gridPane.setAlignment(Pos.CENTER);
+		if (mod.filesModified.size() == 0) {
+			new FXDialogueConfirm("Cannot find assets folder for: \"" + mod.file + "\".\nPlease contact the creator of this mod for help.\n\nCommon causes are:\n - Incorrect folder structures\n - Incorrect \"assets\" path in the .modinfo file").show();
+			return null;
+		}
+
+		mod.container = new VBox();
 		
-		gridPane.setMinHeight(46);
-		gridPane.setPadding(new Insets(0, 0, 0, 15));
+		mod.gridPane = new GridPane();
+		mod.gridPane.setAlignment(Pos.CENTER);
 		
-		bottomStroke = new Rectangle(350, 2);
-		bottomStroke.widthProperty().bind(container.widthProperty());
+		mod.gridPane.setMinHeight(46);
+		mod.gridPane.setPadding(new Insets(0, 0, 0, 15));
 		
-		container.getChildren().addAll(gridPane, bottomStroke);
+		mod.bottomStroke = new Rectangle(350, 2);
+		mod.bottomStroke.widthProperty().bind(mod.container.widthProperty());
 		
-		modName = new Text(name);
-		modName.getStyleClass().add("modname");
-		gridPane.add(modName, 0, 0, 1, 2);
+		mod.container.getChildren().addAll(mod.gridPane, mod.bottomStroke);
 		
-		modVersion = new Text("v" + version);
-		modVersion.getStyleClass().add("modversion");
-		GridPane.setValignment(modVersion, VPos.BOTTOM);
-		gridPane.add(modVersion, 1, 0);
+		mod.modName = new Text(mod.displayName);
+		mod.modName.getStyleClass().add("modname");
+		mod.gridPane.add(mod.modName, 0, 0, 1, 2);
 		
-		modAuthor = new Text(author);
-		modAuthor.getStyleClass().add("modauthor");
-		GridPane.setValignment(modVersion, VPos.TOP);
-		gridPane.add(modAuthor, 1, 1);
+		mod.modVersion = new Text("v" + mod.version);
+		mod.modVersion.getStyleClass().add("modversion");
+		GridPane.setValignment(mod.modVersion, VPos.BOTTOM);
+		mod.gridPane.add(mod.modVersion, 1, 0);
+		
+		mod.modAuthor = new Text(mod.author);
+		mod.modAuthor.getStyleClass().add("modauthor");
+		GridPane.setValignment(mod.modVersion, VPos.TOP);
+		mod.gridPane.add(mod.modAuthor, 1, 1);
 		
 		ColumnConstraints col1 = new ColumnConstraints();
 		col1.setFillWidth(true);
 		col1.setHgrow(Priority.ALWAYS);
-		gridPane.getColumnConstraints().add(col1);
+		mod.gridPane.getColumnConstraints().add(col1);
 		
 		ColumnConstraints col2 = new ColumnConstraints();
 		col2.setHalignment(HPos.RIGHT);
-		gridPane.getColumnConstraints().add(col2);
+		mod.gridPane.getColumnConstraints().add(col2);
 		
 		ColumnConstraints col3 = new ColumnConstraints();
 		col3.setMinWidth(42);
 		col3.setMaxWidth(42);
 		col3.setHalignment(HPos.CENTER);
-		gridPane.getColumnConstraints().add(col3);
+		mod.gridPane.getColumnConstraints().add(col3);
 		
-		updateStyles();
+		mod.updateStyles();
+		
+		return mod;
 		
 	}
 	
