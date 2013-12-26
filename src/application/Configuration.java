@@ -217,6 +217,7 @@ public class Configuration {
 			}
 			
 			boolean headerFound = false;
+			boolean added = false;
 			
 			for (String line : configData) {
 				
@@ -229,11 +230,12 @@ public class Configuration {
 					if (!exists && line.contains("[" + header + "]")) {
 						headerFound = true;
 					}
-				
+					
 					configOutput.append(line + "\r\n");
 					
-					if (headerFound && (line.trim().isEmpty() || configData.indexOf(line) == configData.size() - 1)) {
+					if (!added && headerFound && (line.trim().isEmpty() || configData.indexOf(line) == configData.size() - 1)) {
 						configOutput.append(key + ": \"" + value + "\"\r\n");
+						added = true;
 					}
 				
 				}
@@ -424,7 +426,8 @@ public class Configuration {
 			Date date = new Date();
 			
 			p.append("==============\r\n\r\n[" + dateFormat.format(date) + "]\r\n");
-			p.append("[Mod Manager Version: " + ModManager.versionString + "]\r\n\r\n");
+			p.append("[System: " + System.getProperty("os.name") + "]\r\n\r\n");
+			p.append("[Mod Manager Version: " + ModManager.VERSION_STRING + "]\r\n\r\n");
 			
 			if (!extraInfo.isEmpty()) {
 				p.append("[" + extraInfo + "]\r\n\r\n");

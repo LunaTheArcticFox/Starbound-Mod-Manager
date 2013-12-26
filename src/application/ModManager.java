@@ -23,15 +23,16 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
-	public static final int MINOR_VERSION = 4;
-	public static final int PATCH_VERSION = 0;
+	public static final int MINOR_VERSION = 5;
+	public static final int PATCH_VERSION = 1;
 	
-	public static String versionString;
+	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
 	public ArrayList<Mod> mods = new ArrayList<Mod>();
 	public Mod selectedMod = null;
@@ -58,11 +59,19 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		
-		versionString = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;
-		
-		primaryStage.setTitle("Starbound Mod Manager - Version " + versionString);
+		primaryStage.setTitle("Starbound Mod Manager - Version " + VERSION_STRING);
 		
 		Configuration.load(primaryStage);
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+            	Configuration.addProperty("windowsettings", "width", "" + (int) primaryStage.getWidth());
+            	Configuration.addProperty("windowsettings", "height", "" + (int) primaryStage.getHeight());
+            	primaryStage.close();
+                event.consume();
+            }
+        });
 		loadMods();
 		
 		BorderPane contents = new BorderPane();
@@ -202,8 +211,8 @@ public class ModManager extends Application {
 		primaryStage.setScene(s);
 		primaryStage.setWidth(Integer.parseInt(Configuration.getProperty("width", "950")));
 		primaryStage.setHeight(Integer.parseInt(Configuration.getProperty("height", "550")));
-		primaryStage.setMinWidth(Integer.parseInt(Configuration.getProperty("width", "950")));
-		primaryStage.setMinHeight(Integer.parseInt(Configuration.getProperty("height", "550")));
+		primaryStage.setMinWidth(950);
+		primaryStage.setMinHeight(550);
 		primaryStage.show();
 		
 	}
@@ -411,6 +420,11 @@ public class ModManager extends Application {
 		mods.remove(selectedMod);
 		
 		findConflicts();
+		
+		selectedMod = null;
+		
+		installButton.setDisable(true);
+		removeModButton.setDisable(true);
 		
 	}
 	
@@ -648,7 +662,7 @@ public class ModManager extends Application {
 			case "Windows":
 				
 				try {
-					rt.exec(Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "Starbound.exe");
+					rt.exec("\"" + Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "launcher" + File.separator + "launcher.exe\"");
 				} catch (IOException e) {
 					Configuration.printException(e, "Launching game on Windows.");
 				}
