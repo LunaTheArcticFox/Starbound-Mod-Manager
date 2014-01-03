@@ -145,6 +145,14 @@ public class Mod {
 		
 	}
 	
+	public ArrayList<String> getFilesModified() {
+		return filesModified;
+	}
+
+	public void setFilesModified(ArrayList<String> filesModified) {
+		this.filesModified = filesModified;
+	}
+
 	public void uninstall(final ArrayList<Mod> installedMods) {
 		
 		patched = false;
@@ -494,6 +502,7 @@ public class Mod {
 		
 	}
 	
+	// TODO: Replace this boolean with a check for folder + modinfo in mods directory
 	@SuppressWarnings("rawtypes")
 	public static Mod loadMod(String fileName, boolean installed) {
 		
@@ -521,6 +530,7 @@ public class Mod {
 					} else {
 						mod.subDirectory = null;
 					}
+					break;
 				}
 			}
 			
@@ -598,7 +608,7 @@ public class Mod {
 			return null;
 		}
 		
-		if (!mod.modInfoName.replace(".modinfo", "").equals(mod.internalName)) {
+		if (!mod.modInfoName.replace(".modinfo", "").toLowerCase().equals(mod.internalName.toLowerCase())) {
 			//new FXDialogueConfirm("Mod \"" + mod.file + "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
 			Configuration.printException(new Exception("\"" + mod.modInfoName + "\" does not match \"" + mod.internalName + "\""), "Internal name vs. Modinfo name.");
 			//return null;
@@ -693,11 +703,6 @@ public class Mod {
 		} catch (ZipException | IOException e) {
 			Configuration.printException(e, "Locating assets folder in archive.");
 		}
-		
-		/*if (mod.filesModified.size() == 0) {
-			new FXDialogueConfirm("Cannot find assets folder for: \"" + mod.file + "\".\nPlease contact the creator of this mod for help.\n\nCommon causes are:\n - Incorrect folder structures\n - Incorrect \"assets\" path in the .modinfo file").show();
-			return null;
-		}*/
 
 		mod.container = new VBox();
 		

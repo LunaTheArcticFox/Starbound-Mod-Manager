@@ -3,6 +3,7 @@ package application;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,38 +19,18 @@ public class FileHelper {
 	}
 
 	public static void deleteFile(File file) throws IOException {
-
-		if (!file.exists()) {
-			return;
-		}
-
 		if (file.isDirectory()) {
-
-			File[] files = file.listFiles();
-
-			if (files != null) {
-
-				for (File f : files) {
-					deleteFile(f);
-				}
-
-			}
-
-			Files.delete(file.toPath());
-
-		} else {
-			Files.delete(file.toPath());
+			for (File child : file.listFiles())
+				deleteFile(child);
 		}
-
+		if (!file.delete())
+			throw new FileNotFoundException("Failed to delete file: " + file);
 	}
 
 	public static void listFiles(String directoryName, ArrayList<File> files) {
-
 		File directory = new File(directoryName);
 
-		File[] fileList = directory.listFiles();
-
-		for (File file : fileList) {
+		for (File file : directory.listFiles()) {
 			if (file.isFile()) {
 				files.add(file);
 			} else if (file.isDirectory()) {
@@ -80,12 +61,14 @@ public class FileHelper {
 		}
 
 	}
-	
-	public static final void copyDirectory(String src, String dst) throws IOException {
+
+	public static final void copyDirectory(String src, String dst)
+			throws IOException {
 		copyDirectory(new File(src), new File(dst));
 	}
 
-	public static final void copyDirectory(File source, File destination) throws IOException {
+	public static final void copyDirectory(File source, File destination)
+			throws IOException {
 		if (!source.isDirectory()) {
 			throw new IllegalArgumentException("Source (" + source.getPath()
 					+ ") must be a directory.");
