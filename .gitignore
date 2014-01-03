@@ -7,3 +7,4 @@
 .project
 config.ini
 errors.log
+/target
