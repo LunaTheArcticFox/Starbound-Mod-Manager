@@ -20,8 +20,12 @@ public class FileHelper {
 
 	public static void deleteFile(File file) throws IOException {
 		if (file.isDirectory()) {
-			for (File child : file.listFiles())
-				deleteFile(child);
+			File[] children = file.listFiles();
+
+			if (children != null) {
+				for (File child : file.listFiles())
+					deleteFile(child);
+			}
 		}
 		if (!file.delete())
 			throw new FileNotFoundException("Failed to delete file: " + file);
