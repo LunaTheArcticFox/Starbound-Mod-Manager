@@ -3,7 +3,6 @@
 /mods
 /build
 .settings
-.classpath
 .project
 config.ini
 errors.log
