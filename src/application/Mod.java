@@ -502,6 +502,7 @@ public class Mod {
 		
 	}
 	
+	// TODO: Replace this boolean with a check for folder + modinfo in mods directory
 	@SuppressWarnings("rawtypes")
 	public static Mod loadMod(String fileName, boolean installed) {
 		
