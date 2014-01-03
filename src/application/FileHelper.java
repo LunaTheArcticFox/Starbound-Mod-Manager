@@ -28,12 +28,9 @@ public class FileHelper {
 	}
 
 	public static void listFiles(String directoryName, ArrayList<File> files) {
-
 		File directory = new File(directoryName);
 
-		File[] fileList = directory.listFiles();
-
-		for (File file : fileList) {
+		for (File file : directory.listFiles()) {
 			if (file.isFile()) {
 				files.add(file);
 			} else if (file.isDirectory()) {

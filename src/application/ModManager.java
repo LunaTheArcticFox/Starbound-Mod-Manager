@@ -233,6 +233,7 @@ public class ModManager extends Application {
 				if (mod.internalName.equals(m.internalName)) {
 					modAlreadyExists = true;
 					System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
+					break;
 				}
 			}
 			
