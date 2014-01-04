@@ -2,8 +2,9 @@
 /backups
 /mods
 /build
-.settings
 .classpath
+.settings
 .project
 config.ini
 errors.log
+database

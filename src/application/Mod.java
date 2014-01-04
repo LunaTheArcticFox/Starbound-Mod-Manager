@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -636,7 +638,7 @@ public class Mod {
 			String fileToLookFor = "";
 			
 			if (!mod.assetsPath.isEmpty()) {
-				fileToLookFor = mod.assetsPath.substring(2) + "/";
+				fileToLookFor = mod.assetsPath.substring(2) + File.separator;
 			}
 
 			for(FileHeader fileHeader : fileHeaders) {
@@ -670,11 +672,12 @@ public class Mod {
 							fileLocation = "temp" + File.separator + fileToLookFor + toAdd;
 						}
 						
+						System.out.println(fileLocation);
+						
 						fileContents = FileHelper.fileToJSON(new File(fileLocation));
 						
 						if (fileContents.contains("\"__merge\"")) {
 							isModified = false;
-							System.out.println("JSON: " + toAdd);
 						}
 						
 						FileHelper.deleteFile(new File("temp"));
@@ -683,8 +686,6 @@ public class Mod {
 					
 					if (isModified) {
 						mod.filesModified.add(toAdd);
-					} else {
-						System.out.println("Ignored \"" + toAdd + "\", uses new merge system.");
 					}
 					
 				}
@@ -692,6 +693,12 @@ public class Mod {
 			
 		} catch (ZipException | IOException e) {
 			Configuration.printException(e, "Locating assets folder in archive.");
+		}
+		
+		try {
+			Database.addMod(mod);
+		} catch (SqlJetException e) {
+			Configuration.printException(e, "Adding mod to database.");
 		}
 		
 		/*if (mod.filesModified.size() == 0) {

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -59,6 +61,12 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		
+		try {
+			Database.connect();
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
+		
 		primaryStage.setTitle("Starbound Mod Manager - Version " + VERSION_STRING);
 		
 		Configuration.load(primaryStage);
@@ -68,6 +76,7 @@ public class ModManager extends Application {
             public void handle(WindowEvent event) {
             	Configuration.addProperty("windowsettings", "width", "" + (int) primaryStage.getWidth());
             	Configuration.addProperty("windowsettings", "height", "" + (int) primaryStage.getHeight());
+            	Database.closeConnection();
             	primaryStage.close();
                 event.consume();
             }
@@ -492,6 +501,12 @@ public class ModManager extends Application {
 		
 		for (Mod m : mods) {
 			modList.getChildren().add(m.container);
+			try {
+				Database.updateMod(m);
+			} catch (SqlJetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			Configuration.removeProperty(m.file);
 			Configuration.addProperty("mods", m.file, m.installed + "");
 		}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_45"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre7"/>
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/Eclipse/Libraries/zip4j_1.3.1.jar"/>
 	<classpathentry kind="lib" path="D:/Eclipse/Libraries/jsonio/json-io-2.3.0.jar">
@@ -9,5 +9,8 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/Eclipse/Libraries/jsonio/json-io-2.3.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="D:/Eclipse/Libraries/sqlite/sqljet-1.1.8.jar"/>
+	<classpathentry kind="lib" path="D:/Eclipse/Libraries/sqlite/sqljet-browser-1.1.8.jar"/>
+	<classpathentry kind="lib" path="D:/Eclipse/Libraries/sqlite/antlr-runtime-3.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
