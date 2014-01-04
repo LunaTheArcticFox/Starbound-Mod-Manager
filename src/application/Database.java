@@ -49,8 +49,6 @@ public class Database {
 	
 	public static void updateMod(final Mod mod) throws SqlJetException {
 		
-		long time = System.currentTimeMillis();
-		
 		connect();
 		
 		if (!hasMod(mod)) {
@@ -58,13 +56,9 @@ public class Database {
 			return;
 		}
 
-		System.out.println("a " + (System.currentTimeMillis() - time));
-
 		try {
 			
 			database.beginTransaction(SqlJetTransactionMode.WRITE);
-			
-			System.out.println("b " + (System.currentTimeMillis() - time));
 			
 			String files = "";
 			
@@ -87,8 +81,6 @@ public class Database {
 		} finally {
 			database.commit();
 		}
-		
-		System.out.println("c " + (System.currentTimeMillis() - time));
 		
 	}
 	

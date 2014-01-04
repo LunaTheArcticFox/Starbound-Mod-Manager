@@ -195,16 +195,27 @@ public class Mod {
 		}
 		
 		if (subDirectory != null) {
+			
+			String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")) + File.separator + subDirectory;
+			
+			System.out.println(tempInstallPath);
+			
 			try {
-				FileHelper.copyDirectory(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + subDirectory + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")), Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
-				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + subDirectory + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				FileHelper.deleteFile(tempInstallPath);
 			} catch (IOException e) {
 				Configuration.printException(e, "Copying installed mod subdirectory to main directory.");
 			}
+			
 		}
 		
-		Configuration.addProperty("mods", file, "true");
 		installed = true;
+		
+		try {
+			Database.updateMod(this);
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
 
 		updateStyles();
 		
