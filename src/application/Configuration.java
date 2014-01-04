@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -50,6 +52,13 @@ public class Configuration {
 		if (!configFile.exists()) {
 			firstRun(primaryStage);
 		}
+		
+		fileTypesToIgnore = new HashSet<String>();
+        fileTypesToIgnore.add(".png");
+        fileTypesToIgnore.add(".wav");
+        fileTypesToIgnore.add(".ogg");
+        fileTypesToIgnore.add(".lua");
+        fileTypesToIgnore.add(".ttf");
 		
 		systemType = getProperty("systemtype", "Windows");
 		modsFolder = new File(getProperty("modsfolder", "null"));
@@ -109,26 +118,29 @@ public class Configuration {
 		ArrayList<File> modFiles = new ArrayList<File>();
 		FileHelper.listFiles(getProperty("modsfolder", "null"), modFiles);
 		
-		for (KeyValuePair kvp : getProperties("mods")) {
-			if (!modFiles.contains(new File(modsFolder.getAbsolutePath() + File.separator + kvp.key))) {
-				removeProperty(kvp.key);
+		try {
+			for (KeyValuePair kvp : Database.getModList()) {
+				if (!modFiles.contains(new File(modsFolder.getAbsolutePath() + File.separator + kvp.key))) {
+					Database.removeMod(kvp.key);
+					System.out.println("DELETE " + kvp.key);
+				}
 			}
+		} catch (SqlJetException e) {
+			printException(e);
 		}
 		
 		for (File f : modFiles) {
-			if (getProperty(f.getName(), "modnotfound").equals("modnotfound")) {
-				if (f.getAbsolutePath().endsWith(".zip")) {
-					addProperty("mods", f.getName(), "false");
+			try {
+				if (!Database.hasMod(f.getName())) {
+					if (f.getAbsolutePath().endsWith(".zip")) {
+						Mod m = Mod.loadMod(f.getName(), false);
+						Database.addMod(m);
+					}
 				}
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
 			}
 		}
-		
-		fileTypesToIgnore = new HashSet<String>();
-        fileTypesToIgnore.add(".png");
-        fileTypesToIgnore.add(".wav");
-        fileTypesToIgnore.add(".ogg");
-        fileTypesToIgnore.add(".lua");
-        fileTypesToIgnore.add(".ttf");
 		
 	}
 	

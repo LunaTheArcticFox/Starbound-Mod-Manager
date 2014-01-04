@@ -1,11 +1,14 @@
 package application;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
+
+import application.Configuration.KeyValuePair;
 
 public class Database {
 	
@@ -73,7 +76,7 @@ public class Database {
 			ISqlJetCursor cursor = database.getTable(TABLE_NAME).lookup("nameIndex", mod.internalName);//.insert(mod.internalName, mod.file, mod.installed ? "1" : "0", mod.patched ? "1" : "0", "0", 0, files, "");
 
 			if (!cursor.eof()) {
-				cursor.update(mod.internalName, mod.file + "_updated!", mod.installed ? "1" : "0", mod.patched ? "1" : "0", "0", 0, files, "");
+				cursor.update(mod.internalName, mod.file, mod.installed ? "1" : "0", mod.patched ? "1" : "0", "0", 0, files, "");
 			}
 			
 			//printTable();
@@ -81,6 +84,28 @@ public class Database {
 		} finally {
 			database.commit();
 		}
+		
+	}
+	
+	public static void removeMod(final String mod) throws SqlJetException {
+		
+		connect();
+
+		try {
+			
+			database.beginTransaction(SqlJetTransactionMode.WRITE);
+
+			ISqlJetCursor cursor = database.getTable(TABLE_NAME).lookup("fileIndex", mod);
+
+			if (!cursor.eof()) {
+				cursor.delete();
+			}
+			
+		} finally {
+			database.commit();
+		}
+		
+		printTable();
 		
 	}
 	
@@ -122,6 +147,7 @@ public class Database {
 					+ "files_game_merged MEDIUMTEXT,"
 					+ "dependencies MEDIUMTEXT)");
 			database.createIndex("CREATE INDEX nameIndex ON " + TABLE_NAME + "(internal_name)");
+			database.createIndex("CREATE INDEX fileIndex ON " + TABLE_NAME + "(file)");
 		} finally {
 			database.commit();
 		}
@@ -148,6 +174,49 @@ public class Database {
 		}
 		
 		return (rows > 0);
+		
+	}
+	
+	public static boolean hasMod(final String mod) throws SqlJetException {
+		
+		int rows = 0;
+		
+		database.beginTransaction(SqlJetTransactionMode.READ_ONLY);
+		try {
+			rows = (int) database.getTable(TABLE_NAME).lookup("fileIndex", mod).getRowCount();
+		} finally {
+			database.commit();
+		}
+		
+		return (rows > 0);
+		
+	}
+	
+	public static ArrayList<KeyValuePair> getModList() throws SqlJetException {
+		
+		ArrayList<KeyValuePair> data = new ArrayList<KeyValuePair>();
+		
+		database.beginTransaction(SqlJetTransactionMode.READ_ONLY);
+		ISqlJetCursor cursor = database.getTable(TABLE_NAME).open();
+		
+		try {
+			
+			if (!cursor.eof()) {
+				
+				do {
+					Object[] o = cursor.getRowValues();
+					data.add(new KeyValuePair((String) o[1], (String) o[2]));
+				} while (cursor.next());
+				
+			}
+			
+		} finally {
+			cursor.close();
+		}
+		
+		database.commit();
+		
+		return data;
 		
 	}
 	

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,6 +24,9 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
@@ -227,39 +228,43 @@ public class ModManager extends Application {
 	}
 	
 	public void loadMods() {
-
-		for (final KeyValuePair kvp : Configuration.getProperties("mods")) {
-			
-			final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
-			
-			if (m == null) {
-				continue;
-			}
-			
-			boolean modAlreadyExists = false;
-			
-			for (Mod mod : mods) {
-				if (mod.internalName.equals(m.internalName)) {
-					modAlreadyExists = true;
-					System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
-				}
-			}
-			
-			if (modAlreadyExists) {
-				continue;
-			}
-			
-			mods.add(m);
-			
-			m.container.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		
+		try {
+			for (final KeyValuePair kvp : Database.getModList()) {
 				
-				@Override
-				public void handle(MouseEvent e) {
-					selectMod(m);
+				final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
+			
+				if (m == null) {
+					continue;
 				}
 				
-			});
-			
+				boolean modAlreadyExists = false;
+				
+				for (Mod mod : mods) {
+					if (mod.internalName.equals(m.internalName)) {
+						modAlreadyExists = true;
+						System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
+					}
+				}
+				
+				if (modAlreadyExists) {
+					continue;
+				}
+				
+				mods.add(m);
+				
+				m.container.setOnMouseClicked(new EventHandler<MouseEvent>() {
+					
+					@Override
+					public void handle(MouseEvent e) {
+						selectMod(m);
+					}
+					
+				});
+				
+			}
+		} catch (SqlJetException e) {
+			Configuration.printException(e);
 		}
 		
 		findConflicts();
@@ -404,7 +409,11 @@ public class ModManager extends Application {
 			return;
 		}
 
-		Configuration.removeProperty(selectedMod.file);
+		try {
+			Database.removeMod(selectedMod.file);
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
 		
 		try {
 			FileHelper.deleteFile(Configuration.modsFolder + File.separator + selectedMod.file);
@@ -466,8 +475,11 @@ public class ModManager extends Application {
 		
 		for (Mod m : mods) {
 			modList.getChildren().add(m.container);
-			Configuration.removeProperty(m.file);
-			Configuration.addProperty("mods", m.file, m.installed + "");
+			try {
+				Database.updateMod(m);
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
+			}
 		}
 		
 	}
@@ -504,11 +516,8 @@ public class ModManager extends Application {
 			try {
 				Database.updateMod(m);
 			} catch (SqlJetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Configuration.printException(e);
 			}
-			Configuration.removeProperty(m.file);
-			Configuration.addProperty("mods", m.file, m.installed + "");
 		}
 		
 	}
@@ -622,8 +631,11 @@ public class ModManager extends Application {
 		});
 		
 		for (Mod mod : mods) {
-			Configuration.removeProperty(mod.file);
-			Configuration.addProperty("mods", mod.file, mod.installed + "");
+			try {
+				Database.updateMod(mod);
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
+			}
 		}
 
 	}

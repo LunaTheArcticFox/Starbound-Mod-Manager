@@ -198,8 +198,6 @@ public class Mod {
 			
 			String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")) + File.separator + subDirectory;
 			
-			System.out.println(tempInstallPath);
-			
 			try {
 				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
 				FileHelper.deleteFile(tempInstallPath);
@@ -611,12 +609,6 @@ public class Mod {
 			return null;
 		}
 		
-		if (!mod.modInfoName.replace(".modinfo", "").equals(mod.internalName)) {
-			//new FXDialogueConfirm("Mod \"" + mod.file + "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
-			Configuration.printException(new Exception("\"" + mod.modInfoName + "\" does not match \"" + mod.internalName + "\""), "Internal name vs. Modinfo name.");
-			//return null;
-		}
-		
 		try {
 			if (mod.subDirectory != null) {
 				FileHelper.deleteFile(new File(mod.subDirectory));
@@ -682,8 +674,6 @@ public class Mod {
 						} else {
 							fileLocation = "temp" + File.separator + fileToLookFor + toAdd;
 						}
-						
-						System.out.println(fileLocation);
 						
 						fileContents = FileHelper.fileToJSON(new File(fileLocation));
 						
