@@ -24,6 +24,9 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
@@ -59,6 +62,12 @@ public class ModManager extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		
+		try {
+			Database.connect();
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
+		
 		primaryStage.setTitle("Starbound Mod Manager - Version " + VERSION_STRING);
 		
 		Configuration.load(primaryStage);
@@ -68,6 +77,7 @@ public class ModManager extends Application {
             public void handle(WindowEvent event) {
             	Configuration.addProperty("windowsettings", "width", "" + (int) primaryStage.getWidth());
             	Configuration.addProperty("windowsettings", "height", "" + (int) primaryStage.getHeight());
+            	Database.closeConnection();
             	primaryStage.close();
                 event.consume();
             }
@@ -218,40 +228,44 @@ public class ModManager extends Application {
 	}
 	
 	public void loadMods() {
-
-		for (final KeyValuePair kvp : Configuration.getProperties("mods")) {
-			
-			final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
-			
-			if (m == null) {
-				continue;
-			}
-			
-			boolean modAlreadyExists = false;
-			
-			for (Mod mod : mods) {
-				if (mod.internalName.equals(m.internalName)) {
-					modAlreadyExists = true;
-					System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
-					break;
-				}
-			}
-			
-			if (modAlreadyExists) {
-				continue;
-			}
-			
-			mods.add(m);
-			
-			m.container.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		
+		try {
+			for (final KeyValuePair kvp : Database.getModList()) {
 				
-				@Override
-				public void handle(MouseEvent e) {
-					selectMod(m);
+				final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
+			
+				if (m == null) {
+					continue;
 				}
 				
-			});
-			
+				boolean modAlreadyExists = false;
+				
+				for (Mod mod : mods) {
+					if (mod.internalName.equals(m.internalName)) {
+						modAlreadyExists = true;
+						System.out.println("Ignored duplicate mod '" + mod.internalName + "'. (" + m.file + ")");
+						break;
+					}
+				}
+				
+				if (modAlreadyExists) {
+					continue;
+				}
+				
+				mods.add(m);
+				
+				m.container.setOnMouseClicked(new EventHandler<MouseEvent>() {
+					
+					@Override
+					public void handle(MouseEvent e) {
+						selectMod(m);
+					}
+					
+				});
+				
+			}
+		} catch (SqlJetException e) {
+			Configuration.printException(e);
 		}
 		
 		findConflicts();
@@ -396,7 +410,11 @@ public class ModManager extends Application {
 			return;
 		}
 
-		Configuration.removeProperty(selectedMod.file);
+		try {
+			Database.removeMod(selectedMod.file);
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
 		
 		try {
 			FileHelper.deleteFile(Configuration.modsFolder + File.separator + selectedMod.file);
@@ -458,8 +476,11 @@ public class ModManager extends Application {
 		
 		for (Mod m : mods) {
 			modList.getChildren().add(m.container);
-			Configuration.removeProperty(m.file);
-			Configuration.addProperty("mods", m.file, m.installed + "");
+			try {
+				Database.updateMod(m);
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
+			}
 		}
 		
 	}
@@ -493,8 +514,11 @@ public class ModManager extends Application {
 		
 		for (Mod m : mods) {
 			modList.getChildren().add(m.container);
-			Configuration.removeProperty(m.file);
-			Configuration.addProperty("mods", m.file, m.installed + "");
+			try {
+				Database.updateMod(m);
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
+			}
 		}
 		
 	}
@@ -608,8 +632,11 @@ public class ModManager extends Application {
 		});
 		
 		for (Mod mod : mods) {
-			Configuration.removeProperty(mod.file);
-			Configuration.addProperty("mods", mod.file, mod.installed + "");
+			try {
+				Database.updateMod(mod);
+			} catch (SqlJetException e) {
+				Configuration.printException(e);
+			}
 		}
 
 	}

@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.tmatesoft.sqljet.core.SqlJetException;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -201,16 +203,25 @@ public class Mod {
 		}
 		
 		if (subDirectory != null) {
+			
+			String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")) + File.separator + subDirectory;
+			
 			try {
-				FileHelper.copyDirectory(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + subDirectory + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")), Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
-				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + subDirectory + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				FileHelper.deleteFile(tempInstallPath);
 			} catch (IOException e) {
 				Configuration.printException(e, "Copying installed mod subdirectory to main directory.");
 			}
+			
 		}
 		
-		Configuration.addProperty("mods", file, "true");
 		installed = true;
+		
+		try {
+			Database.updateMod(this);
+		} catch (SqlJetException e1) {
+			Configuration.printException(e1);
+		}
 
 		updateStyles();
 		
@@ -646,7 +657,7 @@ public class Mod {
 			String fileToLookFor = "";
 			
 			if (!mod.assetsPath.isEmpty()) {
-				fileToLookFor = mod.assetsPath.substring(2) + "/";
+				fileToLookFor = mod.assetsPath.substring(2) + File.separator;
 			}
 
 			for(FileHeader fileHeader : fileHeaders) {
@@ -684,7 +695,6 @@ public class Mod {
 						
 						if (fileContents.contains("\"__merge\"")) {
 							isModified = false;
-							System.out.println("JSON: " + toAdd);
 						}
 						
 						FileHelper.deleteFile(new File("temp"));
@@ -693,8 +703,6 @@ public class Mod {
 					
 					if (isModified) {
 						mod.filesModified.add(toAdd);
-					} else {
-						System.out.println("Ignored \"" + toAdd + "\", uses new merge system.");
 					}
 					
 				}
@@ -703,6 +711,17 @@ public class Mod {
 		} catch (ZipException | IOException e) {
 			Configuration.printException(e, "Locating assets folder in archive.");
 		}
+		
+		try {
+			Database.addMod(mod);
+		} catch (SqlJetException e) {
+			Configuration.printException(e, "Adding mod to database.");
+		}
+		
+		/*if (mod.filesModified.size() == 0) {
+			new FXDialogueConfirm("Cannot find assets folder for: \"" + mod.file + "\".\nPlease contact the creator of this mod for help.\n\nCommon causes are:\n - Incorrect folder structures\n - Incorrect \"assets\" path in the .modinfo file").show();
+			return null;
+		}*/
 
 		mod.container = new VBox();
 		
