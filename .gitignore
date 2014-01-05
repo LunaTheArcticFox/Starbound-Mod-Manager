@@ -5,6 +5,8 @@
 .classpath
 .settings
 .project
+.classpath
 config.ini
 errors.log
+/target
 database

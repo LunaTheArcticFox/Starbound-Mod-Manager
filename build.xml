@@ -15,7 +15,7 @@
     <path id="Mod Manager.classpath">
         <pathelement location="bin"/>
         <path refid="JavaFX SDK.libraryclasspath"/>
-        <pathelement location="../../../Libraries/zip4j_1.3.1.jar"/>
+        <pathelement location="lib/zip4j_1.3.1.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
