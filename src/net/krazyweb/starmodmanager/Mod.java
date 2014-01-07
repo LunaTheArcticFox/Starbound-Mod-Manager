@@ -44,9 +44,12 @@ public class Mod {
 		/*
 		 * After cleaning the archive, the .modinfo will be at the top level.
 		 * This removes the need to store and modify subdirectories in the future.
+		 * Additionally, installation of cleaned mods will be a simple extraction.
 		 */
 		modArchive.clean();
-		modArchive.writeToFile(new File("mods/testZip.zip"));
+		modArchive.writeToFile(new File("mods/" + modArchive.getFileName()));
+		
+		modArchive.extractToFolder(new File("mods/testFolder"));
 		
 		Mod mod = new Mod();
 		
@@ -57,10 +60,6 @@ public class Mod {
 		
 		
 		Database.addMod(mod);
-		
-		/*
-		 * TODO Once the data has been retrieved, delete the temporary files.
-		 */
 		
 		return mod;
 		

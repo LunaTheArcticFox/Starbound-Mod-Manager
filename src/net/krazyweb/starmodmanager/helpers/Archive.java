@@ -3,6 +3,7 @@ package net.krazyweb.starmodmanager.helpers;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
@@ -57,7 +58,7 @@ public class Archive {
 			
 			for (ISimpleInArchiveItem item : inArchive.getSimpleInterface().getArchiveItems()) {
 				
-				ArchiveFile file = new ArchiveFile();
+				final ArchiveFile file = new ArchiveFile();
 				
 				file.setPath(item.getPath().replaceAll("\\\\", "/"));
 				
@@ -72,23 +73,19 @@ public class Archive {
 				}
 				
 				ExtractOperationResult result;
-	            
-	            final byte[] output = new byte[item.getSize().intValue()];
-	            
-	            result = item.extractSlow(new ISequentialOutStream() {
-	                public int write(byte[] data) throws SevenZipException {
-	                	for (int i = 0; i < data.length; i++) {
-	                		output[i] = data[i];
-	                	}
-	                    return data.length;
-	                }
-	            });
+				
+				result = item.extractSlow(new ISequentialOutStream() {
+					public int write(byte[] data) throws SevenZipException {
+						file.setData(data);
+						return data.length;
+					}
+				});
 	
-	            if (result == ExtractOperationResult.OK) {
-	            	file.setData(output);
-	            }
-	            
-	            files.add(file);
+				if (result != ExtractOperationResult.OK) {
+					return false;
+				}
+				
+				files.add(file);
 				
 			}
 			
@@ -122,25 +119,25 @@ public class Archive {
 		
 	}
 	
-	public boolean writeToFile(final File f) {
+	public boolean writeToFile(final File file) {
 		
 		try {
 			
 			long time = System.currentTimeMillis();
 		
-			FileOutputStream fileOutput = new FileOutputStream(f);
+			FileOutputStream fileOutput = new FileOutputStream(file);
 			ZipOutputStream zipOutput = new ZipOutputStream(fileOutput);
 			
-			for (ArchiveFile file : files) {
+			for (ArchiveFile archiveFile : files) {
 				
-				if (file.isFolder()) {
+				if (archiveFile.isFolder()) {
 					continue;
 				}
 				
-				ZipEntry entry = new ZipEntry(file.getPath());
+				ZipEntry entry = new ZipEntry(archiveFile.getPath());
 				zipOutput.putNextEntry(entry);
 				
-				zipOutput.write(file.getData());
+				zipOutput.write(archiveFile.getData());
 				
 				zipOutput.closeEntry();
 				
@@ -149,7 +146,7 @@ public class Archive {
 			zipOutput.close();
 			fileOutput.close();
 			
-			System.out.println("Time to write '" + f.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
+			System.out.println("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
@@ -158,6 +155,38 @@ public class Archive {
 			return false;
 		}
 		
+	}
+	
+	public boolean extractToFolder(final File folder) {
+		
+		try {
+		
+			for (ArchiveFile file : files) {
+				
+				if (file.isFolder()) {
+					continue;
+				}
+				
+				File destination = new File(folder.getAbsolutePath() + File.separator + file.getPath());
+				destination.getParentFile().mkdirs();
+				
+				OutputStream out = new FileOutputStream(destination);
+				out.write(file.getData());
+				out.close();
+				
+			}
+			
+			return true;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
+	
+	public String getFileName() {
+		return file.getName();
 	}
 	
 }
