@@ -33,7 +33,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 1;
+	public static final int PATCH_VERSION = 2;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -690,7 +690,7 @@ public class ModManager extends Application {
 			case "Windows":
 				
 				try {
-					rt.exec("\"" + Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "launcher" + File.separator + "launcher.exe\"");
+					rt.exec(new String[] { "\"" + Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "launcher" + File.separator + "launcher.exe\"" });
 				} catch (IOException e) {
 					Configuration.printException(e, "Launching game on Windows.");
 				}
