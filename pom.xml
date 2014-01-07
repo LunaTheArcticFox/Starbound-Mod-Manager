@@ -31,7 +31,7 @@
 					<archive>
 						<manifestEntries>
 							<JavaFX-Version>2.2</JavaFX-Version>
-							<JavaFX-Application-Class>application.ModManager</JavaFX-Application-Class>
+							<JavaFX-Application-Class>net.krazyweb.starmodmanager.Main</JavaFX-Application-Class>
 							<Main-Class>com/javafx/main/Main</Main-Class>
 						</manifestEntries>
 					</archive>
