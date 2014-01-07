@@ -19,7 +19,13 @@ public class Mod {
 	
 	private HashSet<String> dependencies;
 	
-	public Mod(final String filepath) {
+	public Mod(final String filePath) {
+		load(filePath);
+	}
+	
+	private void load(final String filePath) {
+		
+		
 		
 	}
 
