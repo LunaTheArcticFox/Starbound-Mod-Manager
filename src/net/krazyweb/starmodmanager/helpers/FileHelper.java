@@ -1,12 +1,14 @@
 package net.krazyweb.starmodmanager.helpers;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedInputStream;
 
 public class FileHelper {
 	
@@ -31,40 +33,6 @@ public class FileHelper {
 		in.close();
 		out.close();
 
-	}
-
-	public static String getMD5Checksum(String filename) throws Exception {
-		
-		byte[] b = createChecksum(filename);
-		String result = "";
-
-		for (int i = 0; i < b.length; i++) {
-			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
-		}
-		
-		return result;
-		
-	}
-
-	public static byte[] createChecksum(String filename) throws Exception {
-		
-		InputStream input = new FileInputStream(filename);
-
-		byte[] buffer = new byte[1024];
-		MessageDigest complete = MessageDigest.getInstance("MD5");
-		int numRead;
-
-		do {
-			numRead = input.read(buffer);
-			if (numRead > 0) {
-				complete.update(buffer, 0, numRead);
-			}
-		} while (numRead != -1);
-
-		input.close();
-		
-		return complete.digest();		
-		
 	}
 	
 	public static final char[] readBytes(final File file, int amount) throws IOException {
@@ -132,6 +100,24 @@ public class FileHelper {
 		}
 		
 		return true;
+		
+	}
+	
+	public static long getChecksum(final File file) throws IOException {
+		
+		FileInputStream inputFile = new FileInputStream(file);
+		CheckedInputStream checkedStream = new CheckedInputStream(inputFile, new Adler32());
+		BufferedInputStream input = new BufferedInputStream(checkedStream);
+		
+		while (input.read() != -1) {
+			//Do nothing; simply reading file contents.
+		}
+		
+		input.close();
+		checkedStream.close();
+		inputFile.close();
+		
+		return checkedStream.getChecksum().getValue();
 		
 	}
 	

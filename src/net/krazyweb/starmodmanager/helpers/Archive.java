@@ -19,10 +19,23 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 public class Archive {
 	
 	private File file;
+	private String modBaseDirectory;
 	private HashSet<ArchiveFile> files = new HashSet<ArchiveFile>();
 	
 	public Archive(final File file) {
 		this.file = file;
+	}
+	
+	public ArchiveFile getFile(String fileName) {
+		
+		for (ArchiveFile file : files) {
+			if (file.getPath().endsWith(fileName)) {
+				return file;
+			}
+		}
+		
+		return null;
+		
 	}
 	
 	public boolean extract() {
@@ -46,12 +59,16 @@ public class Archive {
 				
 				ArchiveFile file = new ArchiveFile();
 				
-				file.setPath(item.getPath());
+				file.setPath(item.getPath().replaceAll("\\\\", "/"));
 				
 				if (item.isFolder()) {
 					file.setFolder(true);
 					files.add(file);
-					continue;				
+					continue;
+				}
+				
+				if (item.getPath().endsWith(".modinfo")) {
+					modBaseDirectory = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
 				}
 				
 				ExtractOperationResult result;
@@ -85,6 +102,22 @@ public class Archive {
 		} catch (IOException | SevenZipException e) {
 			e.printStackTrace();
 			return false;
+		}
+		
+	}
+	
+	public void clean() {
+		
+		HashSet<ArchiveFile> filesToRemove = new HashSet<ArchiveFile>();
+		
+		for (ArchiveFile file : files) {
+			
+			if (!file.getPath().startsWith(modBaseDirectory)) {
+				filesToRemove.add(file);
+			} else {
+				file.setPath(file.getPath().replace(modBaseDirectory, ""));
+			}
+			
 		}
 		
 	}

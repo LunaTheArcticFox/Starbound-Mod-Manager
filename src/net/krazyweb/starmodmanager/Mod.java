@@ -29,13 +29,10 @@ public class Mod {
 	
 	public static Mod load(final File file) {
 		
-		
-		/*
-		 * TODO Extract the mod and repackage it to fit the mod manager's standards.
-		 * This includes:
-		 * 		- Removing nested directories
-		 * 		- Repackaging non-zip archives as .zip archives.
-		 * Do not delete the temporary files after this step.
+		/* 
+		 * As long as the mod archive object is in memory, so are its entire contents.
+		 * This is advantageous, as the files must only be read from the disk once,
+		 * as opposed to copied from disk, to disk, read, then deleted, then copied again.
 		 */
 		
 		Archive modArchive = new Archive(file);
@@ -44,6 +41,11 @@ public class Mod {
 			return null;
 		}
 		
+		/*
+		 * After cleaning the archive, the .modinfo will be at the top level.
+		 * This removes the need to store and modify subdirectories in the future.
+		 */
+		modArchive.clean();
 		modArchive.writeToFile(new File("mods/testZip.zip"));
 		
 		Mod mod = new Mod();
