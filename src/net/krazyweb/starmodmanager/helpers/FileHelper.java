@@ -2,16 +2,36 @@ package net.krazyweb.starmodmanager.helpers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class FileHelper {
 	
+	//Since Java doesn't have unsigned bytes as a primitive, I use chars to represent unsigned bytes.
 	private static final char[] SIG_SEVENZIP = new char[] { 0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C };
 	private static final char[] SIG_RAR = new char[] { 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00 };
 	private static final char[] SIG_ZIP = new char[] { 0x50, 0x4B, 0x03, 0x04 };
+
+	public static void copyFile(File src, File dest) throws IOException {
+
+		InputStream in = new FileInputStream(src);
+		OutputStream out = new FileOutputStream(dest);
+
+		byte[] buffer = new byte[1024];
+
+		int length;
+
+		while ((length = in.read(buffer)) > 0) {
+			out.write(buffer, 0, length);
+		}
+
+		in.close();
+		out.close();
+
+	}
 	
-	//Since Java doesn't have unsigned bytes as a primitive, I use chars to represent unsigned bytes.
 	public static final char[] readBytes(final File file, int amount) throws IOException {
 		
 		InputStream in = new FileInputStream(file);

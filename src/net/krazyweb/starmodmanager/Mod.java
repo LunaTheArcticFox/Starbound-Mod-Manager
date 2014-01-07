@@ -1,12 +1,15 @@
 package net.krazyweb.starmodmanager;
 
+import java.io.File;
 import java.util.HashSet;
+
+import net.krazyweb.starmodmanager.helpers.FileHelper;
 
 public class Mod {
 	
 	private String internalName;
 	private String displayName;
-	private String version;
+	private String modVersion;
 	private String gameVersion;
 	private String author;
 	private String description;
@@ -18,14 +21,42 @@ public class Mod {
 	private boolean installed;
 	
 	private HashSet<String> dependencies;
+	private HashSet<String> modifiedFiles;
+	private HashSet<String> ignoredFiles; //Files that are ignored when copying to the game's folders, including readmes.
 	
-	public Mod(final String filePath) {
-		load(filePath);
+	private Mod() {
 	}
 	
-	private void load(final String filePath) {
+	public static Mod load(final File file) {
+		
+		if (!FileHelper.verify(file)) {
+			//TODO Inform user of invalid filetype.
+			return null;
+		}
+		
+		/*
+		 * TODO Extract the mod and repackage it to fit the mod manager's standards.
+		 * This includes:
+		 * 		- Removing nested directories
+		 * 		- Repackaging non-zip archives as .zip archives.
+		 * Do not delete the temporary files after this step.
+		 */
+		
+		Mod mod = new Mod();
+		
+		/*
+		 * TODO Take the temporary files from the above step and extract necessary info.
+		 */
 		
 		
+		
+		Database.addMod(mod);
+		
+		/*
+		 * TODO Once the data has been retrieved, delete the temporary files.
+		 */
+		
+		return mod;
 		
 	}
 
@@ -45,12 +76,12 @@ public class Mod {
 		this.displayName = displayName;
 	}
 
-	public String getVersion() {
-		return version;
+	public String getModVersion() {
+		return modVersion;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
+	public void setModVersion(String version) {
+		this.modVersion = version;
 	}
 
 	public String getGameVersion() {

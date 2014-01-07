@@ -1,5 +1,6 @@
 package net.krazyweb.starmodmanager;
 
+import java.io.File;
 import java.util.HashSet;
 
 public class ModList {
@@ -13,8 +14,14 @@ public class ModList {
 		mods = new HashSet<Mod>();
 	}
 	
-	public void addMod(final String path) {
-		mods.add(new Mod(path));
+	public void addMod(final File file) {
+		
+		Mod mod = Mod.load(file);
+		
+		if (mod != null) {
+			mods.add(mod);
+		}
+		
 	}
 	
 	public void deleteMod(final String name) {

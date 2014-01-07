@@ -7,12 +7,18 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import net.krazyweb.starmodmanager.helpers.FileHelper;
 
 public class Main extends Application {
+	
+	private ModList modList;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		
+		Database.initialize();
+		Settings.initialize();
+		
+		modList = new ModList();
 		
 		try {
 			
@@ -26,7 +32,7 @@ public class Main extends Application {
 			
 			File result = fileChooser.showOpenDialog(primaryStage);
 			
-			System.out.println(FileHelper.verify(result));
+			modList.addMod(result);
 			
 		} catch(Exception e) {
 			e.printStackTrace();
