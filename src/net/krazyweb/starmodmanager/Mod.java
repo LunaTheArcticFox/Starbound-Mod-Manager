@@ -3,7 +3,7 @@ package net.krazyweb.starmodmanager;
 import java.io.File;
 import java.util.HashSet;
 
-import net.krazyweb.starmodmanager.helpers.FileHelper;
+import net.krazyweb.starmodmanager.helpers.Archive;
 
 public class Mod {
 	
@@ -29,10 +29,6 @@ public class Mod {
 	
 	public static Mod load(final File file) {
 		
-		if (!FileHelper.verify(file)) {
-			//TODO Inform user of invalid filetype.
-			return null;
-		}
 		
 		/*
 		 * TODO Extract the mod and repackage it to fit the mod manager's standards.
@@ -41,6 +37,14 @@ public class Mod {
 		 * 		- Repackaging non-zip archives as .zip archives.
 		 * Do not delete the temporary files after this step.
 		 */
+		
+		Archive modArchive = new Archive(file);
+			
+		if (!modArchive.extract()) {
+			return null;
+		}
+		
+		modArchive.writeToFile(new File("mods/testZip.zip"));
 		
 		Mod mod = new Mod();
 		
@@ -154,6 +158,22 @@ public class Mod {
 
 	public void setDependencies(HashSet<String> dependencies) {
 		this.dependencies = dependencies;
+	}
+
+	public HashSet<String> getModifiedFiles() {
+		return modifiedFiles;
+	}
+
+	public void setModifiedFiles(HashSet<String> modifiedFiles) {
+		this.modifiedFiles = modifiedFiles;
+	}
+
+	public HashSet<String> getIgnoredFiles() {
+		return ignoredFiles;
+	}
+
+	public void setIgnoredFiles(HashSet<String> ignoredFiles) {
+		this.ignoredFiles = ignoredFiles;
 	}
 	
 }
