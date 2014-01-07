@@ -69,11 +69,6 @@
 			<version>2.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>net.lingala.zip4j</groupId>
-			<artifactId>zip4j</artifactId>
-			<version>1.2.3</version>
-		</dependency>
-		<dependency>
 			<groupId>org.tmatesoft.sqljet</groupId>
 			<artifactId>sqljet</artifactId>
 			<version>1.1.8</version>

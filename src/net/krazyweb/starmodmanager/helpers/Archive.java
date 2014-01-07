@@ -32,7 +32,10 @@ public class Archive {
 			long time = System.currentTimeMillis();
 			
 			if (!FileHelper.verify(file)) {
-				//TODO Inform user of invalid filetype.
+				/* 
+				 * TODO Inform user of invalid filetype.
+				 * Change boolean return to error codes to be passed along to the UI.
+				 */
 				return false;
 			}
 			
