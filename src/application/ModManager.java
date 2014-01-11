@@ -33,7 +33,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 2;
+	public static final int PATCH_VERSION = 3;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -232,7 +232,13 @@ public class ModManager extends Application {
 		try {
 			for (final KeyValuePair kvp : Database.getModList()) {
 				
-				final Mod m = Mod.loadMod(kvp.key, Boolean.parseBoolean(kvp.value));
+				boolean installed = false;
+				
+				if (kvp.value.equals("1")) {
+					installed = true;
+				}
+				
+				final Mod m = Mod.loadMod(kvp.key, installed);
 			
 				if (m == null) {
 					continue;

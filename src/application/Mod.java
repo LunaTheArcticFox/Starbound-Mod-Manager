@@ -208,6 +208,7 @@ public class Mod {
 			
 			try {
 				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				tempInstallPath = tempInstallPath.substring(0, tempInstallPath.indexOf(subDirectory) + subDirectory.indexOf("/"));
 				FileHelper.deleteFile(tempInstallPath);
 			} catch (IOException e) {
 				Configuration.printException(e, "Copying installed mod subdirectory to main directory.");
@@ -619,11 +620,11 @@ public class Mod {
 			return null;
 		}
 		
-		if (!mod.modInfoName.replace(".modinfo", "").toLowerCase().equals(mod.internalName.toLowerCase())) {
+		/*if (!mod.modInfoName.replace(".modinfo", "").toLowerCase().equals(mod.internalName.toLowerCase())) {
 			//new FXDialogueConfirm("Mod \"" + mod.file + "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
 			Configuration.printException(new Exception("\"" + mod.modInfoName + "\" does not match \"" + mod.internalName + "\""), "Internal name vs. Modinfo name.");
 			//return null;
-		}
+		}*/
 		
 		try {
 			if (mod.subDirectory != null) {
