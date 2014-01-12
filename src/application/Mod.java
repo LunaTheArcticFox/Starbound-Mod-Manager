@@ -208,8 +208,7 @@ public class Mod {
 			
 			try {
 				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
-				tempInstallPath = tempInstallPath.substring(0, tempInstallPath.indexOf(subDirectory) + subDirectory.indexOf("/"));
-				FileHelper.deleteFile(tempInstallPath);
+				FileHelper.deleteFile(new File(tempInstallPath).getParentFile().getPath());
 			} catch (IOException e) {
 				Configuration.printException(e, "Copying installed mod subdirectory to main directory.");
 			}
@@ -298,12 +297,16 @@ public class Mod {
 			}
 			
 			if (mod.subDirectory != null) {
+				
+				String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")) + File.separator + mod.subDirectory;
+				
 				try {
-					FileHelper.copyDirectory(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.subDirectory + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")), Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-					FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.subDirectory + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
+					FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
+					FileHelper.deleteFile(new File(tempInstallPath).getParentFile().getPath());
 				} catch (IOException e) {
 					Configuration.printException(e, "Copying installed mod subdirectory to main directory during patch.");
 				}
+				
 			}
 			
 		}
