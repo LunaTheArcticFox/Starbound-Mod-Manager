@@ -24,6 +24,7 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import net.krazyweb.starmodmanager.helpers.Archive;
 
 import org.tmatesoft.sqljet.core.SqlJetException;
 
@@ -33,7 +34,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 4;
+	public static final int PATCH_VERSION = 5;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -365,11 +366,10 @@ public class ModManager extends Application {
 				
 				File newFileLocation = new File(Configuration.modsFolder + File.separator + f.getName());
 				
-				try {
-					FileHelper.copyFile(f, newFileLocation);
-				} catch (IOException e) {
-					Configuration.printException(e, "Copying mod archive when adding new mod.");
-				}
+				Archive archive = new Archive(f);
+				archive.extract();
+				archive.clean();
+				archive.writeToFile(newFileLocation);
 				
 				final Mod m = Mod.loadMod(newFileLocation.getName(), false);
 				

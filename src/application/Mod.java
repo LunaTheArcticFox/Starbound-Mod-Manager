@@ -10,10 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-
-import org.tmatesoft.sqljet.core.SqlJetException;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -30,9 +27,13 @@ import javafx.scene.text.Text;
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
 import name.fraser.neil.plaintext.diff_match_patch.Patch;
+import net.krazyweb.starmodmanager.helpers.Archive;
+import net.krazyweb.starmodmanager.helpers.ArchiveFile;
+import net.krazyweb.starmodmanager.helpers.NewFileHelper;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
+
+import org.tmatesoft.sqljet.core.SqlJetException;
 
 import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
@@ -51,7 +52,6 @@ public class Mod {
 	public boolean patched = false;
 	
 	public String file;
-	public String modInfoName;
 	public String displayName;
 	public String internalName;
 	public String author;
@@ -60,7 +60,6 @@ public class Mod {
 	public String gameVersion;
 	public String description;
 	public String conflicts;
-	public String subDirectory;
 	
 	public VBox container;
 	public GridPane gridPane;
@@ -163,7 +162,6 @@ public class Mod {
 			return;
 		}
 
-		Configuration.addProperty("mods", file, "false");
 		installed = false;
 		
 		if (conflictsWithInstalledMods(installedMods)) {
@@ -179,11 +177,17 @@ public class Mod {
 		if(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + internalName).exists()) {
 			
 			try {
-				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
+				FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + internalName);
 			} catch (IOException e) {
 				Configuration.printException(e, "Deleting installed mod folder when uninstalling.");
 			}
 		
+		}
+		
+		try {
+			Database.updateMod(this);
+		} catch (SqlJetException e) {
+			Configuration.printException(e);
 		}
 		
 		updateStyles();
@@ -192,28 +196,9 @@ public class Mod {
 
 	public void install(final ArrayList<Mod> installedMods) {
 		
-		try {
-			
-			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + file);
-			
-			modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
-			
-		} catch (ZipException e) {
-			Configuration.printException(e, "Extracting mod folder when installing.");
-		}
-		
-		if (subDirectory != null) {
-			
-			String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")) + File.separator + subDirectory;
-			
-			try {
-				FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + modInfoName.substring(0, modInfoName.indexOf(".modinfo")));
-				FileHelper.deleteFile(new File(tempInstallPath).getParentFile().getPath());
-			} catch (IOException e) {
-				Configuration.printException(e, "Copying installed mod subdirectory to main directory.");
-			}
-			
-		}
+		Archive archive = new Archive(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + file));
+		archive.extract();
+		archive.extractToFolder(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + internalName));
 		
 		installed = true;
 		
@@ -237,8 +222,8 @@ public class Mod {
 	
 	private boolean conflictsWithInstalledMods(final ArrayList<Mod> installedMods) {
 
-		ArrayList<Mod> tempModList = new ArrayList<Mod>(installedMods);
-		ArrayList<String> conflictingFiles = new ArrayList<String>();
+		HashSet<Mod> tempModList = new HashSet<Mod>(installedMods);
+		HashSet<String> conflictingFiles = new HashSet<String>();
 		
 		tempModList.remove(this);
 		
@@ -254,6 +239,8 @@ public class Mod {
 	
 	private void createModPatch(final ArrayList<Mod> installedMods) throws IOException {
 		
+		System.out.println(installedMods.size());
+		
 		if (installedMods.size() <= 1) {
 			
 			//No patches needed, delete the patches folder.
@@ -263,21 +250,9 @@ public class Mod {
 			
 			for (Mod mod : installedMods) {
 				
-				try {
-					ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
-					modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-				} catch (ZipException e) {
-					Configuration.printException(e, "Last installed mod in patch gets put in its own folder again.");
-				}
-				
-				if (mod.subDirectory != null) {
-					try {
-						FileHelper.copyDirectory(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.subDirectory + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")), Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-						FileHelper.deleteFile(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.subDirectory + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-					} catch (IOException e) {
-						Configuration.printException(e, "Copying installed mod subdirectory to main directory during patch.");
-					}
-				}
+				Archive modArchive = new Archive(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file));
+				modArchive.extract();
+				modArchive.extractToFolder(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName));
 				
 			}
 			
@@ -289,25 +264,9 @@ public class Mod {
 		
 		for (Mod mod : installedMods) {
 
-			try {
-				ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
-				modArchive.extractAll(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-			} catch (ZipException e) {
-				Configuration.printException(e, "Copying temporary folders and files for mod merging.");
-			}
-			
-			if (mod.subDirectory != null) {
-				
-				String tempInstallPath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")) + File.separator + mod.subDirectory;
-				
-				try {
-					FileHelper.copyDirectory(tempInstallPath, Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.modInfoName.substring(0, mod.modInfoName.indexOf(".modinfo")));
-					FileHelper.deleteFile(new File(tempInstallPath).getParentFile().getPath());
-				} catch (IOException e) {
-					Configuration.printException(e, "Copying installed mod subdirectory to main directory during patch.");
-				}
-				
-			}
+			Archive modArchive = new Archive(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file));
+			modArchive.extract();
+			modArchive.extractToFolder(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName));
 			
 		}
 		
@@ -354,7 +313,9 @@ public class Mod {
 		fileConflicts.removeAll(toRemove);
 		
 		if (fileConflicts.isEmpty()) {
-			FileHelper.deleteFile(Configuration.modsPatchesFolder.getAbsolutePath());
+			if (Configuration.modsPatchesFolder.exists()) {
+				FileHelper.deleteFile(Configuration.modsPatchesFolder.getAbsolutePath());
+			}
 			return;
 		}
 		
@@ -395,7 +356,11 @@ public class Mod {
 				if (mod.assetsPath.isEmpty()) {
 					filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + file.replace("/", "\\");
 				} else {
-					filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + mod.assetsPath.substring(2) + File.separator + file.replace("/", "\\");
+					if (mod.assetsPath.startsWith("./")) {
+						filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + mod.assetsPath.substring(2) + File.separator + file.replace("/", "\\");
+					} else {
+						filePath = Configuration.modsInstallFolder.getAbsolutePath() + File.separator + mod.internalName + File.separator + mod.assetsPath + File.separator + file.replace("/", "\\");
+					}
 				}
 				
 				if (i != currentMods.size() - 1) {
@@ -408,7 +373,7 @@ public class Mod {
 				
 			}
 			
-			new File(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file).getParent()).mkdirs();
+			new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file).getParentFile().mkdirs();
 			
 			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file), "UTF-8");
 			
@@ -422,7 +387,9 @@ public class Mod {
 			
 			try {
 				
-				FileHelper.deleteFile("tempFolder" + File.separator);
+				if (new File("tempFolder" + File.separator).exists()) {
+					FileHelper.deleteFile("tempFolder" + File.separator);
+				}
 				
 				ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
 				modArchive.extractAll(new File("tempFolder" + File.separator).getAbsolutePath());
@@ -432,7 +399,7 @@ public class Mod {
 				if (mod.assetsPath.isEmpty()) {
 					FileHelper.listFiles("tempFolder" + File.separator, files);
 				} else {
-					FileHelper.listFiles("tempFolder" + File.separator + mod.assetsPath.substring(2), files);
+					FileHelper.listFiles("tempFolder" + File.separator + mod.assetsPath, files);
 				}
 				
 				ArrayList<File> remove = new ArrayList<File>();
@@ -442,17 +409,13 @@ public class Mod {
 				if (mod.assetsPath.isEmpty()) {
 					toFindPath = new File("tempFolder" + File.separator).getAbsolutePath() + File.separator;
 				} else {
-					toFindPath = new File("tempFolder" + File.separator + mod.assetsPath.substring(2)).getAbsolutePath() + File.separator;
+					toFindPath = new File("tempFolder" + File.separator + mod.assetsPath).getAbsolutePath() + File.separator;
 				}
 
 				for (File file : files) {
 					
 					String fileName = file.getAbsolutePath().substring(toFindPath.length());
 					fileName = fileName.replace("\\", "/");
-					
-					if (mod.subDirectory != null) {
-						fileName = fileName.substring((mod.subDirectory + File.separator).length());
-					}
 					
 					if (fileConflicts.contains(fileName)) {
 						remove.add(file);
@@ -469,10 +432,6 @@ public class Mod {
 				for (File file : files) {
 					
 					String fileName = file.getAbsolutePath().substring(toFindPath.length());
-					
-					if (mod.subDirectory != null) {
-						fileName = fileName.substring((mod.subDirectory + File.separator).length());
-					}
 					
 					File outputFile = new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + "assets" + File.separator + fileName);
 					outputFile.getParentFile().mkdirs();
@@ -518,7 +477,6 @@ public class Mod {
 	}
 	
 	// TODO: Replace this boolean with a check for folder + modinfo in mods directory
-	@SuppressWarnings("rawtypes")
 	public static Mod loadMod(String fileName, boolean installed) {
 		
 		Mod mod = new Mod();
@@ -526,48 +484,15 @@ public class Mod {
 		mod.file = fileName;
 		mod.installed = installed;
 		
-		mod.modInfoName = "";
-		
-		try {
-			
-			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
-
-			@SuppressWarnings("unchecked")
-			List<FileHeader> fileHeaders = modArchive.getFileHeaders();
-			
-			for (FileHeader fileHeader : fileHeaders) {
-				if (fileHeader.getFileName().endsWith(".modinfo")) {
-					modArchive.extractFile(fileHeader, new File("").getAbsolutePath());
-					mod.modInfoName = fileHeader.getFileName();
-					if (mod.modInfoName.contains("/")) {
-						mod.subDirectory = mod.modInfoName.substring(0, mod.modInfoName.lastIndexOf('/'));
-						mod.modInfoName = mod.modInfoName.substring(mod.modInfoName.lastIndexOf('/') + 1);
-					} else {
-						mod.subDirectory = null;
-					}
-					break;
-				}
-			}
-			
-		} catch (ZipException e) {
-			Configuration.printException(e, "Searching for mod info in archive: " + mod.file);
-		}
-		
-		if (mod.modInfoName.isEmpty()) {
-			new FXDialogueConfirm("Mod \"" + mod.file + "\" is missing a valid .modinfo file.\nPlease contact the creator of this mod for help.").show();
-			return null;
-		}
+		Archive modArchive = new Archive(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file));
+		modArchive.extract();
 		
 		try {
 			
 			Map<?, ?> map;
 			
-			if (mod.subDirectory == null) {
-				map = JsonReader.jsonToMaps(FileHelper.fileToJSON(new File(mod.modInfoName)));
-			} else {
-				map = JsonReader.jsonToMaps(FileHelper.fileToJSON(new File(mod.subDirectory + File.separator + mod.modInfoName)));
-			}
-			
+			map = JsonReader.jsonToMaps(NewFileHelper.fileToJSON(modArchive.getFile(".modinfo")));
+				
 			for (Object e : map.keySet()) {
 				
 				String value = e.toString();
@@ -582,6 +507,9 @@ public class Mod {
 						mod.assetsPath = "";
 					} else {
 						mod.assetsPath = map.get(value).toString();
+						if (mod.assetsPath.startsWith("./")) {
+							mod.assetsPath = mod.assetsPath.substring(2);
+						}
 					}
 					
 				} else if (value.equalsIgnoreCase("version")) {
@@ -590,7 +518,7 @@ public class Mod {
 					
 				} else if (value.equalsIgnoreCase("metadata")) {
 					
-					for (Object e2 : ((JsonObject) map.get(value)).entrySet()) {
+					for (Object e2 : ((JsonObject<?, ?>) map.get(value)).entrySet()) {
 						
 						String metaValue = e2.toString();
 						
@@ -619,24 +547,8 @@ public class Mod {
 			
 		} catch (IOException e) {
 			new FXDialogueConfirm("Mod \"" + mod.file + "\" is missing a valid .modinfo file.\nPlease contact the creator of this mod for help.").show();
-			Configuration.printException(e, "Reading mod info file to JSON: " + mod.modInfoName);
+			Configuration.printException(e, "Reading mod info file to JSON: " + mod.file);
 			return null;
-		}
-		
-		/*if (!mod.modInfoName.replace(".modinfo", "").toLowerCase().equals(mod.internalName.toLowerCase())) {
-			//new FXDialogueConfirm("Mod \"" + mod.file + "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
-			Configuration.printException(new Exception("\"" + mod.modInfoName + "\" does not match \"" + mod.internalName + "\""), "Internal name vs. Modinfo name.");
-			//return null;
-		}*/
-		
-		try {
-			if (mod.subDirectory != null) {
-				FileHelper.deleteFile(new File(mod.subDirectory));
-			} else {
-				FileHelper.deleteFile(new File(mod.modInfoName));
-			}
-		} catch (IOException e) {
-			Configuration.printException(e, "Deleting temporary .modinfo file.");
 		}
 		
 		if (mod.displayName == null) {
@@ -653,24 +565,19 @@ public class Mod {
 		
 		try {
 			
-			ZipFile modArchive = new ZipFile(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file);
+			HashSet<ArchiveFile> files = modArchive.getFiles();
 			
-			@SuppressWarnings("unchecked")
-			List<FileHeader> fileHeaders = modArchive.getFileHeaders();
-			
-			String fileToLookFor = "";
-			
-			if (!mod.assetsPath.isEmpty()) {
-				fileToLookFor = mod.assetsPath.substring(2) + File.separator;
-			}
-
-			for(FileHeader fileHeader : fileHeaders) {
-				if (!fileHeader.isDirectory() && fileHeader.getFileName().contains(fileToLookFor)) {
+			for(ArchiveFile file : files) {
+				if (!file.isFolder() && file.getPath().startsWith(mod.assetsPath)) {
 					
-					String toAdd = fileHeader.getFileName().substring(fileHeader.getFileName().indexOf(fileToLookFor) + fileToLookFor.length());
+					String toAdd = file.getPath().substring(mod.assetsPath.length());
 					
-					if (mod.subDirectory != null) {
-						toAdd = toAdd.substring((mod.subDirectory + File.separator).length());
+					if (toAdd.endsWith(".modinfo")) {
+						continue;
+					}
+					
+					if (!mod.assetsPath.isEmpty()) {
+						toAdd = toAdd.substring(1);
 					}
 					
 					boolean isJSONFile = true;
@@ -684,35 +591,22 @@ public class Mod {
 					
 					if (isJSONFile) {
 
-						modArchive.extractFile(fileHeader, new File("temp" + File.separator).getAbsolutePath());
-						
-						String fileContents = "";
-						String fileLocation = "";
-						
-						if (mod.subDirectory != null) {
-							fileLocation = "temp" + File.separator + fileToLookFor + mod.subDirectory + File.separator + toAdd;
-						} else {
-							fileLocation = "temp" + File.separator + fileToLookFor + toAdd;
-						}
-						
-						fileContents = FileHelper.fileToJSON(new File(fileLocation));
+						String fileContents = NewFileHelper.fileToJSON(file);
 						
 						if (fileContents.contains("\"__merge\"")) {
 							isModified = false;
 						}
 						
-						FileHelper.deleteFile(new File("temp"));
-						
 					}
 					
-					if (isModified) {
+					if (isModified && !toAdd.endsWith(".txt")) {
 						mod.filesModified.add(toAdd);
 					}
 					
 				}
 			}
 			
-		} catch (ZipException | IOException e) {
+		} catch (IOException e) {
 			Configuration.printException(e, "Locating assets folder in archive.");
 		}
 		
@@ -722,10 +616,10 @@ public class Mod {
 			Configuration.printException(e, "Adding mod to database.");
 		}
 		
-		/*if (mod.filesModified.size() == 0) {
+		if (mod.filesModified.size() == 0) {
 			new FXDialogueConfirm("Cannot find assets folder for: \"" + mod.file + "\".\nPlease contact the creator of this mod for help.\n\nCommon causes are:\n - Incorrect folder structures\n - Incorrect \"assets\" path in the .modinfo file").show();
 			return null;
-		}*/
+		}
 
 		mod.container = new VBox();
 		
