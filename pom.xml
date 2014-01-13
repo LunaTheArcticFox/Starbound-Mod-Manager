@@ -5,7 +5,7 @@
 	<artifactId>Starbound-Mod-Manager</artifactId>
 	<version>2.0a</version>
 	<name>Starbound Mod Manager</name>
-	<description>A mod manager for starbound</description>
+	<description>A mod manager for Starbound.</description>
 	
 	<build>
 		<sourceDirectory>src</sourceDirectory>
