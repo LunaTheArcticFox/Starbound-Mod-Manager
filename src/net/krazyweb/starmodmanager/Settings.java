@@ -16,6 +16,9 @@ public class Settings {
 
 	public static void setModsDirectory(File modsDirectory) {
 		Settings.modsDirectory = modsDirectory;
+		if (!Settings.modsDirectory.exists()) {
+			Settings.modsDirectory.mkdir();
+		}
 	}
 	
 }
