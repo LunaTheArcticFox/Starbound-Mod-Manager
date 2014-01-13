@@ -76,10 +76,6 @@ public class Mod {
 		
 		mod.files = new HashSet<ModFile>();
 		
-		/*
-		 * TODO Take the temporary files from the above step and extract necessary info.
-		 */
-		
 		mod.setArchiveName(modArchive.getFileName());
 
 		//Get the modinfo file and parse it

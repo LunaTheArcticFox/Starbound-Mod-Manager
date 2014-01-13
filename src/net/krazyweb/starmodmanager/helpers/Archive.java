@@ -130,7 +130,13 @@ public class Archive {
 				file.setPath(file.getPath().replace(modBaseDirectory, ""));
 			}
 			
+			if (file.getPath().endsWith("Thumbs.db")) {
+				filesToRemove.add(file);
+			}
+			
 		}
+		
+		files.removeAll(filesToRemove);
 		
 	}
 	
