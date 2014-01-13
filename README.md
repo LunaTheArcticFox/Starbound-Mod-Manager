@@ -1,8 +1,6 @@
 Starbound-Mod-Manager
 =====================
 
-A mod manager for Starbound.
+A mod manager for Starbound. This is the development branch for version 2.0 and most features are not yet implemented.
 
-Requires the following libraries:
-zip4j (1.3.1)
-javafx (jfxrt.jar)
+This project requires Maven.
