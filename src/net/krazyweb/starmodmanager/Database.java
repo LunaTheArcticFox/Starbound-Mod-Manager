@@ -1,6 +1,7 @@
 package net.krazyweb.starmodmanager;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -285,6 +286,15 @@ public class Database {
 				}
 				
 				mod.setFiles(files);
+				
+				try {
+					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()))) {
+						System.out.println("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
+						mod = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				
 				modList.add(mod);
 				
