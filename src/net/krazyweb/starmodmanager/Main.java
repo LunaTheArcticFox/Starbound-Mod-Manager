@@ -1,6 +1,7 @@
 package net.krazyweb.starmodmanager;
 
 import java.io.File;
+import java.sql.SQLException;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -13,9 +14,14 @@ public class Main extends Application {
 	private ModList modList;
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public void start(Stage primaryStage) {
 		
-		Database.initialize();
+		try {
+			Database.initialize();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 		Settings.initialize();
 		
 		modList = new ModList();

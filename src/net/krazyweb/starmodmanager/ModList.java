@@ -1,17 +1,18 @@
 package net.krazyweb.starmodmanager;
 
 import java.io.File;
-import java.util.HashSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class ModList {
 	
 	private boolean locked;
 	
-	private HashSet<Mod> mods;
+	private ArrayList<Mod> mods;
 	
 	public ModList() {
 		//TODO Get locked status from settings.
-		mods = new HashSet<Mod>();
+		mods = new ArrayList<Mod>();
 	}
 	
 	public void addMod(final File file) {
@@ -66,7 +67,7 @@ public class ModList {
 			return;
 		}
 		
-		mod.hide();
+		mod.setHidden(true);
 		
 	}
 	
@@ -93,7 +94,11 @@ public class ModList {
 	}
 	
 	public void refreshMods() {
-		Database.getModList();
+		try {
+			Database.getModList();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private Mod getModByName(final String name) {

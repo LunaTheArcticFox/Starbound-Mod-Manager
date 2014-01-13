@@ -69,16 +69,6 @@
 			<version>2.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.tmatesoft.sqljet</groupId>
-			<artifactId>sqljet</artifactId>
-			<version>1.1.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tmatesoft.sqljet</groupId>
-			<artifactId>sqljet-browser</artifactId>
-			<version>1.1.8</version>
-		</dependency>
-		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr-runtime</artifactId>
 			<version>3.4</version>
@@ -87,6 +77,11 @@
 			<groupId>com.carrotgarden.jwrapper</groupId>
 			<artifactId>jwrapper-7zip-jbinding</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 	</dependencies>
 </project>

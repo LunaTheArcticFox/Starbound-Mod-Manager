@@ -12,7 +12,9 @@ import java.util.zip.CheckedInputStream;
 
 public class FileHelper {
 	
-	//Since Java doesn't have unsigned bytes as a primitive, I use chars to represent unsigned bytes.
+	/*
+	 * File signatures found at: http://www.garykessler.net/library/file_sigs.html
+	 */
 	private static final char[] SIG_SEVENZIP = new char[] { 0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C };
 	private static final char[] SIG_RAR = new char[] { 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00 };
 	private static final char[] SIG_ZIP = new char[] { 0x50, 0x4B, 0x03, 0x04 };
@@ -50,9 +52,6 @@ public class FileHelper {
 		
 	}
 
-	/*
-	 * File signatures found at: http://www.garykessler.net/library/file_sigs.html
-	 */
 	
 	public static final boolean verify(final File file) {
 		

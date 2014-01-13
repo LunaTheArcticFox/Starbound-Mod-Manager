@@ -1,6 +1,7 @@
 /backups
 /bin
 /build
+/data
 /mods
 /target
 .classpath

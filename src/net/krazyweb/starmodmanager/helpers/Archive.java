@@ -73,13 +73,24 @@ public class Archive {
 				}
 				
 				ExtractOperationResult result;
-				
+
+				final byte[] outputData = new byte[item.getSize().intValue()];
+
 				result = item.extractSlow(new ISequentialOutStream() {
-					public int write(byte[] data) throws SevenZipException {
-						file.setData(data);
-						return data.length;
-					}
+
+				    int offset = 0;
+
+				    public int write(byte[] data) throws SevenZipException {
+				        for (int i = 0; i < data.length; i++) {
+				            outputData[i + offset] = data[i];
+				        }
+				        offset += data.length;
+				        return data.length;
+				    }
+
 				});
+				
+				file.setData(outputData);
 	
 				if (result != ExtractOperationResult.OK) {
 					return false;

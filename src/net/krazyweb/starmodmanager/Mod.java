@@ -1,6 +1,8 @@
 package net.krazyweb.starmodmanager;
 
 import java.io.File;
+import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.HashSet;
 
 import net.krazyweb.starmodmanager.helpers.Archive;
@@ -14,17 +16,28 @@ public class Mod {
 	private String author;
 	private String description;
 	private String url;
-	private String fileName;
-	private String checksum;
+	private String archiveName;
+	
+	private long checksum;
+	
+	private int order;
 	
 	private boolean hidden;
 	private boolean installed;
 	
 	private HashSet<String> dependencies;
-	private HashSet<String> modifiedFiles;
-	private HashSet<String> ignoredFiles; //Files that are ignored when copying to the game's folders, including readmes.
+	private HashSet<ModFile> files; //All files that the mod alters
 	
-	private Mod() {
+	public static class ModOrderComparator implements Comparator<Mod> {
+
+		@Override
+		public int compare(Mod mod1, Mod mod2) {
+			return mod1.order - mod2.order;
+		}
+		
+	}
+	
+	public Mod() {
 	}
 	
 	public static Mod load(final File file) {
@@ -49,7 +62,7 @@ public class Mod {
 		modArchive.clean();
 		modArchive.writeToFile(new File("mods/" + modArchive.getFileName()));
 		
-		modArchive.extractToFolder(new File("mods/testFolder"));
+		//modArchive.extractToFolder(new File("mods/testFolder"));
 		
 		Mod mod = new Mod();
 		
@@ -59,7 +72,11 @@ public class Mod {
 		
 		
 		
-		Database.addMod(mod);
+		try {
+			Database.updateMod(mod);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		return mod;
 		
@@ -113,27 +130,27 @@ public class Mod {
 		this.description = description;
 	}
 
-	public String getUrl() {
+	public String getURL() {
 		return url;
 	}
 
-	public void setUrl(String url) {
+	public void setURL(String url) {
 		this.url = url;
 	}
 
-	public String getFile() {
-		return fileName;
+	public String getArchiveName() {
+		return archiveName;
 	}
 
-	public void setFile(String file) {
-		this.fileName = file;
+	public void setArchiveName(String file) {
+		this.archiveName = file;
 	}
 
-	public String getChecksum() {
+	public long getChecksum() {
 		return checksum;
 	}
 
-	public void setChecksum(String checksum) {
+	public void setChecksum(long checksum) {
 		this.checksum = checksum;
 	}
 
@@ -141,8 +158,8 @@ public class Mod {
 		return hidden;
 	}
 
-	public void hide() {
-		this.hidden = true;
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 
 	public boolean isInstalled() {
@@ -161,20 +178,20 @@ public class Mod {
 		this.dependencies = dependencies;
 	}
 
-	public HashSet<String> getModifiedFiles() {
-		return modifiedFiles;
+	public HashSet<ModFile> getFiles() {
+		return files;
 	}
 
-	public void setModifiedFiles(HashSet<String> modifiedFiles) {
-		this.modifiedFiles = modifiedFiles;
+	public void setFiles(HashSet<ModFile> files) {
+		this.files = files;
 	}
 
-	public HashSet<String> getIgnoredFiles() {
-		return ignoredFiles;
+	public int getOrder() {
+		return order;
 	}
 
-	public void setIgnoredFiles(HashSet<String> ignoredFiles) {
-		this.ignoredFiles = ignoredFiles;
+	public void setOrder(int order) {
+		this.order = order;
 	}
 	
 }
