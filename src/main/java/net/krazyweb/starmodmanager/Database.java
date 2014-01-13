@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-import net.krazyweb.starmodmanager.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
 
 
 public class Database {

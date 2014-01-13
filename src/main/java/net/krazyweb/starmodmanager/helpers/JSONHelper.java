@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager.helpers;
+package main.java.net.krazyweb.starmodmanager.helpers;
 
 import javax.json.JsonObject;
 

@@ -11,3 +11,4 @@ build.fxbuild
 config.ini
 database
 errors.log
+modmanager.log

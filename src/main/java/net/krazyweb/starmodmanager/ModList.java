@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager;
 
 import java.io.File;
 import java.sql.SQLException;

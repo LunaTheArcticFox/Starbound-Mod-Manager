@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -12,10 +12,10 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import net.krazyweb.starmodmanager.helpers.Archive;
-import net.krazyweb.starmodmanager.helpers.ArchiveFile;
-import net.krazyweb.starmodmanager.helpers.FileHelper;
-import net.krazyweb.starmodmanager.helpers.JSONHelper;
+import main.java.net.krazyweb.starmodmanager.helpers.Archive;
+import main.java.net.krazyweb.starmodmanager.helpers.ArchiveFile;
+import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.helpers.JSONHelper;
 
 public class Mod {
 	
@@ -148,8 +148,6 @@ public class Mod {
 			if (!archiveFile.isFolder() && FileHelper.isJSON(archiveFile.getPath())) {
 				
 				modFile.setJson(true);
-				
-				System.out.println(archiveFile.getPath());
 				
 				String fileContents = new String(archiveFile.getData());
 				

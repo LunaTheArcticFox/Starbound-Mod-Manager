@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager;
 
 public class ModFile {
 	

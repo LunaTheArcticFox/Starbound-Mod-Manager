@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -9,12 +9,32 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 public class Main extends Application {
+	
+	private static Logger log;
 	
 	private ModList modList;
 
 	@Override
 	public void start(Stage primaryStage) {
+		
+		log = Logger.getLogger(Main.class);
+		ConsoleAppender c = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
+		c.setThreshold(Level.ALL);
+		FileAppender f = (FileAppender) Logger.getRootLogger().getAppender("file");
+		f.setThreshold(Level.ALL);
+		
+		log.trace("Test message.");
+		log.debug("Test message.");
+		log.info("Test message.");
+		log.warn("Test message.");
+		log.error("Test message.");
+		log.fatal("Test message.");
 		
 		//TODO Verify file write permissions and capability
 		

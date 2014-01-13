@@ -1,4 +1,4 @@
-package net.krazyweb.starmodmanager.helpers;
+package main.java.net.krazyweb.starmodmanager.helpers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

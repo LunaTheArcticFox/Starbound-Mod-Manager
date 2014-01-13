@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package name.fraser.neil.plaintext;
+package main.java.name.fraser.neil.plaintext;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
