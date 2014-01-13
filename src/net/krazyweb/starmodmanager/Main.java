@@ -16,13 +16,16 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		
+		//TODO Verify file write permissions and capability
+		
+		Settings.initialize();
+		
 		try {
 			Database.initialize();
 		} catch (SQLException e) {
+			//TODO Notify user of failed database connection
 			e.printStackTrace();
 		}
-		
-		Settings.initialize();
 		
 		modList = new ModList();
 		

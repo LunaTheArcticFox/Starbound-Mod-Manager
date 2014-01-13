@@ -1,12 +1,16 @@
 package net.krazyweb.starmodmanager.helpers;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
@@ -120,4 +124,69 @@ public class FileHelper {
 		
 	}
 	
+	public static HashSet<File> listFiles(final String directory, final HashSet<File> files) {
+		return listFiles(new File(directory), files);
+	}
+	
+	public static HashSet<File> listFiles(final File directory, final HashSet<File> files) {
+		
+		for (File file : directory.listFiles()) {
+			if (file.isFile()) {
+				files.add(file);
+			} else if (file.isDirectory()) {
+				listFiles(file.getAbsolutePath(), files);
+			}
+		}
+		
+		return files;
+		
+	}
+	
+	public static void deleteFile(File file) throws IOException {
+		
+		if (file.isDirectory()) {
+			
+			File[] children = file.listFiles();
+			
+			if (children != null) {
+				for (File child : file.listFiles()) {
+					deleteFile(child);
+				}
+			}
+			
+		}
+		
+		if (!file.delete()) {
+			throw new FileNotFoundException("Failed to delete file: " + file);
+		}
+		
+	}
+	
+	public static boolean isJSON(String filename) {
+		
+		if (filename.endsWith(".png") || filename.endsWith(".wav") || filename.endsWith(".ogg") || filename.endsWith(".txt") || filename.endsWith(".lua") || filename.endsWith(".ttf")) {
+			return false;
+		}
+		
+		return true;
+		
+	}
+	
+	public static String fileToString(File file) throws IOException {
+	
+		String output = "";
+		BufferedReader in = new BufferedReader(new FileReader(file));
+
+		String line;
+
+		while ((line = in.readLine()) != null) {
+			output += line + "\r\n";
+		}
+
+		in.close();
+
+		return output;
+	
+	}
+
 }

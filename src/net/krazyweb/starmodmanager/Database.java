@@ -3,12 +3,15 @@ package net.krazyweb.starmodmanager;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+
+import net.krazyweb.starmodmanager.helpers.FileHelper;
 
 
 public class Database {
@@ -97,21 +100,43 @@ public class Database {
 			query.append("UPDATE ");
 			query.append(MOD_TABLE_NAME);
 			query.append(" SET ");
-			query.append("internalName = '")	.append(mod.getInternalName()).append("',");
-			query.append("archiveName = '")		.append(mod.getArchiveName()).append("',");
-			query.append("displayName = '")		.append(mod.getDisplayName()).append("',");
-			query.append("modVersion = '")		.append(mod.getModVersion()).append("',");
-			query.append("gameVersion = '")		.append(mod.getGameVersion()).append("',");
-			query.append("author = '")			.append(mod.getAuthor()).append("',");
-			query.append("description = '")		.append(mod.getDescription()).append("',");
-			query.append("url = '")				.append(mod.getURL()).append("',");
-			query.append("checksum = '")		.append(mod.getChecksum()).append("',");
-			query.append("loadOrder = '")			.append(mod.getOrder()).append("',");
-			query.append("hidden = '")			.append(mod.isHidden() ? "1" : "0").append("',");
-			query.append("installed = '")		.append(mod.isInstalled() ? "1" : "0").append("',");
-			query.append("dependencies = '")	.append(dependencyList.toString()).append("',");
-			query.append("files = '")			.append(fileList.toString()).append(" ");
-			query.append("WHERE internalName = '").append(mod.getInternalName()).append("';");
+			
+			query.append("internalName = ?,");
+			query.append("archiveName = ?,");
+			query.append("displayName = ?,");
+			query.append("modVersion = ?,");
+			query.append("gameVersion = ?,");
+			query.append("author = ?,");
+			query.append("description = ?,");
+			query.append("url = ?,");
+			query.append("checksum = ?,");
+			query.append("loadOrder = ?,");
+			query.append("hidden = ?,");
+			query.append("installed = ?,");
+			query.append("dependencies = ?,");
+			query.append("files = ?");
+			query.append("WHERE internalName = ?");
+			
+			PreparedStatement statement = connection.prepareStatement(query.toString());
+			
+			statement.setString(1, mod.getInternalName());
+			statement.setString(2, mod.getArchiveName());
+			statement.setString(3, mod.getDisplayName());
+			statement.setString(4, mod.getModVersion());
+			statement.setString(5, mod.getGameVersion());
+			statement.setString(6, mod.getAuthor());
+			statement.setString(7, mod.getDescription());
+			statement.setString(8, mod.getURL());
+			statement.setLong(9, mod.getChecksum());
+			statement.setInt(10, mod.getOrder());
+			statement.setInt(11, mod.isHidden() ? 1 : 0);
+			statement.setInt(12, mod.isInstalled() ? 1 : 0);
+			statement.setString(13, dependencyList.toString());
+			statement.setString(14, fileList.toString());
+			statement.setString(15, mod.getInternalName());
+			
+			statement.executeUpdate();
+			statement.closeOnCompletion();
 			
 		} else {
 			
@@ -131,34 +156,35 @@ public class Database {
 			query.append("installed,");
 			query.append("dependencies,");
 			query.append("files");
-			query.append(") VALUES(");
+			query.append(") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 			
-			query.append("'").append(mod.getInternalName()).append("',");
-			query.append("'").append(mod.getArchiveName()).append("',");
-			query.append("'").append(mod.getDisplayName()).append("',");
-			query.append("'").append(mod.getModVersion()).append("',");
-			query.append("'").append(mod.getGameVersion()).append("',");
-			query.append("'").append(mod.getAuthor()).append("',");
-			query.append("'").append(mod.getDescription()).append("',");
-			query.append("'").append(mod.getURL()).append("',");
-			query.append("'").append(mod.getChecksum()).append("',");
-			query.append("'").append(mod.getOrder()).append("',");
-			query.append("'").append(mod.isHidden() ? "1" : "0").append("',");
-			query.append("'").append(mod.isInstalled() ? "1" : "0").append("',");
+			PreparedStatement statement = connection.prepareStatement(query.toString());
+			
+			statement.setString(1, mod.getInternalName());
+			statement.setString(2, mod.getArchiveName());
+			statement.setString(3, mod.getDisplayName());
+			statement.setString(4, mod.getModVersion());
+			statement.setString(5, mod.getGameVersion());
+			statement.setString(6, mod.getAuthor());
+			statement.setString(7, mod.getDescription());
+			statement.setString(8, mod.getURL());
+			statement.setLong(9, mod.getChecksum());
+			statement.setInt(10, mod.getOrder());
+			statement.setInt(11, mod.isHidden() ? 1 : 0);
+			statement.setInt(12, mod.isInstalled() ? 1 : 0);
 			
 			if (dependencyList.toString().isEmpty()) {
-				query.append("'NULL',");
+				statement.setString(13, "NULL");
 			} else {
-				query.append("'").append(dependencyList.toString()).append("',");
+				statement.setString(13, dependencyList.toString());
 			}
+
+			statement.setString(14, fileList.toString());
 			
-			query.append("'").append(fileList.toString()).append("')");
+			statement.execute();
+			statement.closeOnCompletion();
 			
 		}
-		
-		Statement insert = connection.createStatement();
-		insert.execute(query.toString());
-		insert.closeOnCompletion();
 		
 	}
 	
@@ -176,17 +202,17 @@ public class Database {
 	
 	private static boolean containsMod(final Mod mod) throws SQLException {
 		
-		Statement modQuery = connection.createStatement();
-		
 		StringBuilder query = new StringBuilder();
 		
 		query.append("SELECT internalName FROM ");
 		query.append(MOD_TABLE_NAME);
-		query.append(" WHERE internalName = '");
-		query.append(mod.getInternalName());
-		query.append("' LIMIT 1;");
+		query.append(" WHERE internalName = ?");
+		query.append(" LIMIT 1");
 		
-		ResultSet results = modQuery.executeQuery(query.toString());
+		PreparedStatement modQuery = connection.prepareStatement(query.toString());
+		modQuery.setString(1, mod.getInternalName());
+		
+		ResultSet results = modQuery.executeQuery();
 		
 		if (!hasRows(results)) {
 			results.close();
@@ -204,71 +230,72 @@ public class Database {
 	public static ArrayList<Mod> getModList() throws SQLException {
 		
 		ArrayList<Mod> modList = new ArrayList<Mod>();
-		
-		Statement modQuery = connection.createStatement();
 
 		StringBuilder query = new StringBuilder();
 		
 		query.append("SELECT * FROM ");
 		query.append(MOD_TABLE_NAME);
-		query.append(";");
+
+		PreparedStatement modQuery = connection.prepareStatement(query.toString());
 		
-		ResultSet results = modQuery.executeQuery(query.toString());
+		ResultSet results = modQuery.executeQuery();
 		
-		if (!hasRows(results)) {
-			return modList;
-		}
-		
-		while (results.next()) {
+		if (hasRows(results)) {
 			
-			Mod mod = new Mod();
-			
-			mod.setInternalName(results.getString("internalName"));
-			mod.setArchiveName(results.getString("archiveName"));
-			mod.setArchiveName(results.getString("displayName"));
-			mod.setArchiveName(results.getString("modVersion"));
-			mod.setArchiveName(results.getString("gameVersion"));
-			mod.setArchiveName(results.getString("author"));
-			mod.setArchiveName(results.getString("description"));
-			mod.setArchiveName(results.getString("url"));
-			mod.setChecksum(results.getLong("checksum"));
-			mod.setOrder(results.getInt("loadOrder"));
-			mod.setHidden(results.getInt("hidden") == 1);
-			mod.setInstalled(results.getInt("installed") == 1);
-			
-			HashSet<String> dependencies = new HashSet<String>();
-			
-			for (String data : results.getString("dependencies").split("\n")) {
-				dependencies.add(data);
+			while (results.next()) {
+				
+				Mod mod = new Mod();
+				
+				mod.setInternalName(results.getString("internalName"));
+				mod.setArchiveName(results.getString("archiveName"));
+				mod.setDisplayName(results.getString("displayName"));
+				mod.setModVersion(results.getString("modVersion"));
+				mod.setGameVersion(results.getString("gameVersion"));
+				mod.setAuthor(results.getString("author"));
+				mod.setDescription(results.getString("description"));
+				mod.setURL(results.getString("url"));
+				mod.setChecksum(results.getLong("checksum"));
+				mod.setOrder(results.getInt("loadOrder"));
+				mod.setHidden(results.getInt("hidden") == 1);
+				mod.setInstalled(results.getInt("installed") == 1);
+				
+				HashSet<String> dependencies = new HashSet<String>();
+				
+				for (String data : results.getString("dependencies").split("\n")) {
+					dependencies.add(data);
+				}
+				
+				mod.setDependencies(dependencies);
+				
+				HashSet<ModFile> files = new HashSet<ModFile>();
+				
+				for (String data : results.getString("files").split("\n")) {
+					
+					String[] fields = data.split(":::");
+					
+					ModFile file = new ModFile();
+					
+					file.setPath(fields[0]);
+					file.setJson(Boolean.parseBoolean(fields[1]));
+					file.setIgnored(Boolean.parseBoolean(fields[2]));
+					file.setAutoMerged(Boolean.parseBoolean(fields[3]));
+					
+					files.add(file);
+					
+				}
+				
+				mod.setFiles(files);
+				
+				modList.add(mod);
+				
 			}
-			
-			mod.setDependencies(dependencies);
-			
-			HashSet<ModFile> files = new HashSet<ModFile>();
-			
-			for (String data : results.getString("files").split("\n")) {
-				
-				String[] fields = data.split(":::");
-				
-				ModFile file = new ModFile();
-				
-				file.setPath(fields[0]);
-				file.setJson(Boolean.parseBoolean(fields[1]));
-				file.setIgnored(Boolean.parseBoolean(fields[2]));
-				file.setAutoMerged(Boolean.parseBoolean(fields[3]));
-				
-				files.add(file);
-				
-			}
-			
-			mod.setFiles(files);
-			
-			modList.add(mod);
-			
+
 		}
 		
 		results.close();
 		modQuery.closeOnCompletion();
+		
+		getNewMods(modList);
 		
 		Collections.sort(modList, new Mod.ModOrderComparator());
 		
@@ -277,6 +304,44 @@ public class Database {
 		}
 		
 		return modList;
+		
+	}
+	
+	private static void getNewMods(final ArrayList<Mod> modList) {
+		
+		//Collect all filenames of already recognized mods
+		HashSet<String> currentArchives = new HashSet<String>();
+		
+		for (Mod mod : modList) {
+			currentArchives.add(mod.getArchiveName());
+		}
+		
+		//List all the archives in the mods directory, then remove already recognized mods
+		HashSet<File> archives = new HashSet<File>();
+		HashSet<File> toRemove = new HashSet<File>();
+		FileHelper.listFiles(Settings.getModsDirectory(), archives);
+		
+		for (File file : archives) {
+			if (currentArchives.contains(file.getName())) {
+				toRemove.add(file);
+			}
+		}
+		
+		archives.removeAll(toRemove);
+		
+		for (File file : archives) {
+			
+			Mod mod = Mod.load(file);
+			
+			if (mod == null) {
+				continue;
+			}
+
+			mod.setOrder(modList.size());
+			
+			modList.add(mod);
+			
+		}
 		
 	}
 	

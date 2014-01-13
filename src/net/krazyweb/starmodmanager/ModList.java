@@ -12,7 +12,19 @@ public class ModList {
 	
 	public ModList() {
 		//TODO Get locked status from settings.
-		mods = new ArrayList<Mod>();
+		System.out.println("Mod list created.");
+		try {
+			mods = Database.getModList();
+			
+			for (Mod mod : mods) {
+				mod.setOrder(mods.indexOf(mod));
+				Database.updateMod(mod);
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void addMod(final File file) {

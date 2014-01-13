@@ -39,6 +39,10 @@ public class Archive {
 		
 	}
 	
+	public HashSet<ArchiveFile> getFiles() {
+		return files;
+	}
+	
 	public boolean extract() {
 		
 		try {
@@ -197,7 +201,7 @@ public class Archive {
 	}
 	
 	public String getFileName() {
-		return file.getName();
+		return file.getName().replace(".rar", ".zip").replace(".7z", ".zip");
 	}
 	
 }
