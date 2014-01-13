@@ -50,7 +50,7 @@ public class Mod {
 	public Mod() {
 	}
 	
-	public static Mod load(final File file) {
+	public static Mod load(final File file, final int order) {
 		
 		/* 
 		 * As long as the mod archive object is in memory, so are its entire contents.
@@ -73,6 +73,8 @@ public class Mod {
 		modArchive.writeToFile(new File(Settings.getModsDirectory() + File.separator + modArchive.getFileName()));
 		
 		Mod mod = new Mod();
+		
+		mod.setOrder(order);
 		
 		mod.files = new HashSet<ModFile>();
 		

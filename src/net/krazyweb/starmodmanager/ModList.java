@@ -29,7 +29,7 @@ public class ModList {
 	
 	public void addMod(final File file) {
 		
-		Mod mod = Mod.load(file);
+		Mod mod = Mod.load(file, mods.size());
 		
 		if (mod != null) {
 			mods.add(mod);

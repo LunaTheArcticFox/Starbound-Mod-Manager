@@ -287,10 +287,15 @@ public class Database {
 				
 				mod.setFiles(files);
 				
+				if (!new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).exists()) {
+					deleteMod(mod);
+					continue;
+				}
+				
 				try {
 					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()))) {
 						System.out.println("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
-						mod = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()));
+						mod = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()), mod.getOrder());
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -310,6 +315,7 @@ public class Database {
 		Collections.sort(modList, new Mod.ModOrderComparator());
 		
 		for (Mod mod : modList) {
+			mod.setOrder(modList.indexOf(mod));
 			System.out.println("[" + mod.getOrder() + "] \t" + mod.getInternalName());
 		}
 		
@@ -341,13 +347,11 @@ public class Database {
 		
 		for (File file : archives) {
 			
-			Mod mod = Mod.load(file);
+			Mod mod = Mod.load(file, modList.size());
 			
 			if (mod == null) {
 				continue;
 			}
-
-			mod.setOrder(modList.size());
 			
 			modList.add(mod);
 			
