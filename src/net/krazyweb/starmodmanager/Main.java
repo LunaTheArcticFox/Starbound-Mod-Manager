@@ -28,6 +28,8 @@ public class Main extends Application {
 		}
 		
 		modList = new ModList();
+		//modList.moveMod("modname", 10); //Shifts 10 positions up (towards index 0)
+		//modList.moveMod("modname", -3); //Shifts 3 positions down (towards list.size())
 		
 		try {
 			
