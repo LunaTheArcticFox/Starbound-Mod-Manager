@@ -5,7 +5,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.apache.log4j.Logger;
+
 public class ModList {
+	
+	private static final Logger log = Logger.getLogger(ModList.class);
 	
 	private boolean locked;
 	
@@ -13,7 +17,7 @@ public class ModList {
 	
 	public ModList() {
 		//TODO Get locked status from settings.
-		System.out.println("Mod list created.");
+		log.debug("Mod list created.");
 		try {
 			mods = Database.getModList();
 			
@@ -90,7 +94,7 @@ public class ModList {
 	public void moveMod(final String name, final int amount) {
 		
 		if (locked) {
-			System.out.println("Mod list locked; cannot move mod: " + name);
+			log.debug("Mod list locked; cannot move mod: " + name);
 			return;
 		}
 		
@@ -101,7 +105,7 @@ public class ModList {
 			return;
 		}
 		
-		System.out.println("=============\nPerforming rotation, results:");
+		log.debug("=============\nPerforming rotation, results:");
 		
 		if (amount > 0) {
 			
@@ -123,7 +127,7 @@ public class ModList {
 		
 		for (Mod m : mods) {
 			m.setOrder(mods.indexOf(m));
-			System.out.println("[" + m.getOrder() + "] \t" + m.getInternalName());
+			log.debug("[" + m.getOrder() + "] \t" + m.getInternalName());
 			try {
 				Database.updateMod(m);
 			} catch (SQLException e) {

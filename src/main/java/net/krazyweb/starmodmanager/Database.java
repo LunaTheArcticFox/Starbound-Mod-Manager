@@ -12,10 +12,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.apache.log4j.Logger;
+
 import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
 
 
 public class Database {
+	
+	private static final Logger log = Logger.getLogger(Database.class);
 	
 	private static final String MOD_TABLE_NAME = "mods";
 	private static final String SETTINGS_TABLE_NAME = "settings";
@@ -294,7 +298,7 @@ public class Database {
 				
 				try {
 					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()))) {
-						System.out.println("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
+						log.debug("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
 						mod = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()), mod.getOrder());
 					}
 				} catch (IOException e) {
@@ -316,7 +320,7 @@ public class Database {
 		
 		for (Mod mod : modList) {
 			mod.setOrder(modList.indexOf(mod));
-			System.out.println("[" + mod.getOrder() + "] \t" + mod.getInternalName());
+			log.debug("[" + mod.getOrder() + "] " + mod.getInternalName());
 		}
 		
 		return modList;
