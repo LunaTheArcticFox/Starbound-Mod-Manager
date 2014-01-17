@@ -2,8 +2,8 @@ package main.java.net.krazyweb.starmodmanager;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -13,7 +13,7 @@ public class ModList {
 	
 	private boolean locked;
 	
-	private ArrayList<Mod> mods;
+	private List<Mod> mods;
 	
 	public ModList() {
 		//TODO Get locked status from settings.
@@ -49,6 +49,14 @@ public class ModList {
 		if (mod == null) {
 			return;
 		}
+		
+		try {
+			Database.deleteMod(mod);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		mods.remove(mod);
 		
 	}
 	

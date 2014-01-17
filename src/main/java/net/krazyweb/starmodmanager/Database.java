@@ -11,10 +11,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-
-import org.apache.log4j.Logger;
+import java.util.Set;
 
 import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
+
+import org.apache.log4j.Logger;
 
 
 public class Database {
@@ -264,7 +265,7 @@ public class Database {
 				mod.setHidden(results.getInt("hidden") == 1);
 				mod.setInstalled(results.getInt("installed") == 1);
 				
-				HashSet<String> dependencies = new HashSet<String>();
+				Set<String> dependencies = new HashSet<>();
 				
 				for (String data : results.getString("dependencies").split("\n")) {
 					dependencies.add(data);

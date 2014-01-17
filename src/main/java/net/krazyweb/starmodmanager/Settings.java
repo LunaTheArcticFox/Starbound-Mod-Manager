@@ -26,6 +26,10 @@ public class Settings {
 	private static OS operatingSystem;
 	private static String operatingSystemName;
 	
+	private static String message;
+	private static double progress;
+	private static boolean complete = false;
+	
 	/*
 	 * TODO
 	 * Clear log file
@@ -35,14 +39,45 @@ public class Settings {
 	
 	public static void initialize() {
 		
+		complete = false;
+		
 		identifyOS();
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		configureLogger();
 		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		setModsDirectory(new File("mods/"));
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		updateProgress(4, 4);
+		updateMessage("Settings Initialized Successfully");
+		complete = true;
 		
 	}
 	
 	private static final void identifyOS() {
+		
+		updateProgress(0, 4);
+		updateMessage("Identifying Operating System");
 		
 		operatingSystemName = System.getProperty("os.name").toLowerCase();
 		
@@ -72,6 +107,9 @@ public class Settings {
 	 */
 	private static final void configureLogger() {
 		
+		updateProgress(1, 4);
+		updateMessage("Starting Logger");
+		
 		ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
 		FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
 		
@@ -84,6 +122,9 @@ public class Settings {
 		log.info("Starbound Mod Manager - Version " + VERSION_STRING);
 		log.info("Running on " + operatingSystemName);
 		log.info("----------------------");
+
+		updateProgress(2, 4);
+		updateMessage("Setting Logger Thresholds");
 		
 		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
 			console.setThreshold(Level.OFF);
@@ -92,7 +133,6 @@ public class Settings {
 			console.setThreshold(Level.TRACE);
 			file.setThreshold(Level.OFF);
 		}
-
 		
 	}
 
@@ -101,10 +141,15 @@ public class Settings {
 	}
 
 	public static void setModsDirectory(File modsDirectory) {
+
+		updateProgress(3, 4);
+		updateMessage("Creating Mods Directory");
+		
 		Settings.modsDirectory = modsDirectory;
 		if (!Settings.modsDirectory.exists()) {
 			Settings.modsDirectory.mkdir();
 		}
+		
 	}
 
 	public static OS getOperatingSystem() {
@@ -113,6 +158,26 @@ public class Settings {
 
 	public static void setOperatingSystem(OS operatingSystem) {
 		Settings.operatingSystem = operatingSystem;
+	}
+	
+	private static void updateProgress(final double amount, final double total) {
+		progress = (double) amount / (double) total;
+	}
+	
+	private static void updateMessage(final String m) {
+		message = m;
+	}
+
+	public static double getProgress() {
+		return progress;
+	}
+
+	public static String getMessage() {
+		return message;
+	}
+	
+	public static boolean isComplete() {
+		return complete;
 	}
 	
 }

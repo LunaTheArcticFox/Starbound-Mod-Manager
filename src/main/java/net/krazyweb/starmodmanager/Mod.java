@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -35,8 +36,8 @@ public class Mod {
 	private boolean hidden = false;
 	private boolean installed = false;
 	
-	private HashSet<String> dependencies;
-	private HashSet<ModFile> files; //All files that the mod alters
+	private Set<String> dependencies;
+	private Set<ModFile> files; //All files that the mod alters
 	
 	public static class ModOrderComparator implements Comparator<Mod> {
 
@@ -259,19 +260,19 @@ public class Mod {
 		this.installed = installed;
 	}
 
-	public HashSet<String> getDependencies() {
+	public Set<String> getDependencies() {
 		return dependencies;
 	}
 
-	public void setDependencies(HashSet<String> dependencies) {
-		this.dependencies = dependencies;
+	public void setDependencies(Set<String> dependencies2) {
+		this.dependencies = dependencies2;
 	}
 
-	public HashSet<ModFile> getFiles() {
+	public Set<ModFile> getFiles() {
 		return files;
 	}
 
-	public void setFiles(HashSet<ModFile> files) {
+	public void setFiles(Set<ModFile> files) {
 		this.files = files;
 	}
 
