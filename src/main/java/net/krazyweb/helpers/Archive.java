@@ -25,7 +25,6 @@ public class Archive {
 	private static final Logger log = Logger.getLogger(Archive.class);
 	
 	private File file;
-	private String modBaseDirectory;
 	private Set<ArchiveFile> files = new HashSet<>();
 	
 	public Archive(final File file) {
@@ -77,10 +76,6 @@ public class Archive {
 					continue;
 				}
 				
-				if (item.getPath().endsWith(".modinfo")) {
-					modBaseDirectory = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
-				}
-				
 				ExtractOperationResult result;
 
 				final byte[] outputData = new byte[item.getSize().intValue()];
@@ -120,28 +115,6 @@ public class Archive {
 			log.error("Extracting an archive.", e);
 			return false;
 		}
-		
-	}
-	
-	public void clean() {
-		
-		Set<ArchiveFile> filesToRemove = new HashSet<>();
-		
-		for (ArchiveFile file : files) {
-			
-			if (!file.getPath().startsWith(modBaseDirectory)) {
-				filesToRemove.add(file);
-			} else {
-				file.setPath(file.getPath().replace(modBaseDirectory, ""));
-			}
-			
-			if (file.getPath().endsWith("Thumbs.db")) {
-				filesToRemove.add(file);
-			}
-			
-		}
-		
-		files.removeAll(filesToRemove);
 		
 	}
 	

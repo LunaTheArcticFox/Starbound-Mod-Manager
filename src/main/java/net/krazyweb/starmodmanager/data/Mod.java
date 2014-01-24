@@ -70,7 +70,8 @@ public class Mod {
 		 * This removes the need to store and modify subdirectories in the future.
 		 * Additionally, installation of cleaned mods will be a simple extraction.
 		 */
-		modArchive.clean();
+		//TODO Detect multiple modinfos
+		cleanArchive(modArchive);
 		modArchive.writeToFile(new File(Settings.getModsDirectory() + File.separator + modArchive.getFileName()));
 		
 		Mod mod = new Mod();
@@ -169,6 +170,36 @@ public class Mod {
 		}
 		
 		return mod;
+		
+	}
+	
+	private static void cleanArchive(final Archive archive) {
+		
+		Set<ArchiveFile> filesToRemove = new HashSet<>();
+		
+		String modBaseDirectory = "";
+		
+		for (ArchiveFile file : archive.getFiles()) {
+			if (file.getPath().endsWith(".modinfo")) {
+				modBaseDirectory = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
+			}
+		}
+		
+		for (ArchiveFile file : archive.getFiles()) {
+			
+			if (!file.getPath().startsWith(modBaseDirectory)) {
+				filesToRemove.add(file);
+			} else {
+				file.setPath(file.getPath().replace(modBaseDirectory, ""));
+			}
+			
+			if (file.getPath().endsWith("Thumbs.db")) {
+				filesToRemove.add(file);
+			}
+			
+		}
+		
+		archive.getFiles().removeAll(filesToRemove);
 		
 	}
 

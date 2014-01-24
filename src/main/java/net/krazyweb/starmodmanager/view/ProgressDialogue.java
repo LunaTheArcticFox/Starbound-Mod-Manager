@@ -8,6 +8,8 @@ import javafx.stage.Stage;
 
 public class ProgressDialogue {
 
+	private Stage stage;
+	
 	public ProgressBar bar;
 	public Text text;
 	
@@ -21,8 +23,13 @@ public class ProgressDialogue {
 	}
 	
 	public void start(Stage stage) {
+		this.stage = stage;
 		stage.setScene(createPreloaderScene());
 		stage.show();
+	}
+	
+	public void close() {
+		stage.close();
 	}
 	
 }

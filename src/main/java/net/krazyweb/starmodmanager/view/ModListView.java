@@ -78,9 +78,9 @@ public class ModListView extends VBox {
 			public void handle(ActionEvent e) {
 				FileChooser f = new FileChooser();
 				f.setTitle("Select the mod to add.");
-				File file = f.showOpenDialog(mainView.getStage());
-				if (file != null) {
-					modList.addMod(file);
+				List<File> file = f.showOpenMultipleDialog(mainView.getStage());
+				if (file != null && !file.isEmpty()) {
+					modList.addMods(file);
 				}
 			}
 		});

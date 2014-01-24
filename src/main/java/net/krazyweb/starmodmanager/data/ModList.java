@@ -6,7 +6,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+import javafx.stage.Stage;
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
+import main.java.net.krazyweb.starmodmanager.view.ProgressDialogue;
 
 import org.apache.log4j.Logger;
 
@@ -42,14 +47,53 @@ public class ModList {
 		
 	}
 	
-	public void addMod(final File file) {
+	public void addMods(final List<File> files) {
 		
-		Mod mod = Mod.load(file, mods.size());
+		final ProgressDialogue progress = new ProgressDialogue();
+		progress.start(new Stage());
 		
-		if (mod != null) {
-			mods.add(mod);
-			updateView();
-		}
+		Task<Integer> addModsTask = new Task<Integer>() {
+
+			@Override
+			protected Integer call() throws Exception {
+				
+				for (int i = 0; i < files.size(); i++) {
+					
+					File file = files.get(i);
+					
+					this.updateMessage("Loading Mod: " + file.getName());
+					
+					Mod mod = Mod.load(file, mods.size());
+					
+					if (mod != null) {
+						mods.add(mod);
+					}
+					
+					this.updateProgress(i, files.size());
+					
+				}
+				
+				return 1;
+				
+			}
+			
+		};
+		
+		addModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				progress.close();
+				updateView();
+			}
+		});
+		
+		progress.bar.progressProperty().bind(addModsTask.progressProperty());
+		progress.text.textProperty().bind(addModsTask.messageProperty());
+		
+		Thread t = new Thread(addModsTask);
+		t.setName("Add Mods Thread");
+		t.setDaemon(true);
+		t.start();
 		
 	}
 	
