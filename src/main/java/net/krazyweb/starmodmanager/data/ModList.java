@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -57,20 +58,30 @@ public class ModList {
 			@Override
 			protected Integer call() throws Exception {
 				
-				for (int i = 0; i < files.size(); i++) {
+				try {
+				
+					this.updateProgress(0, files.size());
 					
-					File file = files.get(i);
-					
-					this.updateMessage("Loading Mod: " + file.getName());
-					
-					Mod mod = Mod.load(file, mods.size());
-					
-					if (mod != null) {
-						mods.add(mod);
+					for (int i = 0; i < files.size(); i++) {
+						
+						File file = files.get(i);
+						
+						this.updateMessage("Loading Mod: " + file.getName());
+						
+						Set<Mod> modsToAdd = Mod.load(file, mods.size());
+						
+						if (modsToAdd != null && !modsToAdd.isEmpty()) {
+							for (Mod mod : modsToAdd) {
+								mods.add(mod);
+							}
+						}
+						
+						this.updateProgress(i, files.size());
+						
 					}
-					
-					this.updateProgress(i, files.size());
-					
+				
+				} catch (Exception e) {
+					log.error("", e);
 				}
 				
 				return 1;
@@ -78,6 +89,16 @@ public class ModList {
 			}
 			
 		};
+		
+		addModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				//TODO Appropriate error messages.
+				log.error("Error occurred while getting mods!");
+				progress.close();
+				updateView();
+			}
+		});
 		
 		addModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -90,10 +111,14 @@ public class ModList {
 		progress.bar.progressProperty().bind(addModsTask.progressProperty());
 		progress.text.textProperty().bind(addModsTask.messageProperty());
 		
+		try {
 		Thread t = new Thread(addModsTask);
 		t.setName("Add Mods Thread");
 		t.setDaemon(true);
 		t.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

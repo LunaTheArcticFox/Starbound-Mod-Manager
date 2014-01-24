@@ -6,6 +6,16 @@ public class ArchiveFile {
 	private String path;
 	private boolean folder;
 	
+	protected ArchiveFile() {
+		
+	}
+	
+	public ArchiveFile(final ArchiveFile f) {
+		this.data = f.data;
+		this.path = f.path;
+		this.folder = f.folder;
+	}
+	
 	public byte[] getData() {
 		return data;
 	}

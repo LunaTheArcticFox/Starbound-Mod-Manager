@@ -40,7 +40,7 @@ public class ModListView extends VBox {
 			
 			GridPane modPane = new GridPane();
 			modPane.setHgap(25.0);
-			modPane.add(new Text(mod.getInternalName()), 1, 1);
+			modPane.add(new Text(mod.getDisplayName()), 1, 1);
 			modPane.add(new Text(mod.isInstalled() ? "Installed" : "Not Installed"), 2, 1);
 			modPane.add(new Text(mod.getModVersion()), 2, 2);
 			

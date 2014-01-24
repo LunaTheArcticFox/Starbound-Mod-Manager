@@ -263,6 +263,8 @@ public class Database {
 		
 		if (hasRows(results)) {
 			
+			log.debug("Mods found in database.");
+			
 			while (results.next()) {
 				
 				Mod mod = new Mod();
@@ -312,16 +314,25 @@ public class Database {
 					continue;
 				}
 				
+				Set<Mod> mods = null;
+				
 				try {
 					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()))) {
 						log.debug("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
-						mod = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()), mod.getOrder());
+						mods = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()), mod.getOrder());
+					} else {
+						mods = new HashSet<>();
+						mods.add(mod);
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					log.error("", e);
 				}
 				
-				modList.add(mod);
+				if (mods != null && !mods.isEmpty()) {
+					for (Mod m : mods) {
+						modList.add(m);
+					}
+				}
 				
 			}
 
@@ -349,7 +360,7 @@ public class Database {
 		Set<String> currentArchives = new HashSet<>();
 		
 		for (Mod mod : modList) {
-			currentArchives.add(mod.getArchiveName());
+			currentArchives.add(Settings.getModsDirectory() + File.separator + mod.getArchiveName());
 		}
 		
 		//List all the archives in the mods directory, then remove already recognized mods
@@ -357,8 +368,16 @@ public class Database {
 		Set<File> toRemove = new HashSet<>();
 		FileHelper.listFiles(Settings.getModsDirectory(), archives);
 		
+		for (String file : currentArchives) {
+			log.debug(file);
+		}
+		
 		for (File file : archives) {
-			if (currentArchives.contains(file.getName())) {
+			log.debug(file.getPath());
+		}
+		
+		for (File file : archives) {
+			if (currentArchives.contains(file.getPath())) {
 				toRemove.add(file);
 			}
 		}
@@ -367,13 +386,15 @@ public class Database {
 		
 		for (File file : archives) {
 			
-			Mod mod = Mod.load(file, modList.size());
+			Set<Mod> mods = Mod.load(file, modList.size());
 			
-			if (mod == null) {
+			if (mods == null || mods.isEmpty()) {
 				continue;
 			}
 			
-			modList.add(mod);
+			for (Mod mod : mods) {
+				modList.add(mod);
+			}
 			
 		}
 		

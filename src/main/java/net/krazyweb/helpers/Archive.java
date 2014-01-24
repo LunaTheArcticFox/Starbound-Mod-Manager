@@ -31,6 +31,10 @@ public class Archive {
 		this.file = file;
 	}
 	
+	public Archive(final String file) {
+		this(new File(file));
+	}
+	
 	public ArchiveFile getFile(String fileName) {
 		
 		for (ArchiveFile file : files) {
@@ -48,6 +52,8 @@ public class Archive {
 	}
 	
 	public boolean extract() {
+		
+		log.debug("Extracting: " + file.getPath());
 		
 		try {
 			
