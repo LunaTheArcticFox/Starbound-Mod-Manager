@@ -368,14 +368,6 @@ public class Database {
 		Set<File> toRemove = new HashSet<>();
 		FileHelper.listFiles(Settings.getModsDirectory(), archives);
 		
-		for (String file : currentArchives) {
-			log.debug(file);
-		}
-		
-		for (File file : archives) {
-			log.debug(file.getPath());
-		}
-		
 		for (File file : archives) {
 			if (currentArchives.contains(file.getPath())) {
 				toRemove.add(file);

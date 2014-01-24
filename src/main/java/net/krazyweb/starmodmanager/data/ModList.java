@@ -53,35 +53,29 @@ public class ModList {
 		final ProgressDialogue progress = new ProgressDialogue();
 		progress.start(new Stage());
 		
-		Task<Integer> addModsTask = new Task<Integer>() {
+		final Task<Integer> addModsTask = new Task<Integer>() {
 
 			@Override
 			protected Integer call() throws Exception {
 				
-				try {
+				this.updateProgress(0, files.size());
 				
-					this.updateProgress(0, files.size());
+				for (int i = 0; i < files.size(); i++) {
 					
-					for (int i = 0; i < files.size(); i++) {
-						
-						File file = files.get(i);
-						
-						this.updateMessage("Loading Mod: " + file.getName());
-						
-						Set<Mod> modsToAdd = Mod.load(file, mods.size());
-						
-						if (modsToAdd != null && !modsToAdd.isEmpty()) {
-							for (Mod mod : modsToAdd) {
-								mods.add(mod);
-							}
+					File file = files.get(i);
+					
+					this.updateMessage("Loading Mod: " + file.getName());
+					
+					Set<Mod> modsToAdd = Mod.load(file, mods.size());
+					
+					if (modsToAdd != null && !modsToAdd.isEmpty()) {
+						for (Mod mod : modsToAdd) {
+							mods.add(mod);
 						}
-						
-						this.updateProgress(i, files.size());
-						
 					}
-				
-				} catch (Exception e) {
-					log.error("", e);
+					
+					this.updateProgress(i, files.size());
+					
 				}
 				
 				return 1;
@@ -94,7 +88,7 @@ public class ModList {
 			@Override
 			public void handle(WorkerStateEvent t) {
 				//TODO Appropriate error messages.
-				log.error("Error occurred while getting mods!");
+				log.error("Error occurred while getting mods!", addModsTask.getException());
 				progress.close();
 				updateView();
 			}
@@ -111,14 +105,10 @@ public class ModList {
 		progress.bar.progressProperty().bind(addModsTask.progressProperty());
 		progress.text.textProperty().bind(addModsTask.messageProperty());
 		
-		try {
 		Thread t = new Thread(addModsTask);
 		t.setName("Add Mods Thread");
 		t.setDaemon(true);
 		t.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
 	}
 	

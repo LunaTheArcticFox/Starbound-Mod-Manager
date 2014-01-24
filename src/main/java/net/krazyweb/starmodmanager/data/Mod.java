@@ -79,8 +79,11 @@ public class Mod {
 		 * This removes the need to store and modify subdirectories in the future.
 		 * Additionally, installation of cleaned mods will be a simple extraction.
 		 */
-		//TODO Detect multiple modinfos
 		
+		/* 
+		 * TODO Clean all this up.
+		 * Count all mods and send back progress info
+		 */
 		for (ArchiveFile f : modArchive.getFiles()) {
 			if (f.getPath().endsWith(".modinfo")) {
 				
