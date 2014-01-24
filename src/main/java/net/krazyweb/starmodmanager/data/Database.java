@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,12 +26,26 @@ public class Database {
 	private static final String SETTINGS_TABLE_NAME = "settings";
 	
 	private static Connection connection;
+
+	private static String message;
+	private static double progress;
+	private static boolean complete = false;
 	
 	public static void initialize() throws SQLException {
 		
+		complete = false;
+		
+		updateProgress(0, 2);
+		
 		connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
 		
+		updateProgress(1, 2);
+		
 		createTables();
+
+		updateProgress(2, 2);
+		
+		complete = true;
 		
 	}
 	
@@ -366,6 +380,26 @@ public class Database {
 	
 	private static boolean hasRows(final ResultSet resultSet) throws SQLException {
 		return resultSet.isBeforeFirst();
+	}
+	
+	private static void updateProgress(final double amount, final double total) {
+		progress = (double) amount / (double) total;
+	}
+	
+	private static void updateMessage(final String m) {
+		message = m;
+	}
+
+	public static double getProgress() {
+		return progress;
+	}
+
+	public static String getMessage() {
+		return message;
+	}
+	
+	public static boolean isComplete() {
+		return complete;
 	}
 	
 }

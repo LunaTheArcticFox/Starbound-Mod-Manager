@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -39,7 +39,7 @@ public class Mod {
 	private Set<String> dependencies;
 	private Set<ModFile> files; //All files that the mod alters
 	
-	public static class ModOrderComparator implements Comparator<Mod> {
+	protected static class ModOrderComparator implements Comparator<Mod> {
 
 		@Override
 		public int compare(Mod mod1, Mod mod2) {
@@ -48,10 +48,10 @@ public class Mod {
 		
 	}
 	
-	public Mod() {
+	protected Mod() {
 	}
 	
-	public static Mod load(final File file, final int order) {
+	protected static Mod load(final File file, final int order) {
 		
 		/* 
 		 * As long as the mod archive object is in memory, so are its entire contents.
@@ -176,7 +176,7 @@ public class Mod {
 		return internalName;
 	}
 
-	public void setInternalName(String internalName) {
+	protected void setInternalName(String internalName) {
 		this.internalName = internalName;
 	}
 
@@ -184,7 +184,7 @@ public class Mod {
 		return displayName;
 	}
 
-	public void setDisplayName(String displayName) {
+	protected void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
@@ -192,7 +192,7 @@ public class Mod {
 		return modVersion;
 	}
 
-	public void setModVersion(String version) {
+	protected void setModVersion(String version) {
 		this.modVersion = version;
 	}
 
@@ -200,7 +200,7 @@ public class Mod {
 		return gameVersion;
 	}
 
-	public void setGameVersion(String gameVersion) {
+	protected void setGameVersion(String gameVersion) {
 		this.gameVersion = gameVersion;
 	}
 
@@ -208,7 +208,7 @@ public class Mod {
 		return author;
 	}
 
-	public void setAuthor(String author) {
+	protected void setAuthor(String author) {
 		this.author = author;
 	}
 
@@ -216,7 +216,7 @@ public class Mod {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	protected void setDescription(String description) {
 		this.description = description;
 	}
 
@@ -224,7 +224,7 @@ public class Mod {
 		return url;
 	}
 
-	public void setURL(String url) {
+	protected void setURL(String url) {
 		this.url = url;
 	}
 
@@ -232,15 +232,15 @@ public class Mod {
 		return archiveName;
 	}
 
-	public void setArchiveName(String file) {
+	protected void setArchiveName(String file) {
 		this.archiveName = file;
 	}
 
-	public long getChecksum() {
+	protected long getChecksum() {
 		return checksum;
 	}
 
-	public void setChecksum(long checksum) {
+	protected void setChecksum(long checksum) {
 		this.checksum = checksum;
 	}
 
@@ -248,7 +248,7 @@ public class Mod {
 		return hidden;
 	}
 
-	public void setHidden(boolean hidden) {
+	protected void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
 
@@ -256,7 +256,7 @@ public class Mod {
 		return installed;
 	}
 
-	public void setInstalled(boolean installed) {
+	protected void setInstalled(boolean installed) {
 		this.installed = installed;
 	}
 
@@ -264,7 +264,7 @@ public class Mod {
 		return dependencies;
 	}
 
-	public void setDependencies(Set<String> dependencies2) {
+	protected void setDependencies(Set<String> dependencies2) {
 		this.dependencies = dependencies2;
 	}
 
@@ -272,7 +272,7 @@ public class Mod {
 		return files;
 	}
 
-	public void setFiles(Set<ModFile> files) {
+	protected void setFiles(Set<ModFile> files) {
 		this.files = files;
 	}
 
@@ -280,7 +280,7 @@ public class Mod {
 		return order;
 	}
 
-	public void setOrder(int order) {
+	protected void setOrder(int order) {
 		this.order = order;
 	}
 	

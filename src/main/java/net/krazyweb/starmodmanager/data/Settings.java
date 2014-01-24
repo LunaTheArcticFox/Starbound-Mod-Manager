@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 
@@ -42,32 +42,9 @@ public class Settings {
 		complete = false;
 		
 		identifyOS();
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		configureLogger();
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		setModsDirectory(new File("mods/"));
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 		updateProgress(4, 4);
 		updateMessage("Settings Initialized Successfully");
 		complete = true;
@@ -178,6 +155,10 @@ public class Settings {
 	
 	public static boolean isComplete() {
 		return complete;
+	}
+	
+	public static String getVersion() {
+		return VERSION_STRING;
 	}
 	
 }

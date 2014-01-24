@@ -1,9 +1,13 @@
-package main.java.net.krazyweb.starmodmanager;
+package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import main.java.net.krazyweb.starmodmanager.view.ModListView;
 
 import org.apache.log4j.Logger;
 
@@ -13,12 +17,17 @@ public class ModList {
 	
 	private boolean locked;
 	
+	private ModListView modListView;
+	
 	private List<Mod> mods;
 	
-	public ModList() {
+	public ModList(final ModListView modListView) {
+		
+		this.modListView = modListView;
+		
 		//TODO Get locked status from settings.
-		log.debug("Mod list created.");
 		try {
+			
 			mods = Database.getModList();
 			
 			for (Mod mod : mods) {
@@ -26,10 +35,12 @@ public class ModList {
 				Database.updateMod(mod);
 			}
 			
+			updateView();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public void addMod(final File file) {
@@ -93,6 +104,14 @@ public class ModList {
 		}
 		
 		mod.setHidden(true);
+		
+	}
+	
+	private void updateView() {
+
+		Set<Mod> modListCopy = new HashSet<>(mods);
+		
+		modListView.updateModList(modListCopy);
 		
 	}
 	
