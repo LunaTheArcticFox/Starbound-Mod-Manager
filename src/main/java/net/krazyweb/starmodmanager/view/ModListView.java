@@ -1,6 +1,8 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.event.ActionEvent;
@@ -29,6 +31,17 @@ public class ModListView extends VBox {
 		modList = new ModList(this);
 		
 		setSpacing(25.0);
+		
+	}
+	
+	public void addMod(final Path file) {
+		
+		log.info("Adding mod: " + file);
+		
+		List<File> toAdd = new ArrayList<>();
+		toAdd.add(file.toFile());
+		
+		modList.addMods(toAdd);
 		
 	}
 	

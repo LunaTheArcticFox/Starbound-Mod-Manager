@@ -90,7 +90,12 @@ public class Mod {
 				Set<ArchiveFile> newFiles = new HashSet<>();
 				
 				log.debug(f.getPath());
-				String subDir = f.getPath().substring(0, f.getPath().lastIndexOf("/"));
+				
+				String subDir = "";
+				
+				if (f.getPath().contains("/")) {
+					subDir = f.getPath().substring(0, f.getPath().lastIndexOf("/"));
+				}
 				
 				for (ArchiveFile f2 : modArchive.getFiles()) {
 					if (f2.getPath().startsWith(subDir)) {

@@ -1,5 +1,6 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
+import java.io.File;
 import java.sql.SQLException;
 
 import javafx.application.Application;
@@ -8,10 +9,16 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import main.java.net.krazyweb.starmodmanager.data.Database;
@@ -125,7 +132,7 @@ public class MainView extends Application {
 	
 	protected void buildMainUI() {
 			
-		VBox root = new VBox();
+		final VBox root = new VBox();
 		
 		AnchorPane topBar = new AnchorPane();
 		
@@ -173,11 +180,92 @@ public class MainView extends Application {
 		root.getChildren().add(mainContentPane);
 		root.prefHeightProperty().bind(primaryStage.heightProperty());
 		
-		Scene scene = new Scene(root, 683, 700);
+		final StackPane stackPane = new StackPane();
+		stackPane.getChildren().add(root);
+		
+		final Scene scene = new Scene(stackPane, 683, 700);
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		scene.setOnDragOver(new EventHandler<DragEvent>() {
+
+			@Override
+			public void handle(DragEvent event) {
+				
+                Dragboard db = event.getDragboard();
+                
+                if (db.hasFiles()) {
+
+                	boolean filesAccepted = false;
+                	
+					for (File file : db.getFiles()) {
+						if (file.getPath().endsWith(".zip")) {
+							filesAccepted = true;
+							log.debug("File '" + file.toPath() + "' dragged over Mod Manager.");
+						}
+					}
+                	
+					if (filesAccepted) {
+						event.acceptTransferModes(TransferMode.COPY);
+					} else {
+						event.consume();
+					}
+                    
+                } else {
+                    event.consume();
+                }
+				
+			}
+			
+		});
+
+		scene.setOnDragEntered(new EventHandler<DragEvent>() {
+
+			@Override
+			public void handle(DragEvent event) {
+				stackPane.getChildren().add(new Rectangle(683, 700, new Color(1.0, 1.0, 1.0, 0.5)));
+			}
+			
+		});
+		
+		scene.setOnDragExited(new EventHandler<DragEvent>() {
+
+			@Override
+			public void handle(DragEvent event) {
+				stackPane.getChildren().clear();
+				stackPane.getChildren().add(root);
+			}
+			
+		});
+		
+		scene.setOnDragDropped(new EventHandler<DragEvent>() {
+
+			@Override
+			public void handle(DragEvent event) {
+				
+				Dragboard db = event.getDragboard();
+			   
+				boolean success = false;
+				
+				if (db.hasFiles()) {
+					success = true;
+					for (File file : db.getFiles()) {
+						modListView.addMod(file.toPath());
+						log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
+					}
+				}
+				
+				event.setDropCompleted(success);
+				event.consume();
+				
+				stackPane.getChildren().clear();
+				stackPane.getChildren().add(root);
+				
+			}
+			
+		});
 		
 	}
 	
