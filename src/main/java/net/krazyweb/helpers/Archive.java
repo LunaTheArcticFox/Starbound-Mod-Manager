@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.log4j.Logger;
 
 import net.sf.sevenzipjbinding.ExtractOperationResult;
 import net.sf.sevenzipjbinding.ISequentialOutStream;
@@ -19,9 +22,11 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
 public class Archive {
 	
+	private static final Logger log = Logger.getLogger(Archive.class);
+	
 	private File file;
 	private String modBaseDirectory;
-	private HashSet<ArchiveFile> files = new HashSet<ArchiveFile>();
+	private Set<ArchiveFile> files = new HashSet<>();
 	
 	public Archive(final File file) {
 		this.file = file;
@@ -39,7 +44,7 @@ public class Archive {
 		
 	}
 	
-	public HashSet<ArchiveFile> getFiles() {
+	public Set<ArchiveFile> getFiles() {
 		return files;
 	}
 	
@@ -107,12 +112,12 @@ public class Archive {
 			inArchive.close();
 			randomAccessFile.close();
 			
-			System.out.println("Time to extract '" + file.getName() + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
+			log.info("Time to extract '" + file.getName() + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
 		} catch (IOException | SevenZipException e) {
-			e.printStackTrace();
+			log.error("Extracting an archive.", e);
 			return false;
 		}
 		
@@ -120,7 +125,7 @@ public class Archive {
 	
 	public void clean() {
 		
-		HashSet<ArchiveFile> filesToRemove = new HashSet<ArchiveFile>();
+		Set<ArchiveFile> filesToRemove = new HashSet<>();
 		
 		for (ArchiveFile file : files) {
 			
@@ -167,7 +172,7 @@ public class Archive {
 			zipOutput.close();
 			fileOutput.close();
 			
-			System.out.println("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
+			log.info("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
@@ -200,7 +205,7 @@ public class Archive {
 			return true;
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Extracting archive to folder.", e);
 			return false;
 		}
 		

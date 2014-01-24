@@ -48,17 +48,12 @@ public class ModList {
 		
 		if (mod != null) {
 			mods.add(mod);
+			updateView();
 		}
 		
 	}
 	
-	public void deleteMod(final String name) {
-		
-		Mod mod = getModByName(name);
-		
-		if (mod == null) {
-			return;
-		}
+	public void deleteMod(final Mod mod) {
 		
 		try {
 			Database.deleteMod(mod);
@@ -70,37 +65,13 @@ public class ModList {
 		
 	}
 	
-	public void installMod(final String name) {
-		
-		Mod mod = getModByName(name);
-		
-		if (mod == null) {
-			return;
-		}
-		
-		
-		
+	public void installMod(final Mod mod) {
 	}
 	
-	public void uninstallMod(final String name) {
-		
-		Mod mod = getModByName(name);
-		
-		if (mod == null) {
-			return;
-		}
-		
-		
-		
+	public void uninstallMod(final Mod mod) {
 	}
 	
-	public void hideMod(final String name) {
-		
-		Mod mod = getModByName(name);
-		
-		if (mod == null) {
-			return;
-		}
+	public void hideMod(final Mod mod) {
 		
 		mod.setHidden(true);
 		
@@ -117,17 +88,10 @@ public class ModList {
 	/*
 	 * See: http://stackoverflow.com/questions/4938626/moving-items-around-in-an-arraylist
 	 */
-	public void moveMod(final String name, final int amount) {
+	public void moveMod(final Mod mod, final int amount) {
 		
 		if (locked) {
-			log.debug("Mod list locked; cannot move mod: " + name);
-			return;
-		}
-		
-		Mod mod = getModByName(name);
-		
-		if (mod == null) {
-			System.out.println("Mod '" + name + "' not found.");
+			log.debug("Mod list locked; cannot move mod: " + mod.getInternalName());
 			return;
 		}
 		
@@ -177,18 +141,6 @@ public class ModList {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	private Mod getModByName(final String name) {
-		
-		for (Mod mod : mods) {
-			if (mod.getInternalName().equals(name)) {
-				return mod;
-			}
-		}
-		
-		return null;
-		
 	}
 	
 }

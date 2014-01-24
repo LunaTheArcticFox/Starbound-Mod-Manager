@@ -5,8 +5,10 @@ import java.sql.SQLException;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -141,15 +143,8 @@ public class MainView extends Application {
 		root.getChildren().add(topBar);
 		
 		AnchorPane tabsBar = new AnchorPane();
-		HBox pageTabs = new HBox();
+		Tabs pageTabs = new Tabs(this);
 		HBox buttons = new HBox();
-		
-		pageTabs.getChildren().addAll(
-				new Text("Mods"),
-				new Text("Backups"),
-				new Text("Settings"),
-				new Text("About")
-				);
 		
 		buttons.getChildren().addAll(
 				new Text("1"),
@@ -166,12 +161,13 @@ public class MainView extends Application {
 		
 		tabsBar.getChildren().addAll(pageTabs, buttons);
 		
-		modListView = new ModListView();
+		modListView = new ModListView(this);
 		
 		mainContentPane = new ScrollPane();
 		mainContentPane.setFitToHeight(true);
 		mainContentPane.setFitToWidth(true);
-		mainContentPane.setContent(modListView);
+		
+		showModList();
 		
 		VBox.setVgrow(mainContentPane, Priority.ALWAYS);
 		
@@ -188,19 +184,30 @@ public class MainView extends Application {
 	}
 	
 	protected void showModList() {
-		
+		log.debug("Setting view to mod list.");
+		mainContentPane.setContent(modListView);
 	}
 	
 	protected void showBackupList() {
-		
+		log.debug("Setting view to backup list.");
+		//TODO Actual content
+		mainContentPane.setContent(new VBox());
 	}
 	
 	protected void showSettings() {
-		
+		log.debug("Setting view to settings.");
+		//TODO Actual content
+		mainContentPane.setContent(new VBox());
 	}
 	
 	protected void showAbout() {
-		
+		log.debug("Setting view to about.");
+		//TODO Actual content
+		mainContentPane.setContent(new VBox());
+	}
+	
+	protected Stage getStage() {
+		return primaryStage;
 	}
 	
 	public static void main(String[] args) {
