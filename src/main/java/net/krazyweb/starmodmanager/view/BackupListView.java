@@ -1,5 +1,7 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
-public class BackupListView {
+import javafx.scene.layout.VBox;
+
+public class BackupListView extends VBox {
 
 }

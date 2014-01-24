@@ -3,6 +3,7 @@ package main.java.net.krazyweb.starmodmanager.data;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -55,9 +56,9 @@ public class Mod {
 	protected Mod() {
 	}
 	
-	protected static Set<Mod> load(final File file, final int order) {
+	protected static Set<Mod> load(final Path path, final int order) {
 		
-		log.debug("Loading mod: " + file.getPath());
+		log.debug("Loading mod: " + path);
 		
 		Set<Mod> mods = new HashSet<>();
 		
@@ -67,7 +68,7 @@ public class Mod {
 		 * as opposed to copied from disk, to disk, read, then deleted, then copied again.
 		 */
 		
-		Archive modArchive = new Archive(file);
+		Archive modArchive = new Archive(path);
 			
 		if (!modArchive.extract()) {
 			//TODO Error messages
@@ -106,12 +107,14 @@ public class Mod {
 				String newDir;
 				
 				if (subDir.contains("/")) {
-					newDir = subDir.substring(subDir.lastIndexOf("/"));
+					newDir = subDir.substring(subDir.lastIndexOf("/")) + ".zip";
+				} else if (subDir.isEmpty()) {
+					newDir = modArchive.getFileName();
 				} else {
-					newDir = subDir;
+					newDir = subDir + ".zip";
 				}
 				
-				Archive newArchive = new Archive(newDir + ".zip");
+				Archive newArchive = new Archive(newDir);
 				
 				newArchive.getFiles().addAll(newFiles);
 				
@@ -172,7 +175,7 @@ public class Mod {
 				}
 				
 				try {
-					mod.setChecksum(FileHelper.getChecksum(new File(Settings.getModsDirectory().getAbsolutePath() + File.separator + mod.archiveName)));
+					mod.setChecksum(FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.archiveName).toPath()));
 				} catch (IOException e) {
 					log.error("Setting Checksum", e);
 				}

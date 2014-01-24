@@ -2,6 +2,8 @@ package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -37,14 +39,17 @@ public class Database {
 		complete = false;
 		
 		updateProgress(0, 2);
+		updateMessage("Connecting to the Database");
 		
 		connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
 		
 		updateProgress(1, 2);
+		updateMessage("Creating Default Tables");
 		
 		createTables();
 
 		updateProgress(2, 2);
+		updateMessage("Complete");
 		
 		complete = true;
 		
@@ -317,9 +322,10 @@ public class Database {
 				Set<Mod> mods = null;
 				
 				try {
-					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()))) {
+					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).toPath())) {
 						log.debug("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
-						mods = Mod.load(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()), mod.getOrder());
+						//TODO Get path
+						mods = Mod.load(Paths.get(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
 					} else {
 						mods = new HashSet<>();
 						mods.add(mod);
@@ -364,21 +370,22 @@ public class Database {
 		}
 		
 		//List all the archives in the mods directory, then remove already recognized mods
-		Set<File> archives = new HashSet<>();
-		Set<File> toRemove = new HashSet<>();
+		Set<Path> archives = new HashSet<>();
+		Set<Path> toRemove = new HashSet<>();
+		
 		FileHelper.listFiles(Settings.getModsDirectory(), archives);
 		
-		for (File file : archives) {
-			if (currentArchives.contains(file.getPath())) {
-				toRemove.add(file);
+		for (Path path : archives) {
+			if (currentArchives.contains(path)) {
+				toRemove.add(path);
 			}
 		}
 		
 		archives.removeAll(toRemove);
 		
-		for (File file : archives) {
+		for (Path path : archives) {
 			
-			Set<Mod> mods = Mod.load(file, modList.size());
+			Set<Mod> mods = Mod.load(path, modList.size());
 			
 			if (mods == null || mods.isEmpty()) {
 				continue;

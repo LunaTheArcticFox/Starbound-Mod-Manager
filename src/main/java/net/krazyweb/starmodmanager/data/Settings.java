@@ -1,6 +1,9 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
@@ -21,7 +24,7 @@ public class Settings {
 		WINDOWS, MACOS, LINUX32, LINUX64;
 	}
 	
-	private static File modsDirectory;
+	private static Path modsDirectory;
 	
 	private static OS operatingSystem;
 	private static String operatingSystemName;
@@ -43,7 +46,7 @@ public class Settings {
 		
 		identifyOS();
 		configureLogger();
-		setModsDirectory(new File("mods/"));
+		setModsDirectory(Paths.get("mods/"));
 		
 		updateProgress(4, 4);
 		updateMessage("Settings Initialized Successfully");
@@ -113,18 +116,22 @@ public class Settings {
 		
 	}
 
-	public static File getModsDirectory() {
+	public static Path getModsDirectory() {
 		return modsDirectory;
 	}
 
-	public static void setModsDirectory(File modsDirectory) {
+	public static void setModsDirectory(final Path modsDirectory) {
 
 		updateProgress(3, 4);
 		updateMessage("Creating Mods Directory");
 		
 		Settings.modsDirectory = modsDirectory;
-		if (!Settings.modsDirectory.exists()) {
-			Settings.modsDirectory.mkdir();
+		if (Files.notExists(modsDirectory)) {
+			try {
+				Files.createDirectories(modsDirectory);
+			} catch (IOException e) {
+				log.error("Error creating mods directory.", e);
+			}
 		}
 		
 	}
@@ -133,7 +140,7 @@ public class Settings {
 		return operatingSystem;
 	}
 
-	public static void setOperatingSystem(OS operatingSystem) {
+	public static void setOperatingSystem(final OS operatingSystem) {
 		Settings.operatingSystem = operatingSystem;
 	}
 	

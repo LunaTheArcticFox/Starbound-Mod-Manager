@@ -5,12 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.log4j.Logger;
 
 import net.sf.sevenzipjbinding.ExtractOperationResult;
 import net.sf.sevenzipjbinding.ISequentialOutStream;
@@ -20,19 +20,21 @@ import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
+import org.apache.log4j.Logger;
+
 public class Archive {
 	
 	private static final Logger log = Logger.getLogger(Archive.class);
 	
-	private File file;
+	private Path path;
 	private Set<ArchiveFile> files = new HashSet<>();
 	
-	public Archive(final File file) {
-		this.file = file;
+	public Archive(final Path path) {
+		this.path = path;
 	}
 	
-	public Archive(final String file) {
-		this(new File(file));
+	public Archive(final String path) {
+		this(Paths.get(path));
 	}
 	
 	public ArchiveFile getFile(String fileName) {
@@ -53,13 +55,13 @@ public class Archive {
 	
 	public boolean extract() {
 		
-		log.debug("Extracting: " + file.getPath());
+		log.debug("Extracting: " + path);
 		
 		try {
 			
 			long time = System.currentTimeMillis();
 			
-			if (!FileHelper.verify(file)) {
+			if (!FileHelper.verify(path)) {
 				/* 
 				 * TODO Inform user of invalid filetype.
 				 * Change boolean return to error codes to be passed along to the UI.
@@ -67,7 +69,7 @@ public class Archive {
 				return false;
 			}
 			
-			RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
+			RandomAccessFile randomAccessFile = new RandomAccessFile(path.toFile(), "r");
 			ISevenZipInArchive inArchive = SevenZip.openInArchive(null, new RandomAccessFileInStream(randomAccessFile));
 			
 			for (ISimpleInArchiveItem item : inArchive.getSimpleInterface().getArchiveItems()) {
@@ -113,12 +115,12 @@ public class Archive {
 			inArchive.close();
 			randomAccessFile.close();
 			
-			log.info("Time to extract '" + file.getName() + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
+			log.info("Time to extract '" + path + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
 		} catch (IOException | SevenZipException e) {
-			log.error("Extracting an archive.", e);
+			log.error("Extracting archive: " + path, e);
 			return false;
 		}
 		
@@ -191,7 +193,7 @@ public class Archive {
 	}
 	
 	public String getFileName() {
-		return file.getName().replace(".rar", ".zip").replace(".7z", ".zip");
+		return path.getFileName().toString().replace(".rar", ".zip").replace(".7z", ".zip");
 	}
 	
 }

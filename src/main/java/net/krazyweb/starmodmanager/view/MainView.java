@@ -39,22 +39,6 @@ public class MainView extends Application {
 	
 	private ScrollPane mainContentPane;
 	
-	/*
-	 * The MainView portion of the application will manage sub-views and application-level
-	 * commands. The top bar with the name and version does not need its own class, but
-	 * the buttons and tabs should each be their own. Additionally, this should implement
-	 * showX(), where X is the tab's name, then update a scrollpane to use that new content.
-	 * This should also handle application initialization.
-	 * 
-	 * TODO:
-	 * 	- ModListView
-	 *  - BackupListView
-	 *  - SettingsView
-	 *  - AboutView
-	 *  
-	 *  The above "view"s should extend a node so they can be inserted directly into the pane. 
-	 */
-	
 	@Override
 	public void start(Stage primaryStage) {
 		
@@ -167,6 +151,9 @@ public class MainView extends Application {
 		tabsBar.getChildren().addAll(pageTabs, buttons);
 		
 		modListView = new ModListView(this);
+		backupListView = new BackupListView();
+		settingsView = new SettingsView();
+		aboutView = new AboutView();
 		
 		mainContentPane = new ScrollPane();
 		mainContentPane.setFitToHeight(true);
@@ -203,7 +190,6 @@ public class MainView extends Application {
 					for (File file : db.getFiles()) {
 						if (file.getPath().endsWith(".zip")) {
 							filesAccepted = true;
-							log.debug("File '" + file.toPath() + "' dragged over Mod Manager.");
 						}
 					}
                 	
@@ -276,20 +262,17 @@ public class MainView extends Application {
 	
 	protected void showBackupList() {
 		log.debug("Setting view to backup list.");
-		//TODO Actual content
-		mainContentPane.setContent(new VBox());
+		mainContentPane.setContent(backupListView);
 	}
 	
 	protected void showSettings() {
 		log.debug("Setting view to settings.");
-		//TODO Actual content
-		mainContentPane.setContent(new VBox());
+		mainContentPane.setContent(settingsView);
 	}
 	
 	protected void showAbout() {
 		log.debug("Setting view to about.");
-		//TODO Actual content
-		mainContentPane.setContent(new VBox());
+		mainContentPane.setContent(aboutView);
 	}
 	
 	protected Stage getStage() {

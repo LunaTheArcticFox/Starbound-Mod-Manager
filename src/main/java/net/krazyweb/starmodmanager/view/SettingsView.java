@@ -1,5 +1,7 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
-public class SettingsView {
+import javafx.scene.layout.VBox;
+
+public class SettingsView extends VBox {
 
 }

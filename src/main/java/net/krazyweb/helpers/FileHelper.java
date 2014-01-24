@@ -4,17 +4,25 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
+import main.java.net.krazyweb.helpers.FileCopier.TreeCopier;
+
+import org.apache.log4j.Logger;
+
 public class FileHelper {
+	
+	private static final Logger log = Logger.getLogger(FileHelper.class);
 	
 	/*
 	 * File signatures found at: http://www.garykessler.net/library/file_sigs.html
@@ -23,47 +31,31 @@ public class FileHelper {
 	private static final char[] SIG_RAR = new char[] { 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00 };
 	private static final char[] SIG_ZIP = new char[] { 0x50, 0x4B, 0x03, 0x04 };
 
-	public static void copyFile(File src, File dest) throws IOException {
-
-		InputStream in = new FileInputStream(src);
-		OutputStream out = new FileOutputStream(dest);
-
-		byte[] buffer = new byte[1024];
-
-		int length;
-
-		while ((length = in.read(buffer)) > 0) {
-			out.write(buffer, 0, length);
+	public static boolean copyFile(Path src, Path dest) {
+		
+		dest = Files.isDirectory(src) ? dest.resolve(src) : dest;
+		
+        EnumSet<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+        TreeCopier tc = new TreeCopier(src, dest, false, false);
+        
+        try {
+			Files.walkFileTree(src, opts, Integer.MAX_VALUE, tc);
+			return true;
+		} catch (IOException e) {
+			log.error("Copying file/folder: " + src + " to " + dest, e);
 		}
-
-		in.close();
-		out.close();
-
-	}
-	
-	public static final char[] readBytes(final File file, int amount) throws IOException {
-		
-		InputStream in = new FileInputStream(file);
-		
-		byte[] bytes = new byte[amount];
-		
-		in.read(bytes);
-		in.close();
-		
-		char[] output = new String(bytes).toCharArray();
-		
-		return output;
+        
+        return false;
 		
 	}
-
 	
-	public static final boolean verify(final File file) {
+	public static final boolean verify(final Path path) {
 		
-		if (file == null) {
+		if (path == null) {
 			return false;
 		}
 		
-		String fileName = file.getName();
+		String fileName = path.getFileName().toString();
 		String extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
 		
 		int byteOffset = 0;
@@ -83,12 +75,12 @@ public class FileHelper {
 				return false;
 		}
 		
-		char[] fileBytes = null;
+		byte[] fileBytes = null;
 		
 		try {
-			fileBytes = FileHelper.readBytes(file, signatureBytes.length + byteOffset);
+			fileBytes = Files.readAllBytes(path);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Reading all bytes from a file to get the signature.", e);
 			return false;
 		}
 		
@@ -102,13 +94,15 @@ public class FileHelper {
 			}
 		}
 		
+		log.info("File '" + path + "' verified.");
+		
 		return true;
 		
 	}
 	
-	public static long getChecksum(final File file) throws IOException {
+	public static long getChecksum(final Path path) throws IOException {
 		
-		FileInputStream inputFile = new FileInputStream(file);
+		FileInputStream inputFile = new FileInputStream(path.toFile());
 		CheckedInputStream checkedStream = new CheckedInputStream(inputFile, new Adler32());
 		BufferedInputStream input = new BufferedInputStream(checkedStream);
 		
@@ -120,45 +114,49 @@ public class FileHelper {
 		checkedStream.close();
 		inputFile.close();
 		
-		return checkedStream.getChecksum().getValue();
+		long checksum = checkedStream.getChecksum().getValue();
+		
+		log.info("Checksum (" + checksum + ") created for file: " + path);
+		
+		return checksum;
 		
 	}
 	
-	public static Set<File> listFiles(final String directory, final Set<File> files) {
-		return listFiles(new File(directory), files);
+	public static Set<Path> listFiles(final String directory, final Set<Path> paths) {
+		return listFiles(Paths.get(directory), paths);
 	}
 	
-	public static Set<File> listFiles(final File directory, final Set<File> files) {
+	public static Set<Path> listFiles(final Path directory, final Set<Path> paths) {
 		
-		for (File file : directory.listFiles()) {
-			if (file.isFile()) {
-				files.add(file);
-			} else if (file.isDirectory()) {
-				listFiles(file.getAbsolutePath(), files);
-			}
-		}
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory.toUri()))) {
+            for (Path path : directoryStream) {
+            	paths.add(path);
+            }
+        } catch (IOException e) {
+        	log.error("Listing files in directory:" + directory, e);
+        }
 		
-		return files;
-		
+        return paths;
+        
 	}
 	
-	public static void deleteFile(File file) throws IOException {
+	public static void deleteFile(final Path path) throws IOException {
 		
-		if (file.isDirectory()) {
+		//TODO Change to fully use nio
+		
+		if (Files.isDirectory(path)) {
 			
-			File[] children = file.listFiles();
+			File[] children = path.toFile().listFiles();
 			
 			if (children != null) {
-				for (File child : file.listFiles()) {
-					deleteFile(child);
+				for (File child : path.toFile().listFiles()) {
+					deleteFile(child.toPath());
 				}
 			}
 			
 		}
 		
-		if (!file.delete()) {
-			throw new FileNotFoundException("Failed to delete file: " + file);
-		}
+		Files.deleteIfExists(path);
 		
 	}
 	
@@ -172,18 +170,24 @@ public class FileHelper {
 		
 	}
 	
-	public static String fileToString(File file) throws IOException {
+	public static String fileToString(File file) {
+		
+		// TODO update to use nio
 	
 		String output = "";
-		BufferedReader in = new BufferedReader(new FileReader(file));
+		
+		try (BufferedReader in = new BufferedReader(new FileReader(file))) {
 
-		String line;
+			String line;
 
-		while ((line = in.readLine()) != null) {
-			output += line + "\r\n";
+			while ((line = in.readLine()) != null) {
+				output += line + "\r\n";
+			}
+			
+		} catch (IOException e) {
+			log.error("Reading a file to a string.", e);
+			return null;
 		}
-
-		in.close();
 
 		return output;
 	

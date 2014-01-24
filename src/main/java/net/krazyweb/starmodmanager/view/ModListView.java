@@ -38,8 +38,8 @@ public class ModListView extends VBox {
 		
 		log.info("Adding mod: " + file);
 		
-		List<File> toAdd = new ArrayList<>();
-		toAdd.add(file.toFile());
+		List<Path> toAdd = new ArrayList<>();
+		toAdd.add(file);
 		
 		modList.addMods(toAdd);
 		
@@ -85,17 +85,30 @@ public class ModListView extends VBox {
 			
 		}
 		
-		Button addMod = new Button("Add Mod");
+		Button addMod = new Button("Add Mods");
 		addMod.setOnAction(new EventHandler<ActionEvent>() {
+			
 			@Override
 			public void handle(ActionEvent e) {
+				
 				FileChooser f = new FileChooser();
 				f.setTitle("Select the mod to add.");
-				List<File> file = f.showOpenMultipleDialog(mainView.getStage());
-				if (file != null && !file.isEmpty()) {
-					modList.addMods(file);
+				
+				List<Path> paths = new ArrayList<>();
+				List<File> files = f.showOpenMultipleDialog(mainView.getStage());
+				
+				if (files != null && !files.isEmpty()) {
+				
+					for (File file : files) {
+						paths.add(file.toPath());
+					}
+					
+					modList.addMods(paths);
+				
 				}
+				
 			}
+			
 		});
 		
 		getChildren().add(addMod);

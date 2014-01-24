@@ -1,6 +1,6 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +48,7 @@ public class ModList {
 		
 	}
 	
-	public void addMods(final List<File> files) {
+	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
 		progress.start(new Stage());
@@ -62,9 +62,9 @@ public class ModList {
 				
 				for (int i = 0; i < files.size(); i++) {
 					
-					File file = files.get(i);
+					Path file = files.get(i);
 					
-					this.updateMessage("Loading Mod: " + file.getName());
+					this.updateMessage("Loading Mod: " + file.getFileName());
 					
 					Set<Mod> modsToAdd = Mod.load(file, mods.size());
 					
