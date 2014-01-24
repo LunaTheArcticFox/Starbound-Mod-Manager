@@ -11,9 +11,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
+import main.java.net.krazyweb.helpers.FileHelper;
 
 import org.apache.log4j.Logger;
 
@@ -247,9 +248,9 @@ public class Database {
 		
 	}
 	
-	public static ArrayList<Mod> getModList() throws SQLException {
+	public static List<Mod> getModList() throws SQLException {
 		
-		ArrayList<Mod> modList = new ArrayList<Mod>();
+		List<Mod> modList = new ArrayList<Mod>();
 
 		StringBuilder query = new StringBuilder();
 		
@@ -287,7 +288,7 @@ public class Database {
 				
 				mod.setDependencies(dependencies);
 				
-				HashSet<ModFile> files = new HashSet<ModFile>();
+				Set<ModFile> files = new HashSet<>();
 				
 				for (String data : results.getString("files").split("\n")) {
 					
@@ -342,18 +343,18 @@ public class Database {
 		
 	}
 	
-	private static void getNewMods(final ArrayList<Mod> modList) {
+	private static void getNewMods(final List<Mod> modList) {
 		
 		//Collect all filenames of already recognized mods
-		HashSet<String> currentArchives = new HashSet<String>();
+		Set<String> currentArchives = new HashSet<>();
 		
 		for (Mod mod : modList) {
 			currentArchives.add(mod.getArchiveName());
 		}
 		
 		//List all the archives in the mods directory, then remove already recognized mods
-		HashSet<File> archives = new HashSet<File>();
-		HashSet<File> toRemove = new HashSet<File>();
+		Set<File> archives = new HashSet<>();
+		Set<File> toRemove = new HashSet<>();
 		FileHelper.listFiles(Settings.getModsDirectory(), archives);
 		
 		for (File file : archives) {

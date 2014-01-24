@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -168,16 +169,37 @@ public class MainView extends Application {
 		modListView = new ModListView();
 		
 		mainContentPane = new ScrollPane();
+		mainContentPane.setFitToHeight(true);
+		mainContentPane.setFitToWidth(true);
 		mainContentPane.setContent(modListView);
-
+		
+		VBox.setVgrow(mainContentPane, Priority.ALWAYS);
+		
 		root.getChildren().add(tabsBar);
 		root.getChildren().add(mainContentPane);
+		root.prefHeightProperty().bind(primaryStage.heightProperty());
 		
 		Scene scene = new Scene(root, 683, 700);
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+	}
+	
+	protected void showModList() {
+		
+	}
+	
+	protected void showBackupList() {
+		
+	}
+	
+	protected void showSettings() {
+		
+	}
+	
+	protected void showAbout() {
 		
 	}
 	

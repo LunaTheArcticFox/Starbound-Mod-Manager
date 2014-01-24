@@ -2,10 +2,9 @@ package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
 
@@ -109,7 +108,7 @@ public class ModList {
 	
 	private void updateView() {
 
-		Set<Mod> modListCopy = new HashSet<>(mods);
+		List<Mod> modListCopy = new ArrayList<>(mods);
 		
 		modListView.updateModList(modListCopy);
 		

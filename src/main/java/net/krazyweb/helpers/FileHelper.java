@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.helpers;
+package main.java.net.krazyweb.helpers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -10,7 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
@@ -124,11 +124,11 @@ public class FileHelper {
 		
 	}
 	
-	public static HashSet<File> listFiles(final String directory, final HashSet<File> files) {
+	public static Set<File> listFiles(final String directory, final Set<File> files) {
 		return listFiles(new File(directory), files);
 	}
 	
-	public static HashSet<File> listFiles(final File directory, final HashSet<File> files) {
+	public static Set<File> listFiles(final File directory, final Set<File> files) {
 		
 		for (File file : directory.listFiles()) {
 			if (file.isFile()) {

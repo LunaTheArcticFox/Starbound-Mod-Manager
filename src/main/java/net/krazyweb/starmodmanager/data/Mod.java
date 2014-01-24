@@ -13,10 +13,10 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import main.java.net.krazyweb.starmodmanager.helpers.Archive;
-import main.java.net.krazyweb.starmodmanager.helpers.ArchiveFile;
-import main.java.net.krazyweb.starmodmanager.helpers.FileHelper;
-import main.java.net.krazyweb.starmodmanager.helpers.JSONHelper;
+import main.java.net.krazyweb.helpers.Archive;
+import main.java.net.krazyweb.helpers.ArchiveFile;
+import main.java.net.krazyweb.helpers.FileHelper;
+import main.java.net.krazyweb.helpers.JSONHelper;
 
 public class Mod {
 	

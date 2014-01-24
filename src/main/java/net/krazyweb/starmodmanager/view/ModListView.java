@@ -1,6 +1,6 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
-import java.util.Set;
+import java.util.List;
 
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -21,10 +21,10 @@ public class ModListView extends VBox {
 		
 	}
 	
-	public void updateModList(final Set<Mod> mods) {
+	public void updateModList(final List<Mod> mods) {
 		
 		for (Mod mod : mods) {
-			getChildren().add(new Text(mod.getDisplayName()));
+			getChildren().add(new Text(mod.getInternalName()));
 		}
 		
 	}

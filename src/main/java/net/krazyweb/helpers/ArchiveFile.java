@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.helpers;
+package main.java.net.krazyweb.helpers;
 
 public class ArchiveFile {
 	
