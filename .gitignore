@@ -2,6 +2,7 @@
 /backups
 /mods
 /build
+/data
 .classpath
 .settings
 .project
@@ -10,3 +11,4 @@ config.ini
 errors.log
 /target
 database
+modmanager.log

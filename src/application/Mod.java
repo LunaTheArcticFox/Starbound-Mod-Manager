@@ -43,7 +43,7 @@ public class Mod {
 	private static final String installedImage = application.Mod.class.getResource("installed.png").toExternalForm();
 	private static final String notInstalledImage = application.Mod.class.getResource("notinstalled.png").toExternalForm();
 	private static final String conflictImage = application.Mod.class.getResource("conflict.png").toExternalForm();
-	private static final String outdatedImage = application.Mod.class.getResource("outdated.png").toExternalForm();
+	//private static final String outdatedImage = application.Mod.class.getResource("outdated.png").toExternalForm();
 	
 	public ArrayList<String> filesModified = new ArrayList<String>();
 	public boolean installed = false;
@@ -99,15 +99,7 @@ public class Mod {
 		modAuthor.getStyleClass().removeAll("not-installed-font-color", "installed-font-color", "conflicted-font-color");
 		gridPane.getChildren().remove(modStatus);
 		
-		if (!Configuration.gameVersionString.equals(gameVersion)) {
-			gridPane.getStyleClass().add("outdated-mod-fill");
-			bottomStroke.getStyleClass().add("outdated-mod-stroke");
-			modName.getStyleClass().add("outdated-font-color");
-			modVersion.getStyleClass().add("outdated-font-color");
-			modAuthor.getStyleClass().add("outdated-font-color");
-			modStatus = new CenteredRegion(new ImageView(new Image(outdatedImage)));
-			gridPane.add(modStatus, 2, 0, 1, 2);
-		} else if (hasConflicts && !installed && !patched) {
+		if (hasConflicts && !installed && !patched) {
 			gridPane.getStyleClass().add("conflicted-mod-fill");
 			bottomStroke.getStyleClass().add("conflicted-mod-stroke");
 			modName.getStyleClass().add("conflicted-font-color");

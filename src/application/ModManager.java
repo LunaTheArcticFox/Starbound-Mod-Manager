@@ -34,7 +34,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 5;
+	public static final int PATCH_VERSION = 6;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -282,13 +282,6 @@ public class ModManager extends Application {
 		for (Mod mod : mods) {
 			if (mod.installed) {
 				installedMods.add(mod);
-			}
-		}
-		
-		for (Mod mod : installedMods) {
-			if (!Configuration.gameVersionString.equals(mod.gameVersion) && mod.installed) {
-				mod.uninstall(installedMods);
-				new FXDialogueConfirm("Mod \"" + mod.displayName + "\" is not compatible with your game's version and has been uninstalled automatically.\n\nPlease contact the creator of this mod for support.").show();
 			}
 		}
 			
@@ -542,12 +535,7 @@ public class ModManager extends Application {
 		
 		removeModButton.setDisable(false);
 		
-		if (!Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
-			
-			installButton.setText("Install Mod");
-			installButton.setDisable(true);
-			
-		} else if (selectedMod.installed) {
+		if (selectedMod.installed) {
 			
 			installButton.setText("Uninstall Mod");
 			installButton.setDisable(false);
@@ -589,14 +577,12 @@ public class ModManager extends Application {
 		
 		modInfoText += "Description:\n" + selectedMod.description + "\n";
 		
-		if (selectedMod.hasConflicts && Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
+		if (selectedMod.hasConflicts) {
 			modInfoText += "\n\n\nThis mod has conflicts with the following mods:\n\n" + selectedMod.conflicts;
 			modInfoText += "\n\nThis mod may still be installed and the mod manager will attempt to merge the mods automatically.\n\nThis results in a successful merge most of the time and you should try it.";
 		}
 
-		if (!Configuration.gameVersionString.equals(selectedMod.gameVersion)) {
-			modInfoText += "\n\nThis mod is outdated and must be updated before it can be installed.";
-		} else if (selectedMod.installed) {
+		if (selectedMod.installed) {
 			modInfoText += "\n\nThis mod is currently installed.";
 		} else {
 			modInfoText += "\n\nThis mod has not been installed.";
