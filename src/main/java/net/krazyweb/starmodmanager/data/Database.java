@@ -268,7 +268,7 @@ public class Database {
 		
 		if (hasRows(results)) {
 			
-			log.debug("Mods found in database.");
+			log.debug("Mods found in database: ");
 			
 			while (results.next()) {
 				
@@ -286,6 +286,8 @@ public class Database {
 				mod.setOrder(results.getInt("loadOrder"));
 				mod.setHidden(results.getInt("hidden") == 1);
 				mod.setInstalled(results.getInt("installed") == 1);
+				
+				log.debug(" -> " + mod.getInternalName());
 				
 				Set<String> dependencies = new HashSet<>();
 				
@@ -323,7 +325,7 @@ public class Database {
 				
 				try {
 					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).toPath())) {
-						log.debug("Mod file checksum mismatch (loading from file): " + mod.getArchiveName());
+						log.debug("Mod file checksum mismatch: " + mod.getArchiveName());
 						//TODO Get path
 						mods = Mod.load(Paths.get(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
 					} else {
@@ -366,7 +368,7 @@ public class Database {
 		Set<String> currentArchives = new HashSet<>();
 		
 		for (Mod mod : modList) {
-			currentArchives.add(Settings.getModsDirectory() + File.separator + mod.getArchiveName());
+			currentArchives.add(Settings.getModsDirectory().toAbsolutePath() + File.separator + mod.getArchiveName());
 		}
 		
 		//List all the archives in the mods directory, then remove already recognized mods
@@ -376,7 +378,7 @@ public class Database {
 		FileHelper.listFiles(Settings.getModsDirectory(), archives);
 		
 		for (Path path : archives) {
-			if (currentArchives.contains(path)) {
+			if (currentArchives.contains(path.toString())) {
 				toRemove.add(path);
 			}
 		}

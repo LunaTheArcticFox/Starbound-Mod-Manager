@@ -90,8 +90,6 @@ public class Mod {
 				
 				Set<ArchiveFile> newFiles = new HashSet<>();
 				
-				log.debug(f.getPath());
-				
 				String subDir = "";
 				
 				if (f.getPath().contains("/")) {
@@ -258,7 +256,7 @@ public class Mod {
 		return internalName;
 	}
 
-	protected void setInternalName(String internalName) {
+	protected void setInternalName(final String internalName) {
 		this.internalName = internalName;
 	}
 
@@ -266,7 +264,7 @@ public class Mod {
 		return displayName;
 	}
 
-	protected void setDisplayName(String displayName) {
+	protected void setDisplayName(final String displayName) {
 		this.displayName = displayName;
 	}
 
@@ -274,7 +272,7 @@ public class Mod {
 		return modVersion;
 	}
 
-	protected void setModVersion(String version) {
+	protected void setModVersion(final String version) {
 		this.modVersion = version;
 	}
 
@@ -282,7 +280,7 @@ public class Mod {
 		return gameVersion;
 	}
 
-	protected void setGameVersion(String gameVersion) {
+	protected void setGameVersion(final String gameVersion) {
 		this.gameVersion = gameVersion;
 	}
 
@@ -290,7 +288,7 @@ public class Mod {
 		return author;
 	}
 
-	protected void setAuthor(String author) {
+	protected void setAuthor(final String author) {
 		this.author = author;
 	}
 
@@ -298,7 +296,7 @@ public class Mod {
 		return description;
 	}
 
-	protected void setDescription(String description) {
+	protected void setDescription(final String description) {
 		this.description = description;
 	}
 
@@ -306,7 +304,7 @@ public class Mod {
 		return url;
 	}
 
-	protected void setURL(String url) {
+	protected void setURL(final String url) {
 		this.url = url;
 	}
 
@@ -314,7 +312,7 @@ public class Mod {
 		return archiveName;
 	}
 
-	protected void setArchiveName(String file) {
+	protected void setArchiveName(final String file) {
 		this.archiveName = file;
 	}
 
@@ -322,7 +320,7 @@ public class Mod {
 		return checksum;
 	}
 
-	protected void setChecksum(long checksum) {
+	protected void setChecksum(final long checksum) {
 		this.checksum = checksum;
 	}
 
@@ -330,7 +328,7 @@ public class Mod {
 		return hidden;
 	}
 
-	protected void setHidden(boolean hidden) {
+	protected void setHidden(final boolean hidden) {
 		this.hidden = hidden;
 	}
 
@@ -338,7 +336,7 @@ public class Mod {
 		return installed;
 	}
 
-	protected void setInstalled(boolean installed) {
+	protected void setInstalled(final boolean installed) {
 		this.installed = installed;
 	}
 
@@ -346,7 +344,7 @@ public class Mod {
 		return dependencies;
 	}
 
-	protected void setDependencies(Set<String> dependencies2) {
+	protected void setDependencies(final Set<String> dependencies2) {
 		this.dependencies = dependencies2;
 	}
 
@@ -354,7 +352,7 @@ public class Mod {
 		return files;
 	}
 
-	protected void setFiles(Set<ModFile> files) {
+	protected void setFiles(final Set<ModFile> files) {
 		this.files = files;
 	}
 
@@ -362,7 +360,7 @@ public class Mod {
 		return order;
 	}
 
-	protected void setOrder(int order) {
+	protected void setOrder(final int order) {
 		this.order = order;
 	}
 	
