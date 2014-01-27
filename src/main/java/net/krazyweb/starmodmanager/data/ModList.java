@@ -226,7 +226,7 @@ public class ModList {
 			return;
 		}
 		
-		log.debug("=============\nPerforming rotation, results:");
+		log.debug("Performing rotation, results:");
 		
 		if (amount > 0) {
 			
@@ -248,7 +248,7 @@ public class ModList {
 		
 		for (Mod m : mods) {
 			m.setOrder(mods.indexOf(m));
-			log.debug("[" + m.getOrder() + "] \t" + m.getInternalName());
+			log.debug("  [" + m.getOrder() + "] " + m.getInternalName());
 			try {
 				Database.updateMod(m);
 			} catch (SQLException e) {
@@ -256,6 +256,17 @@ public class ModList {
 			}
 		}
 		
+		//updateView();
+		
+	}
+	
+	public List<Mod> getMods() {
+		List<Mod> modListCopy = new ArrayList<>(mods);
+		return modListCopy;
+	}
+	
+	public int indexOf(final Mod mod) {
+		return mods.indexOf(mod);
 	}
 	
 	public void lockList() {
