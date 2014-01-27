@@ -127,7 +127,7 @@ public class MainView extends Application {
 		AnchorPane topBar = new AnchorPane();
 		
 		Text appName = new Text(Localizer.getMessage("title"));
-		appName = new Text(Localizer.formatMessage("testpat", Localizer.getMessage("flavor"), 500));
+		appName = new Text(Localizer.formatMessage("testpat", Localizer.getMessage("flavor"), 0));
 		Text versionName = new Text(Settings.getVersion());
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
