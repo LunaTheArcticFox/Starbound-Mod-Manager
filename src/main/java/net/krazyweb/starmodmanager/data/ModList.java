@@ -40,8 +40,6 @@ public class ModList {
 				Database.updateMod(mod);
 			}
 			
-			updateView();
-			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -125,16 +123,89 @@ public class ModList {
 	}
 	
 	public void installMod(final Mod mod) {
-		mod.install();
+		
+		final Task<Integer> installModsTask = new Task<Integer>() {
+
+			@Override
+			protected Integer call() throws Exception {
+				
+				mod.install();
+				
+				return 1;
+				
+			}
+			
+		};
+		
+		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				//TODO Appropriate error messages.
+				log.error("Error occurred while installing mods!", installModsTask.getException());
+				updateView();
+			}
+		});
+		
+		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				updateView();
+			}
+		});
+		
+		Thread t = new Thread(installModsTask);
+		t.setName("Install Mods Thread");
+		t.setDaemon(true);
+		t.start();
+		
 	}
 	
 	public void uninstallMod(final Mod mod) {
+		
+		final Task<Integer> installModsTask = new Task<Integer>() {
+
+			@Override
+			protected Integer call() throws Exception {
+				
+				mod.uninstall();
+				
+				return 1;
+				
+			}
+			
+		};
+		
+		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				//TODO Appropriate error messages.
+				log.error("Error occurred while uninstalling mods!", installModsTask.getException());
+				updateView();
+			}
+		});
+		
+		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				updateView();
+			}
+		});
+		
+		Thread t = new Thread(installModsTask);
+		t.setName("Uninstall Mods Thread");
+		t.setDaemon(true);
+		t.start();
+		
 	}
 	
 	public void hideMod(final Mod mod) {
 		
 		mod.setHidden(true);
 		
+	}
+	
+	public void requestUpdate() {
+		updateView();
 	}
 	
 	private void updateView() {

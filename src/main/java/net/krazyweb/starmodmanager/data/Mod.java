@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -236,6 +237,20 @@ public class Mod {
 		Archive archive = new Archive(Settings.getModsDirectory() + File.separator + archiveName);
 		archive.extract();
 		archive.extractToFolder(new File(Settings.getModsInstallDirectory().toString() + File.separator + internalName));
+		
+		installed = true;
+		
+	}
+	
+	protected void uninstall() {
+		
+		try {
+			FileHelper.deleteFile(Paths.get(Settings.getModsInstallDirectory().toString() + File.separator + internalName));
+		} catch (IOException e) {
+			log.error("Uninstalling Mod: " + getInternalName(), e);
+		}
+		
+		installed = false;
 		
 	}
 
