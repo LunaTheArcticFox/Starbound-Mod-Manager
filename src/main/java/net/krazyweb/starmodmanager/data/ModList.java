@@ -26,7 +26,7 @@ public class ModList {
 	
 	private boolean locked;
 	
-	private ModListView modListView;
+	private final ModListView modListView;
 	
 	private List<Mod> mods;
 	

@@ -4,8 +4,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -26,7 +28,7 @@ public class ModListView extends VBox {
 	
 	private static final Logger log = Logger.getLogger(ModListView.class);
 	
-	private ModList modList;
+	private final ModList modList;
 	
 	private Map<Mod, ModView> modViews;
 	
@@ -93,9 +95,12 @@ public class ModListView extends VBox {
 			modViews = new HashMap<>();
 		}
 		
+		final Set<Mod> toRemove = new HashSet<>();
+		
 		for (final Mod mod : mods) {
 			
 			if (mod.isHidden()) {
+				toRemove.add(mod);
 				continue;
 			}
 			
@@ -111,6 +116,26 @@ public class ModListView extends VBox {
 			modsBox.getChildren().add(modView);
 			
 		}
+		
+		this.mods.removeAll(toRemove);
+		
+	}
+	
+	private void getModList() {
+		
+		mods = modList.getMods();
+		
+		final Set<Mod> toRemove = new HashSet<>();
+
+		for (final Mod mod : mods) {
+			
+			if (mod.isHidden()) {
+				toRemove.add(mod);
+			}
+			
+		}
+		
+		mods.removeAll(toRemove);
 		
 	}
 	
@@ -143,50 +168,28 @@ public class ModListView extends VBox {
 					modView.setLayoutY(modsBox.getLayoutY() + modsBox.getHeight() - modView.getHeight());
 				}
 				
-				if (modList.indexOf(modView.mod) > 0 && modView.getLayoutY() < lastY) {
+				if (mods.indexOf(modView.mod) > 0 && modView.getLayoutY() < lastY) {
 					
-					final ModView mv = modViews.get(mods.get(modList.indexOf(modView.mod) - 1));
+					final ModView mv = modViews.get(mods.get(mods.indexOf(modView.mod) - 1));
 					
 					if (!mv.moving && mv.getLayoutY() > modView.getLayoutY() - 16) { //16  = half the node height
 						mv.moving = true;
 						modList.moveMod(modView.mod, 1);
-						mods = modList.getMods();
-						Timeline timeline = new Timeline();
-						timeline.setAutoReverse(false);
-						final KeyValue kv = new KeyValue(mv.layoutYProperty(), mv.getLayoutY() + 57); //Height + spacing
-						final KeyFrame kf = new KeyFrame(Duration.millis(80), kv);
-						timeline.getKeyFrames().add(kf);
-						timeline.setOnFinished(new EventHandler<ActionEvent>() {
-							@Override
-							public void handle(ActionEvent e) {
-								mv.moving = false;
-							}
-						});
-						timeline.play();
+						getModList();
+						animate(mv, 57);
 					}
 					
 				}
 				
-				if (modList.indexOf(modView.mod) < mods.size() - 1 && modView.getLayoutY() > lastY) {
+				if (mods.indexOf(modView.mod) < mods.size() - 1 && modView.getLayoutY() > lastY) {
 					
-					final ModView mv = modViews.get(mods.get(modList.indexOf(modView.mod) + 1));
+					final ModView mv = modViews.get(mods.get(mods.indexOf(modView.mod) + 1));
 					
 					if (!mv.moving && mv.getLayoutY() < modView.getLayoutY() + modView.getHeight() - 16) { //16  = half the node height
 						mv.moving = true;
 						modList.moveMod(modView.mod, -1);
-						mods = modList.getMods();
-						Timeline timeline = new Timeline();
-						timeline.setAutoReverse(false);
-						final KeyValue kv = new KeyValue(mv.layoutYProperty(), mv.getLayoutY() - 57); //Height + spacing
-						final KeyFrame kf = new KeyFrame(Duration.millis(80), kv);
-						timeline.getKeyFrames().add(kf);
-						timeline.setOnFinished(new EventHandler<ActionEvent>() {
-							@Override
-							public void handle(ActionEvent e) {
-								mv.moving = false;
-							}
-						});
-						timeline.play();
+						getModList();
+						animate(mv, -57);
 					}
 					
 				}
@@ -204,6 +207,23 @@ public class ModListView extends VBox {
 				modList.requestUpdate();
 			}
 		});
+		
+	}
+	
+	private void animate(final ModView modView, final int amount) {
+		
+		Timeline timeline = new Timeline();
+		timeline.setAutoReverse(false);
+		final KeyValue kv = new KeyValue(modView.layoutYProperty(), modView.getLayoutY() + amount); //Height + spacing
+		final KeyFrame kf = new KeyFrame(Duration.millis(80), kv);
+		timeline.getKeyFrames().add(kf);
+		timeline.setOnFinished(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				modView.moving = false;
+			}
+		});
+		timeline.play();
 		
 	}
 

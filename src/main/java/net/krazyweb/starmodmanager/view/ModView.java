@@ -16,15 +16,15 @@ public class ModView extends GridPane {
 	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ModView.class);
 	
-	protected Mod mod;
 	protected boolean moving = false;
-	private ModList modList;
+	protected final Mod mod;
+	private final ModList modList;
 	
-	private Button installButton;
-	private Text statusText;
-	private Text displayName;
-	private Text modVersion;
-	private HBox buttons;
+	private final Button installButton;
+	private final Text statusText;
+	private final Text displayName;
+	private final Text modVersion;
+	private final HBox buttons;
 	
 	protected ModView(final Mod mod, final ModList modList) {
 		
