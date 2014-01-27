@@ -40,7 +40,7 @@ public class Archive {
 	public ArchiveFile getFile(String fileName) {
 		
 		for (ArchiveFile file : files) {
-			if (file.getPath().endsWith(fileName)) {
+			if (file.getPath().toString().endsWith(fileName)) {
 				return file;
 			}
 		}
@@ -76,7 +76,7 @@ public class Archive {
 				
 				final ArchiveFile file = new ArchiveFile();
 				
-				file.setPath(item.getPath().replaceAll("\\\\", "/"));
+				file.setPath(Paths.get(item.getPath()));
 				
 				if (item.isFolder()) {
 					file.setFolder(true);
@@ -128,6 +128,8 @@ public class Archive {
 	
 	public boolean writeToFile(final File file) {
 		
+		//TODO Explore updating this to use the Java 7 filesystem.
+		
 		try {
 			
 			long time = System.currentTimeMillis();
@@ -141,7 +143,7 @@ public class Archive {
 					continue;
 				}
 				
-				ZipEntry entry = new ZipEntry(archiveFile.getPath());
+				ZipEntry entry = new ZipEntry(archiveFile.getPath().toString());
 				zipOutput.putNextEntry(entry);
 				
 				zipOutput.write(archiveFile.getData());

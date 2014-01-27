@@ -125,6 +125,7 @@ public class ModList {
 	}
 	
 	public void installMod(final Mod mod) {
+		mod.install();
 	}
 	
 	public void uninstallMod(final Mod mod) {

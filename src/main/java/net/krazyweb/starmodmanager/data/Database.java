@@ -305,7 +305,7 @@ public class Database {
 					
 					ModFile file = new ModFile();
 					
-					file.setPath(fields[0]);
+					file.setPath(Paths.get(fields[0]));
 					file.setJson(Boolean.parseBoolean(fields[1]));
 					file.setIgnored(Boolean.parseBoolean(fields[2]));
 					file.setAutoMerged(Boolean.parseBoolean(fields[3]));

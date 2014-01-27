@@ -1,9 +1,11 @@
 package main.java.net.krazyweb.helpers;
 
+import java.nio.file.Path;
+
 public class ArchiveFile {
 	
 	private byte[] data;
-	private String path;
+	private Path path;
 	private boolean folder;
 	
 	protected ArchiveFile() {
@@ -24,11 +26,11 @@ public class ArchiveFile {
 		this.data = data;
 	}
 	
-	public String getPath() {
+	public Path getPath() {
 		return path;
 	}
 	
-	public void setPath(String path) {
+	public void setPath(Path path) {
 		this.path = path;
 	}
 

@@ -1,18 +1,20 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
+import java.nio.file.Path;
+
 public class ModFile {
 	
-	private String path;
+	private Path path;
 	
 	private boolean json;
 	private boolean ignored;
 	private boolean autoMerged; //The file uses the official "__merge" system.
 	
-	public String getPath() {
+	public Path getPath() {
 		return path;
 	}
 	
-	public void setPath(String path) {
+	public void setPath(final Path path) {
 		this.path = path;
 	}
 

@@ -62,12 +62,6 @@ public class Mod {
 		
 		Set<Mod> mods = new HashSet<>();
 		
-		/* 
-		 * As long as the mod archive object is in memory, so are its entire contents.
-		 * This is advantageous, as the files must only be read from the disk once,
-		 * as opposed to copied from disk, to disk, read, then deleted, then copied again.
-		 */
-		
 		Archive modArchive = new Archive(path);
 			
 		if (!modArchive.extract()) {
@@ -75,180 +69,173 @@ public class Mod {
 			return null;
 		}
 		
-		/*
-		 * After cleaning the archive, the .modinfo will be at the top level.
-		 * This removes the need to store and modify subdirectories in the future.
-		 * Additionally, installation of cleaned mods will be a simple extraction.
-		 */
+		//TODO Count all mods and send back progress info
 		
-		/* 
-		 * TODO Clean all this up.
-		 * Count all mods and send back progress info
-		 */
-		for (ArchiveFile f : modArchive.getFiles()) {
-			if (f.getPath().endsWith(".modinfo")) {
-				
-				Set<ArchiveFile> newFiles = new HashSet<>();
-				
-				String subDir = "";
-				
-				if (f.getPath().contains("/")) {
-					subDir = f.getPath().substring(0, f.getPath().lastIndexOf("/"));
+		Set<Archive> archives = processArchive(modArchive);
+		
+		for (Archive archive : archives) {
+			
+			Mod mod = new Mod();
+			
+			mod.setOrder(order);
+			mod.files = new HashSet<>();
+			mod.setArchiveName(archive.getFileName());
+			
+			//Get the modinfo file and parse it
+			JsonReader reader = Json.createReader(new ByteArrayInputStream(archive.getFile(".modinfo").getData()));
+			JsonObject obj = reader.readObject();
+			
+			mod.setInternalName(obj.getString("name"));
+			mod.setGameVersion(obj.getString("version"));
+			
+			Set<String> dependencies = new HashSet<>();
+			Set<String> ignoredFileNames = new HashSet<>();
+			
+			if (obj.containsKey("dependencies")) {
+				JsonArray arr = obj.getJsonArray("dependencies");
+				for (int i = 0; i < arr.size(); i++) {
+					dependencies.add(arr.getString(i));
 				}
+			}
+			
+			mod.setDependencies(dependencies);
+			
+			if (obj.containsKey("metadata")) {
 				
-				for (ArchiveFile f2 : modArchive.getFiles()) {
-					if (f2.getPath().startsWith(subDir)) {
-						newFiles.add(f2);
-					}
-				}
+				JsonObject metadata = obj.getJsonObject("metadata");
 				
-				String newDir;
+				mod.setDisplayName(JSONHelper.getString(metadata, "displayname", mod.getInternalName()));
+				mod.setAuthor(JSONHelper.getString(metadata, "author", "Unknown"));
+				mod.setDescription(JSONHelper.getString(metadata, "description", "[No Description]"));
+				mod.setURL(JSONHelper.getString(metadata, "support_url", ""));
+				mod.setModVersion(JSONHelper.getString(metadata, "version", "Unknown"));
 				
-				if (subDir.contains("/")) {
-					newDir = subDir.substring(subDir.lastIndexOf("/")) + ".zip";
-				} else if (subDir.isEmpty()) {
-					newDir = modArchive.getFileName();
-				} else {
-					newDir = subDir + ".zip";
-				}
-				
-				Archive newArchive = new Archive(newDir);
-				
-				newArchive.getFiles().addAll(newFiles);
-				
-				cleanArchive(newArchive);
-				
-				newArchive.writeToFile(new File(Settings.getModsDirectory() + File.separator + newArchive.getFileName()));
-				
-				Mod mod = new Mod();
-				
-				mod.setOrder(order);
-				mod.files = new HashSet<>();
-				mod.setArchiveName(newArchive.getFileName());
-				
-				//Get the modinfo file and parse it
-				JsonReader reader = Json.createReader(new ByteArrayInputStream(newArchive.getFile(".modinfo").getData()));
-				JsonObject obj = reader.readObject();
-				
-				mod.setInternalName(obj.getString("name"));
-				mod.setGameVersion(obj.getString("version"));
-				
-				Set<String> dependencies = new HashSet<>();
-				Set<String> ignoredFileNames = new HashSet<>();
-				
-				if (obj.containsKey("dependencies")) {
-					JsonArray arr = obj.getJsonArray("dependencies");
+				if (obj.containsKey("ignoredfiles")) {
+					JsonArray arr = obj.getJsonArray("ignoredfiles");
 					for (int i = 0; i < arr.size(); i++) {
-						dependencies.add(arr.getString(i));
+						ignoredFileNames.add(arr.getString(i));
 					}
 				}
 				
-				mod.setDependencies(dependencies);
+			} else {
 				
-				if (obj.containsKey("metadata")) {
-					
-					JsonObject metadata = obj.getJsonObject("metadata");
-					
-					mod.setDisplayName(JSONHelper.getString(metadata, "displayname", mod.getInternalName()));
-					mod.setAuthor(JSONHelper.getString(metadata, "author", "Unknown"));
-					mod.setDescription(JSONHelper.getString(metadata, "description", "[No Description]"));
-					mod.setURL(JSONHelper.getString(metadata, "support_url", ""));
-					mod.setModVersion(JSONHelper.getString(metadata, "version", "Unknown"));
-					
-					if (obj.containsKey("ignoredfiles")) {
-						JsonArray arr = obj.getJsonArray("ignoredfiles");
-						for (int i = 0; i < arr.size(); i++) {
-							ignoredFileNames.add(arr.getString(i));
-						}
-					}
-					
-				} else {
-					
-					mod.setDisplayName(mod.getInternalName());
-					mod.setAuthor("Unknown");
-					mod.setDescription("[No Description]");
-					mod.setURL("");
-					mod.setModVersion("Unknown");
-					
-				}
-				
-				try {
-					mod.setChecksum(FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.archiveName).toPath()));
-				} catch (IOException e) {
-					log.error("Setting Checksum", e);
-				}
-				
-				for (ArchiveFile archiveFile : newArchive.getFiles()) {
-					
-					ModFile modFile = new ModFile();
-					modFile.setPath(archiveFile.getPath());
-					
-					//Find and list all ignored files
-					for (String ignored : ignoredFileNames) {
-						if (archiveFile.getPath().endsWith(ignored) || archiveFile.getPath().endsWith(".txt")) {
-							modFile.setIgnored(true);
-						}
-					}
-					
-					//Scan all json files and find those with mergeability
-					if (!archiveFile.isFolder() && FileHelper.isJSON(archiveFile.getPath())) {
-						
-						modFile.setJson(true);
-						
-						String fileContents = new String(archiveFile.getData());
-						
-						if (fileContents.contains("__merge")) {
-							modFile.setAutoMerged(true);
-						}
-						
-					}
-					
-					mod.files.add(modFile);
-					
-				}
-				
-				try {
-					Database.updateMod(mod);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
-				mods.add(mod);
+				mod.setDisplayName(mod.getInternalName());
+				mod.setAuthor("Unknown");
+				mod.setDescription("[No Description]");
+				mod.setURL("");
+				mod.setModVersion("Unknown");
 				
 			}
+			
+			try {
+				mod.setChecksum(FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.archiveName).toPath()));
+			} catch (IOException e) {
+				log.error("Setting Checksum", e);
+			}
+			
+			for (ArchiveFile archiveFile : archive.getFiles()) {
+				
+				ModFile modFile = new ModFile();
+				modFile.setPath(archiveFile.getPath());
+				
+				//Find and list all ignored files
+				for (String ignored : ignoredFileNames) {
+					if (archiveFile.getPath().endsWith(ignored) || archiveFile.getPath().endsWith(".txt")) {
+						modFile.setIgnored(true);
+					}
+				}
+				
+				//Scan all json files and find those with mergeability
+				if (!archiveFile.isFolder() && FileHelper.isJSON(archiveFile.getPath())) {
+					
+					modFile.setJson(true);
+					
+					String fileContents = new String(archiveFile.getData());
+					
+					if (fileContents.contains("__merge")) {
+						modFile.setAutoMerged(true);
+					}
+					
+				}
+				
+				mod.files.add(modFile);
+				
+			}
+			
+			try {
+				Database.updateMod(mod);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			mods.add(mod);
+			
 		}
 		
 		return mods;
 		
 	}
+
+	private static Set<Archive> processArchive(final Archive archive) {
+		
+		Set<Archive> archives = new HashSet<>();
+		
+		for (ArchiveFile file : archive.getFiles()) {
+			
+			if (FileHelper.getExtension(file.getPath()).equals("modinfo")) {
+				
+				Set<ArchiveFile> files = new HashSet<>();
+				
+				Path subDir = file.getPath().getParent();
+				
+				for (ArchiveFile f2 : archive.getFiles()) {
+
+					Path filePath = f2.getPath();
+					
+					if (subDir == null) {
+
+						files.add(f2);
+						
+					} else if (filePath.startsWith(subDir)) {
+						
+						Path newPath;
+						
+						//Unfortunately, having identical ending indices for the subpath() method doesn't work.
+						//Thus, the following is needed for all 3 possibilities.
+						if (filePath.getNameCount() > 2) {
+							newPath = filePath.subpath(subDir.getNameCount(), filePath.getNameCount());
+						} else if (filePath.getNameCount() > 1) {
+							newPath = filePath.getName(1);
+						} else {
+							newPath = filePath;
+						}
+						
+						f2.setPath(newPath);
+						
+						files.add(f2);
+						
+					}
+				}
+				
+				Archive newArchive = new Archive(subDir + ".zip");
+				newArchive.getFiles().addAll(files);
+				
+				newArchive.writeToFile(new File(Settings.getModsDirectory() + File.separator + newArchive.getFileName()));
+				
+				archives.add(newArchive);
+				
+			}
+		}
+		
+		return archives;
+		
+	}
 	
-	private static void cleanArchive(final Archive archive) {
+	protected void install() {
 		
-		Set<ArchiveFile> filesToRemove = new HashSet<>();
-		
-		String modBaseDirectory = "";
-		
-		for (ArchiveFile file : archive.getFiles()) {
-			if (file.getPath().endsWith(".modinfo")) {
-				modBaseDirectory = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
-			}
-		}
-		
-		for (ArchiveFile file : archive.getFiles()) {
-			
-			if (!file.getPath().startsWith(modBaseDirectory)) {
-				filesToRemove.add(file);
-			} else {
-				file.setPath(file.getPath().replace(modBaseDirectory, ""));
-			}
-			
-			if (file.getPath().endsWith("Thumbs.db")) {
-				filesToRemove.add(file);
-			}
-			
-		}
-		
-		archive.getFiles().removeAll(filesToRemove);
+		Archive archive = new Archive(Settings.getModsDirectory() + File.separator + archiveName);
+		archive.extract();
+		archive.extractToFolder(new File(Settings.getModsInstallDirectory().toString() + File.separator + internalName));
 		
 	}
 

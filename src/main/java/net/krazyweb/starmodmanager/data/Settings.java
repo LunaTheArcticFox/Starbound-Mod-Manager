@@ -25,6 +25,7 @@ public class Settings {
 	}
 	
 	private static Path modsDirectory;
+	private static Path modsInstallDirectory;
 	
 	private static OS operatingSystem;
 	private static String operatingSystemName;
@@ -47,6 +48,7 @@ public class Settings {
 		identifyOS();
 		configureLogger();
 		setModsDirectory(Paths.get("mods/"));
+		setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
 		
 		updateProgress(4, 4);
 		updateMessage("Settings Initialized Successfully");
@@ -166,6 +168,14 @@ public class Settings {
 	
 	public static String getVersion() {
 		return VERSION_STRING;
+	}
+
+	public static Path getModsInstallDirectory() {
+		return modsInstallDirectory;
+	}
+
+	public static void setModsInstallDirectory(final Path modsInstallDirectory) {
+		Settings.modsInstallDirectory = modsInstallDirectory;
 	}
 	
 }

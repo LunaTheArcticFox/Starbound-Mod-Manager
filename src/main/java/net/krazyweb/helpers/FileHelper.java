@@ -160,9 +160,9 @@ public class FileHelper {
 		
 	}
 	
-	public static boolean isJSON(String filename) {
+	public static boolean isJSON(final Path file) {
 		
-		if (filename.endsWith(".png") || filename.endsWith(".wav") || filename.endsWith(".ogg") || filename.endsWith(".txt") || filename.endsWith(".lua") || filename.endsWith(".ttf")) {
+		if (getExtension(file).equals("png") || getExtension(file).equals("wav") || getExtension(file).equals("ogg") || getExtension(file).equals("txt") || getExtension(file).equals("lua") || getExtension(file).equals("ttf")) {
 			return false;
 		}
 		
@@ -191,6 +191,18 @@ public class FileHelper {
 
 		return output;
 	
+	}
+	
+	public static String getExtension(final Path path) {
+		
+		int i = path.toString().lastIndexOf(".");
+		
+		if (i >= 0) {
+			return path.toString().substring(i + 1);
+		}
+		
+		return "";
+		
 	}
 
 }
