@@ -76,14 +76,10 @@ public class ModListView extends VBox {
 		
 	}
 	
-	public void addMod(final Path file) {
+	public void addMods(final List<Path> files) {
 		
-		log.info("Adding mod: " + file);
-		
-		List<Path> toAdd = new ArrayList<>();
-		toAdd.add(file);
-		
-		modList.addMods(toAdd);
+		log.info("Adding mods: " + files);
+		modList.addMods(files);
 		
 	}
 	
@@ -98,6 +94,10 @@ public class ModListView extends VBox {
 		}
 		
 		for (final Mod mod : mods) {
+			
+			if (mod.isHidden()) {
+				continue;
+			}
 			
 			if (!modViews.containsKey(mod)) {
 				ModView modView = new ModView(mod, modList);

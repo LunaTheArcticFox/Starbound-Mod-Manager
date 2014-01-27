@@ -1,6 +1,9 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +14,7 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
+import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
 import main.java.net.krazyweb.starmodmanager.view.ProgressDialogue;
 
@@ -112,13 +116,26 @@ public class ModList {
 	
 	public void deleteMod(final Mod mod) {
 		
+		if (mod.isInstalled()) {
+			mod.uninstall();
+		}
+		
 		try {
 			Database.deleteMod(mod);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
+		try {
+			FileHelper.deleteFile(Paths.get(Settings.getModsDirectory() + File.separator + mod.getArchiveName()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		mods.remove(mod);
+		
+		updateView();
 		
 	}
 	
@@ -201,6 +218,13 @@ public class ModList {
 	public void hideMod(final Mod mod) {
 		
 		mod.setHidden(true);
+		try {
+			Database.updateMod(mod);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		updateView();
 		
 	}
 	

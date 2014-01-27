@@ -1,7 +1,10 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
@@ -243,10 +246,12 @@ public class MainView extends Application {
 				
 				if (db.hasFiles()) {
 					success = true;
+					List<Path> toAdd = new ArrayList<>();
 					for (File file : db.getFiles()) {
-						modListView.addMod(file.toPath());
+						toAdd.add(file.toPath());
 						log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
 					}
+					modListView.addMods(toAdd);
 				}
 				
 				event.setDropCompleted(success);
