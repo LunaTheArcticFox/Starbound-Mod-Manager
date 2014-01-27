@@ -192,6 +192,11 @@ public class Mod {
 				for (ArchiveFile f2 : archive.getFiles()) {
 
 					Path filePath = f2.getPath();
+					String fileName = filePath.getFileName().toString().toLowerCase();
+					
+					if (fileName.equals("desktop.ini") || fileName.equals("thumbs.db")) {
+						continue;
+					}
 					
 					if (subDir == null) {
 

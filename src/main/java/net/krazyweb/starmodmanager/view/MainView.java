@@ -193,6 +193,7 @@ public class MainView extends Application {
                 	String fileName = "";
                 	
 					for (File file : db.getFiles()) {
+						//TODO Actual file checking
 						if (file.getPath().endsWith(".zip")) {
 							filesAccepted = true;
 							fileName += "\"" + file.getName() + "\"\n";
