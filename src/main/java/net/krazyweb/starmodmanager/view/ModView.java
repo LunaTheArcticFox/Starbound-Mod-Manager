@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Mod;
 import main.java.net.krazyweb.starmodmanager.data.ModList;
 
@@ -35,10 +36,10 @@ public class ModView extends GridPane {
 		setHgap(25.0);
 		
 		displayName = new Text(mod.getDisplayName());
-		statusText = new Text(mod.isInstalled() ? "Installed" : "Not Installed");
+		statusText = new Text(Localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		modVersion = new Text(mod.getModVersion());
 		
-		installButton = new Button(mod.isInstalled() ? "Uninstall" : "Install");
+		installButton = new Button(Localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		Button hideButton = new Button("HID");
 		hideButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -109,7 +110,7 @@ public class ModView extends GridPane {
 	
 	public void update() {
 		
-		installButton.setText(mod.isInstalled() ? "Uninstall" : "Install");
+		installButton.setText(Localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		installButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -122,7 +123,7 @@ public class ModView extends GridPane {
 			}
 		});
 		
-		statusText.setText(mod.isInstalled() ? "Installed" : "Not Installed");
+		statusText.setText(Localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		
 	}
 	

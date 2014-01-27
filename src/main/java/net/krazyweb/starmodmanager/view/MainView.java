@@ -57,6 +57,10 @@ public class MainView extends Application {
 	
 	private void initialize() {
 		
+		/*
+		 * Currently there's no good way that I can think of to localize the initial
+		 * loading progress dialogue. If someone thinks up a way, please add it.
+		 */
 		final ProgressDialogue startup = new ProgressDialogue();
 		startup.start(primaryStage, "Starbound Mod Manager - Loading");
 		
@@ -126,8 +130,7 @@ public class MainView extends Application {
 		
 		AnchorPane topBar = new AnchorPane();
 		
-		Text appName = new Text(Localizer.getMessage("title"));
-		appName = new Text(Localizer.formatMessage("testpat", Localizer.getMessage("flavor"), 0));
+		Text appName = new Text(Localizer.getMessage("appName"));
 		Text versionName = new Text(Settings.getVersion());
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
@@ -176,7 +179,7 @@ public class MainView extends Application {
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
 		primaryStage.setScene(scene);
-		primaryStage.setTitle("Starbound Mod Manager - Version " + Settings.getVersion());
+		primaryStage.setTitle(Localizer.formatMessage("windowTitle", Settings.getVersion()));
 		primaryStage.show();
 		
 		scene.setOnDragOver(new EventHandler<DragEvent>() {
@@ -189,20 +192,20 @@ public class MainView extends Application {
                 if (db.hasFiles()) {
 
                 	boolean filesAccepted = false;
-                	String fileName = "";
+                	String fileName = "\n";
                 	
 					for (File file : db.getFiles()) {
 						//TODO Actual file checking
 						if (file.getPath().endsWith(".zip")) {
 							filesAccepted = true;
-							fileName += "\"" + file.getName() + "\"\n";
+							fileName += Localizer.formatMessage("inquotes", file.getName()) + "\n";
 						}
 					}
                 	
 					if (filesAccepted) {
 						event.acceptTransferModes(TransferMode.COPY);
 						if (!dragOver) {
-							Text text = new Text((db.getFiles().size() == 1 ? "Add Mod:\n" : "Add Mods:\n") + fileName);
+							Text text = new Text(Localizer.formatMessage("mainview.addmods", db.getFiles().size(), fileName));
 							text.setFill(Color.WHITE);
 							text.setFont(Font.font("Verdana", 32));
 							stackPane.getChildren().addAll(new Rectangle(683, 700, new Color(0.0, 0.0, 0.0, 0.8)), text);

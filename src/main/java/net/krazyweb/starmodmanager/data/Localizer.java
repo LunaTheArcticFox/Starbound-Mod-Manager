@@ -13,12 +13,12 @@ public class Localizer {
 	}
 	
 	public static String getMessage(final String key) {
-		return bundle.getString(key);
+		return bundle.getString(key.toLowerCase());
 	}
 	
 	public static String formatMessage(final String key, final Object... messageArguments) {
 		
-		MessageFormat formatter = new MessageFormat(bundle.getString(key), Settings.getLocale());
+		MessageFormat formatter = new MessageFormat(bundle.getString(key.toLowerCase()), Settings.getLocale());
 		formatter.setLocale(Settings.getLocale());
 		
 		return formatter.format(messageArguments);

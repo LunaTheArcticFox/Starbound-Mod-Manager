@@ -19,6 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Mod;
 import main.java.net.krazyweb.starmodmanager.data.ModList;
 
@@ -45,14 +46,14 @@ public class ModListView extends VBox {
 		modsBox = new VBox();
 		modsBox.setSpacing(25.0);
 		
-		Button addMod = new Button("Add Mods");
+		Button addMod = new Button(Localizer.getMessage("modlistview.addmodsbutton"));
 		addMod.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
 			public void handle(final ActionEvent e) {
 				
 				FileChooser f = new FileChooser();
-				f.setTitle("Select the mod to add.");
+				f.setTitle(Localizer.getMessage("modlistview.modfilechoosertitle"));
 				
 				List<Path> paths = new ArrayList<>();
 				List<File> files = f.showOpenMultipleDialog(mainView.getStage());

@@ -53,7 +53,7 @@ public class ModList {
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(new Stage(), "TEMP TITLE");
+		progress.start(new Stage(), Localizer.getMessage("modlist.addingmods"));
 		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 
@@ -66,7 +66,7 @@ public class ModList {
 					
 					Path file = files.get(i);
 					
-					this.updateMessage("Loading Mod: " + file.getFileName());
+					this.updateMessage(Localizer.getMessage("modlist.loadingmod") + file.getFileName());
 					
 					Set<Mod> modsToAdd = Mod.load(file, mods.size());
 					
@@ -183,6 +183,8 @@ public class ModList {
 
 			@Override
 			protected Integer call() throws Exception {
+				
+				log.info("Uninstalling mod: " + mod.getInternalName());
 				
 				mod.uninstall();
 				

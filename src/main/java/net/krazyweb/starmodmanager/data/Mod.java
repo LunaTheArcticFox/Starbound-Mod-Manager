@@ -106,10 +106,10 @@ public class Mod {
 				JsonObject metadata = obj.getJsonObject("metadata");
 				
 				mod.setDisplayName(JSONHelper.getString(metadata, "displayname", mod.getInternalName()));
-				mod.setAuthor(JSONHelper.getString(metadata, "author", "Unknown"));
-				mod.setDescription(JSONHelper.getString(metadata, "description", "[No Description]"));
+				mod.setAuthor(JSONHelper.getString(metadata, "author", Localizer.getMessage("mod.unknownauthor")));
+				mod.setDescription(JSONHelper.getString(metadata, "description", Localizer.getMessage("mod.nodescription")));
 				mod.setURL(JSONHelper.getString(metadata, "support_url", ""));
-				mod.setModVersion(JSONHelper.getString(metadata, "version", "Unknown"));
+				mod.setModVersion(JSONHelper.getString(metadata, "version", Localizer.getMessage("mod.unknownversion")));
 				
 				if (obj.containsKey("ignoredfiles")) {
 					JsonArray arr = obj.getJsonArray("ignoredfiles");
@@ -121,10 +121,10 @@ public class Mod {
 			} else {
 				
 				mod.setDisplayName(mod.getInternalName());
-				mod.setAuthor("Unknown");
-				mod.setDescription("[No Description]");
+				mod.setAuthor(Localizer.getMessage("mod.unknownauthor"));
+				mod.setDescription(Localizer.getMessage("mod.nodescription"));
 				mod.setURL("");
-				mod.setModVersion("Unknown");
+				mod.setModVersion(Localizer.getMessage("mod.unknownversion"));
 				
 			}
 			

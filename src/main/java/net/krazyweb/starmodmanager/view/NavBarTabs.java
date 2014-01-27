@@ -1,5 +1,6 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
+import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -18,7 +19,7 @@ public class NavBarTabs extends HBox {
 		
 		mainView = m;
 		
-		modListButton = new Button("Mods");
+		modListButton = new Button(Localizer.getMessage("navbartabs.mods"));
 		modListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -26,7 +27,7 @@ public class NavBarTabs extends HBox {
 			}
 		});
 		
-		backupListButton = new Button("Backups");
+		backupListButton = new Button(Localizer.getMessage("navbartabs.backups"));
 		backupListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -34,7 +35,7 @@ public class NavBarTabs extends HBox {
 			}
 		});
 		
-		settingsButton = new Button("Settings");
+		settingsButton = new Button(Localizer.getMessage("navbartabs.settings"));
 		settingsButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -42,7 +43,7 @@ public class NavBarTabs extends HBox {
 			}
 		});
 		
-		aboutButton = new Button("About");
+		aboutButton = new Button(Localizer.getMessage("navbartabs.about"));
 		aboutButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
