@@ -49,7 +49,7 @@ public class ModList {
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(new Stage());
+		progress.start(new Stage(), "TEMP TITLE");
 		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 

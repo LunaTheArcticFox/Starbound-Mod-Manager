@@ -146,7 +146,7 @@ public class ModListView extends VBox {
 					
 					final ModView mv = modViews.get(mods.get(modList.indexOf(modView.mod) - 1));
 					
-					if (!mv.moving && mv.getLayoutY() > modView.getLayoutY() - 16) {
+					if (!mv.moving && mv.getLayoutY() > modView.getLayoutY() - 16) { //16  = half the node height
 						mv.moving = true;
 						modList.moveMod(modView.mod, 1);
 						mods = modList.getMods();
@@ -170,7 +170,7 @@ public class ModListView extends VBox {
 					
 					final ModView mv = modViews.get(mods.get(modList.indexOf(modView.mod) + 1));
 					
-					if (!mv.moving && mv.getLayoutY() < modView.getLayoutY() + modView.getHeight() + 16) {
+					if (!mv.moving && mv.getLayoutY() < modView.getLayoutY() + modView.getHeight() - 16) { //16  = half the node height
 						mv.moving = true;
 						modList.moveMod(modView.mod, -1);
 						mods = modList.getMods();
@@ -197,21 +197,11 @@ public class ModListView extends VBox {
 		});
 		
 		modView.setOnMouseReleased(new EventHandler<MouseEvent>() {
-
 			@Override
 			public void handle(MouseEvent e) {
-				
-				/*if (modView.getLayoutY() - 20 > y) {
-				} else if (modView.getLayoutY() + 20 < y) { 
-					modList.moveMod(modView.mod, 1);
-				} else {*/
-					modView.setLayoutY(y);
-				//}
-				
+				modView.setLayoutY(y);
 				modList.requestUpdate();
-				
 			}
-			
 		});
 		
 	}

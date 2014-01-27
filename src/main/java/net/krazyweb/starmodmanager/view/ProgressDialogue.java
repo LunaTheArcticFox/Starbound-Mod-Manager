@@ -22,9 +22,10 @@ public class ProgressDialogue {
 		return new Scene(p, 300, 150);		
 	}
 	
-	public void start(Stage stage) {
+	public void start(final Stage stage, final String windowTitle) {
 		this.stage = stage;
 		stage.setScene(createPreloaderScene());
+		stage.setTitle(windowTitle);
 		stage.show();
 	}
 	

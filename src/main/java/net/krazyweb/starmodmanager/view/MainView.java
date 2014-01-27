@@ -51,7 +51,7 @@ public class MainView extends Application {
 	private void initialize() {
 		
 		final ProgressDialogue startup = new ProgressDialogue();
-		startup.start(primaryStage);
+		startup.start(primaryStage, "Starbound Mod Manager - Loading");
 		
 		//TODO Verify file write permissions and capability
 		
@@ -174,6 +174,7 @@ public class MainView extends Application {
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
 		primaryStage.setScene(scene);
+		primaryStage.setTitle("Starbound Mod Manager - Version " + Settings.getVersion());
 		primaryStage.show();
 		
 		scene.setOnDragOver(new EventHandler<DragEvent>() {
