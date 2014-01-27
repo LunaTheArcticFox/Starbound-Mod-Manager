@@ -19,6 +19,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import main.java.net.krazyweb.starmodmanager.data.Database;
@@ -38,6 +39,8 @@ public class MainView extends Application {
 	private AboutView aboutView;
 	
 	private ScrollPane mainContentPane;
+	
+	private boolean dragOver = false;
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -187,15 +190,24 @@ public class MainView extends Application {
                 if (db.hasFiles()) {
 
                 	boolean filesAccepted = false;
+                	String fileName = "";
                 	
 					for (File file : db.getFiles()) {
 						if (file.getPath().endsWith(".zip")) {
 							filesAccepted = true;
+							fileName += "\"" + file.getName() + "\"\n";
 						}
 					}
                 	
 					if (filesAccepted) {
 						event.acceptTransferModes(TransferMode.COPY);
+						if (!dragOver) {
+							Text text = new Text((db.getFiles().size() == 1 ? "Add Mod:\n" : "Add Mods:\n") + fileName);
+							text.setFill(Color.WHITE);
+							text.setFont(Font.font("Verdana", 32));
+							stackPane.getChildren().addAll(new Rectangle(683, 700, new Color(0.0, 0.0, 0.0, 0.8)), text);
+							dragOver = true;
+						}
 					} else {
 						event.consume();
 					}
@@ -207,15 +219,6 @@ public class MainView extends Application {
 			}
 			
 		});
-
-		scene.setOnDragEntered(new EventHandler<DragEvent>() {
-
-			@Override
-			public void handle(DragEvent event) {
-				stackPane.getChildren().add(new Rectangle(683, 700, new Color(1.0, 1.0, 1.0, 0.5)));
-			}
-			
-		});
 		
 		scene.setOnDragExited(new EventHandler<DragEvent>() {
 
@@ -223,6 +226,7 @@ public class MainView extends Application {
 			public void handle(DragEvent event) {
 				stackPane.getChildren().clear();
 				stackPane.getChildren().add(root);
+				dragOver = false;
 			}
 			
 		});

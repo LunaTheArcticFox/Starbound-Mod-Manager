@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 public class ModView extends GridPane {
 	
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ModView.class);
 	
 	protected Mod mod;
@@ -24,7 +25,7 @@ public class ModView extends GridPane {
 		this.modList = modList;
 
 		//setGridLinesVisible(true);
-		
+		//TODO Move all the update stuff to the actual update() method.
 		setHgap(25.0);
 		Text displayName = new Text(mod.getDisplayName());
 		add(displayName, 1, 1);
