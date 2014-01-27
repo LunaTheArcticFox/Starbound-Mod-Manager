@@ -122,6 +122,7 @@ public class ModListView extends VBox {
 			public void handle(MouseEvent e) {
 				lastY = y = modView.getLayoutY();
 				mouseY = e.getSceneY();
+				modView.toFront();
 			}
 			
 		});

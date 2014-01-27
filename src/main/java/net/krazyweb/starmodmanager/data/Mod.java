@@ -223,6 +223,10 @@ public class Mod {
 					}
 				}
 				
+				if (subDir == null) {
+					subDir = Paths.get(archive.getFileName().substring(0, archive.getFileName().lastIndexOf(".")));
+				}
+				
 				Archive newArchive = new Archive(subDir + ".zip");
 				newArchive.getFiles().addAll(files);
 				
