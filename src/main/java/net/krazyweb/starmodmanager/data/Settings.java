@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
@@ -136,6 +137,11 @@ public class Settings {
 			}
 		}
 		
+	}
+	
+	protected static Locale getLocale() {
+		//TODO Get actual localization from database
+		return new Locale("en", "US");
 	}
 
 	public static OS getOperatingSystem() {

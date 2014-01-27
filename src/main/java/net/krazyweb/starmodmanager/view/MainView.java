@@ -26,6 +26,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import main.java.net.krazyweb.starmodmanager.data.Database;
+import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
 
 import org.apache.log4j.Logger;
@@ -71,7 +72,7 @@ public class MainView extends Application {
 					public void run() {
 						this.setName("Settings Initialization");
 						Settings.initialize();
-						
+						Localizer.initialize();
 					}
 				}.start();
 				
@@ -92,7 +93,6 @@ public class MainView extends Application {
 				
 				while (!Settings.isComplete() || !Database.isComplete()) {
 					this.updateProgress((Settings.getProgress() / 2.0) + (Database.getProgress() / 2.0), 1.0);
-					//this.updateMessage(Settings.getMessage());
 				}
 				
 				this.updateMessage("Complete!");
@@ -126,7 +126,8 @@ public class MainView extends Application {
 		
 		AnchorPane topBar = new AnchorPane();
 		
-		Text appName = new Text("Starbound Mod Manager");
+		Text appName = new Text(Localizer.getMessage("title"));
+		appName = new Text(Localizer.formatMessage("testpat", Localizer.getMessage("flavor"), 500));
 		Text versionName = new Text(Settings.getVersion());
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
