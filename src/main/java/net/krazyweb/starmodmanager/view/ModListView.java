@@ -49,7 +49,7 @@ public class ModListView extends VBox {
 		addMod.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
-			public void handle(ActionEvent e) {
+			public void handle(final ActionEvent e) {
 				
 				FileChooser f = new FileChooser();
 				f.setTitle("Select the mod to add.");
@@ -106,12 +106,17 @@ public class ModListView extends VBox {
 			
 			if (!modViews.containsKey(mod)) {
 				ModView modView = new ModView(mod, modList);
-				setDragAndDrop(modView);
 				modViews.put(mod, modView);
 			}
 			
 			ModView modView = modViews.get(mod);
 			modView.update();
+
+			if (modList.isLocked()) {
+				removeDragAndDrop(modView);
+			} else {
+				setDragAndDrop(modView);
+			}
 			
 			modsBox.getChildren().add(modView);
 			
@@ -144,7 +149,7 @@ public class ModListView extends VBox {
 		modView.setOnMousePressed(new EventHandler<MouseEvent>() {
 
 			@Override
-			public void handle(MouseEvent e) {
+			public void handle(final MouseEvent e) {
 				lastY = y = modView.getLayoutY();
 				mouseY = e.getSceneY();
 				modView.toFront();
@@ -155,7 +160,7 @@ public class ModListView extends VBox {
 		modView.setOnMouseDragged(new EventHandler<MouseEvent>() {
 
 			@Override
-			public void handle(MouseEvent e) {
+			public void handle(final MouseEvent e) {
 
 				lastY = modView.getLayoutY();
 				modView.setLayoutY(y + e.getSceneY() - mouseY);
@@ -202,9 +207,37 @@ public class ModListView extends VBox {
 		
 		modView.setOnMouseReleased(new EventHandler<MouseEvent>() {
 			@Override
-			public void handle(MouseEvent e) {
+			public void handle(final MouseEvent e) {
 				modView.setLayoutY(y);
 				modList.requestUpdate();
+			}
+		});
+		
+	}
+	
+	private void removeDragAndDrop(final ModView modView) {
+		
+		modView.setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				e.consume();
+				return;
+			}
+		});
+		
+		modView.setOnMouseDragged(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				e.consume();
+				return;
+			}
+		});
+		
+		modView.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				e.consume();
+				return;
 			}
 		});
 		
@@ -224,6 +257,16 @@ public class ModListView extends VBox {
 			}
 		});
 		timeline.play();
+		
+	}
+	
+	protected void toggleLock() {
+		
+		if (modList.isLocked()) {
+			modList.unlockList();
+		} else {
+			modList.lockList();
+		}
 		
 	}
 

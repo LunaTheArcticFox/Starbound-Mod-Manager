@@ -5,23 +5,23 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 
-public class Tabs extends HBox {
+public class NavBarTabs extends HBox {
 	
-	private Button modListButton;
-	private Button backupListButton;
-	private Button settingsButton;
-	private Button aboutButton;
+	private final Button modListButton;
+	private final Button backupListButton;
+	private final Button settingsButton;
+	private final Button aboutButton;
 	
-	private MainView mainView;
+	private final MainView mainView;
 	
-	public Tabs(final MainView m) {
+	public NavBarTabs(final MainView m) {
 		
 		mainView = m;
 		
 		modListButton = new Button("Mods");
 		modListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) {
+			public void handle(final ActionEvent e) {
 				mainView.showModList();
 			}
 		});
@@ -29,7 +29,7 @@ public class Tabs extends HBox {
 		backupListButton = new Button("Backups");
 		backupListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) {
+			public void handle(final ActionEvent e) {
 				mainView.showBackupList();
 			}
 		});
@@ -37,7 +37,7 @@ public class Tabs extends HBox {
 		settingsButton = new Button("Settings");
 		settingsButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) {
+			public void handle(final ActionEvent e) {
 				mainView.showSettings();
 			}
 		});
@@ -45,7 +45,7 @@ public class Tabs extends HBox {
 		aboutButton = new Button("About");
 		aboutButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) {
+			public void handle(final ActionEvent e) {
 				mainView.showAbout();
 			}
 		});

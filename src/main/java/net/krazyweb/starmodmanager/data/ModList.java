@@ -295,10 +295,16 @@ public class ModList {
 	
 	public void lockList() {
 		locked = true;
+		updateView();
 	}
 	
 	public void unlockList() {
 		locked = false;
+		updateView();
+	}
+	
+	public boolean isLocked() {
+		return locked;
 	}
 	
 	public void refreshMods() {

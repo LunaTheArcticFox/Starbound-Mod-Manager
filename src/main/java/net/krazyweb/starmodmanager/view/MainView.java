@@ -138,15 +138,10 @@ public class MainView extends Application {
 		root.getChildren().add(topBar);
 		
 		AnchorPane tabsBar = new AnchorPane();
-		Tabs pageTabs = new Tabs(this);
+		NavBarTabs pageTabs = new NavBarTabs(this);
 		HBox buttons = new HBox();
 		
-		buttons.getChildren().addAll(
-				new Text("1"),
-				new Text("2"),
-				new Text("3"),
-				new Text("4")
-				);
+		buttons.getChildren().add(new NavBarButtons(this));
 		
 		AnchorPane.setLeftAnchor(pageTabs, 19.0);
 		AnchorPane.setTopAnchor(pageTabs, 19.0);
@@ -264,6 +259,11 @@ public class MainView extends Application {
 			
 		});
 		
+	}
+	
+	protected void toggleLockModList() {
+		log.debug("(Un)Locking mod list!");
+		modListView.toggleLock();
 	}
 	
 	protected void showModList() {
