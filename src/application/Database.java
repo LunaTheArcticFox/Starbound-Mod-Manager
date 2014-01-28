@@ -46,7 +46,7 @@ public class Database {
 			database.commit();
 		}
 		
-		printTable();
+		//printTable();
 		
 	}
 	
@@ -105,7 +105,7 @@ public class Database {
 			database.commit();
 		}
 		
-		printTable();
+		//printTable();
 		
 	}
 	
@@ -220,6 +220,7 @@ public class Database {
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private static void printTable() throws SqlJetException {
 		
 		database.beginTransaction(SqlJetTransactionMode.READ_ONLY);

@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -72,8 +74,11 @@ public class Archive {
 					continue;
 				}
 				
-				if (item.getPath().endsWith(".modinfo")) {
-					modBaseDirectory = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
+				Path tempDir = Paths.get(file.getPath());
+				
+				if (file.getPath().endsWith(".modinfo") && tempDir.getParent() != null) {
+					modBaseDirectory = Paths.get(file.getPath()).getParent().toString() + "/";
+					System.out.println("\n\n:::::" + modBaseDirectory + " ---- " + file.getPath());
 				}
 				
 				ExtractOperationResult result;
@@ -128,7 +133,7 @@ public class Archive {
 			if (!file.getPath().startsWith(modBaseDirectory)) {
 				filesToRemove.add(file);
 			} else {
-				file.setPath(file.getPath().replace(modBaseDirectory, ""));
+				file.setPath(file.getPath().substring(modBaseDirectory.length(), file.getPath().length()));
 			}
 			
 		}
