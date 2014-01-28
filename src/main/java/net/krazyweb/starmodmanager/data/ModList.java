@@ -14,6 +14,7 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
+import main.java.net.krazyweb.helpers.Archive;
 import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
 import main.java.net.krazyweb.starmodmanager.view.ProgressDialogue;
@@ -117,7 +118,7 @@ public class ModList {
 	public void deleteMod(final Mod mod) {
 		
 		if (mod.isInstalled()) {
-			mod.uninstall();
+			uninstallMod(mod);
 		}
 		
 		try {
@@ -146,7 +147,19 @@ public class ModList {
 			@Override
 			protected Integer call() throws Exception {
 				
-				mod.install();
+				//Grab every installed mod, then separate out those with conflicts
+				//Find all the conflicting files in each of those mods
+				//Find all the non-conflicting files in each of those mods
+				//Copy the non-conflicting files to a new patch folder
+				//
+				
+				Archive archive = new Archive(Settings.getModsDirectory() + File.separator + mod.getArchiveName());
+				archive.extract();
+				archive.extractToFolder(new File(Settings.getModsInstallDirectory().toString() + File.separator + mod.getInternalName()));
+				
+				mod.setInstalled(true);
+				
+				Database.updateMod(mod);
 				
 				return 1;
 				
@@ -185,8 +198,16 @@ public class ModList {
 			protected Integer call() throws Exception {
 				
 				log.info("Uninstalling mod: " + mod.getInternalName());
+
+				try {
+					FileHelper.deleteFile(Paths.get(Settings.getModsInstallDirectory().toString() + File.separator + mod.getInternalName()));
+				} catch (IOException e) {
+					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
+				}
 				
-				mod.uninstall();
+				mod.setInstalled(false);
+				
+				Database.updateMod(mod);
 				
 				return 1;
 				

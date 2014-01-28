@@ -241,28 +241,6 @@ public class Mod {
 		
 	}
 	
-	protected void install() {
-		
-		Archive archive = new Archive(Settings.getModsDirectory() + File.separator + archiveName);
-		archive.extract();
-		archive.extractToFolder(new File(Settings.getModsInstallDirectory().toString() + File.separator + internalName));
-		
-		installed = true;
-		
-	}
-	
-	protected void uninstall() {
-		
-		try {
-			FileHelper.deleteFile(Paths.get(Settings.getModsInstallDirectory().toString() + File.separator + internalName));
-		} catch (IOException e) {
-			log.error("Uninstalling Mod: " + getInternalName(), e);
-		}
-		
-		installed = false;
-		
-	}
-
 	public String getInternalName() {
 		return internalName;
 	}
