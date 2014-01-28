@@ -49,6 +49,7 @@ public class FileHelper {
 		
 	}
 	
+	//TODO Instead of relying on the filename for the extension, figure it out from the byte sequences.
 	public static final boolean verify(final Path path) {
 		
 		if (path == null) {
