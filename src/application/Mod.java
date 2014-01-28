@@ -560,7 +560,7 @@ public class Mod {
 			HashSet<ArchiveFile> files = modArchive.getFiles();
 			
 			for(ArchiveFile file : files) {
-				if (!file.isFolder() && file.getPath().startsWith(mod.assetsPath)) {
+				if (!file.isFolder() && (mod.assetsPath.isEmpty()) ? true : file.getPath().startsWith(mod.assetsPath)) {
 					
 					String toAdd = file.getPath().substring(mod.assetsPath.length());
 					
@@ -606,11 +606,6 @@ public class Mod {
 			Database.addMod(mod);
 		} catch (SqlJetException e) {
 			Configuration.printException(e, "Adding mod to database.");
-		}
-		
-		if (mod.filesModified.size() == 0) {
-			new FXDialogueConfirm("Cannot find assets folder for: \"" + mod.file + "\".\nPlease contact the creator of this mod for help.\n\nCommon causes are:\n - Incorrect folder structures\n - Incorrect \"assets\" path in the .modinfo file").show();
-			return null;
 		}
 
 		mod.container = new VBox();
