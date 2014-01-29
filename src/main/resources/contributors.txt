@@ -1,0 +1,8 @@
+# This file contains a list of all contributors to the project
+# It's displayed on the "About" tab of the Mod Manager
+# One of those statements is a lie (for now)
+
+KrazyTheFox - Creator of the Starbound Mod Manager
+Thundercraft - Tester
+Krageon - Contributor to versions 1.x.x
+kxy - Translation to German

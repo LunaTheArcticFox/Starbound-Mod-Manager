@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package main.java.net.krazyweb.starmodmanager.dialogue;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

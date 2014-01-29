@@ -15,8 +15,8 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import main.java.net.krazyweb.helpers.Archive;
 import main.java.net.krazyweb.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
-import main.java.net.krazyweb.starmodmanager.view.ProgressDialogue;
 
 import org.apache.log4j.Logger;
 

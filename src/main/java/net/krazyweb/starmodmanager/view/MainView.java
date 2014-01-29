@@ -31,7 +31,10 @@ import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
-import main.java.net.krazyweb.starmodmanager.view.MessageDialogue.MessageType;
+import main.java.net.krazyweb.starmodmanager.dialogue.ConfirmDialogue;
+import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
+import main.java.net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
 import org.apache.log4j.Logger;
 
