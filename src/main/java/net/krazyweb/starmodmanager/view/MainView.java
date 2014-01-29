@@ -2,6 +2,7 @@ package main.java.net.krazyweb.starmodmanager.view;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
@@ -199,10 +201,9 @@ public class MainView extends Application {
                 	String fileName = "\n";
                 	
 					for (File file : db.getFiles()) {
-						//TODO Actual file checking
-						if (file.getPath().endsWith(".zip")) {
+						if (FileHelper.verify(Paths.get(file.getPath()), dragOver)) {
 							filesAccepted = true;
-							fileName += Localizer.formatMessage("inquotes", file.getName()) + "\n";
+							fileName += Localizer.formatMessage(dragOver, "inquotes", file.getName()) + "\n";
 						}
 					}
                 	

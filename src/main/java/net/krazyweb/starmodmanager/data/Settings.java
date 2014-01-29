@@ -141,8 +141,7 @@ public class Settings {
 	
 	protected static Locale getLocale() {
 		//TODO Get actual localization from database
-		//return new Locale("de", "DE");
-		return new Locale("fl", "SB");
+		return new Locale("en", "US");
 	}
 
 	public static OS getOperatingSystem() {

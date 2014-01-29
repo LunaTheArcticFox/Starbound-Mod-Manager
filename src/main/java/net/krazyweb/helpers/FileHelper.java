@@ -30,6 +30,8 @@ public class FileHelper {
 	private static final char[] SIG_SEVENZIP = new char[] { 0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C };
 	private static final char[] SIG_RAR = new char[] { 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00 };
 	private static final char[] SIG_ZIP = new char[] { 0x50, 0x4B, 0x03, 0x04 };
+	
+	private static final char[][] SIGNATURES = new char[][] { SIG_SEVENZIP, SIG_RAR, SIG_ZIP };
 
 	public static boolean copyFile(Path src, Path dest) {
 		
@@ -49,56 +51,75 @@ public class FileHelper {
 		
 	}
 	
-	//TODO Instead of relying on the filename for the extension, figure it out from the byte sequences.
-	public static final boolean verify(final Path path) {
+	public static final boolean verify(final Path path, final boolean suppressLogging) {
 		
 		if (path == null) {
 			return false;
 		}
 		
 		String fileName = path.getFileName().toString();
-		String extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
-		
-		int byteOffset = 0;
-		char[] signatureBytes;
-		
-		switch (extension) {
-			case ".7z":
-				signatureBytes = SIG_SEVENZIP;
-				break;
-			case ".rar":
-				signatureBytes = SIG_RAR;
-				break;
-			case ".zip":
-				signatureBytes = SIG_ZIP;
-				break;
-			default:
-				return false;
-		}
+		String extension = "";
 		
 		byte[] fileBytes = null;
 		
 		try {
 			fileBytes = Files.readAllBytes(path);
-		} catch (IOException e) {
-			log.error("Reading all bytes from a file to get the signature.", e);
+		} catch (final IOException e) {
+			if (!suppressLogging) {
+				log.error("Reading all bytes from file '" + fileName + "' to get the signature.", e);
+			}
 			return false;
 		}
 		
 		if (fileBytes == null) {
+			if (!suppressLogging) {
+				log.error("File '" + fileName + "' contains no bytes (or none were able to be loaded)!");
+			}
 			return false;
 		}
 		
-		for (int i = 0; i < signatureBytes.length; i++) {
-			if (fileBytes[i + byteOffset] != (char) signatureBytes[i]) {
-				return false;
+		for (char[] array : SIGNATURES) {
+			
+			char[] signatureBytes = array;
+			
+			boolean typeFound = false;
+			
+			for (int i = 0; i < signatureBytes.length; i++) {
+				
+				if (fileBytes[i] != (char) signatureBytes[i]) {
+					break;
+				}
+				
+				if (i == signatureBytes.length - 1) {
+					typeFound = true;
+				}
+				
 			}
+			
+			if (typeFound) {
+				
+				if (signatureBytes == SIG_SEVENZIP) {
+					extension = ".7z";
+				} else if (signatureBytes == SIG_RAR) {
+					extension = ".rar";
+				} else if (signatureBytes == SIG_ZIP) {
+					extension = ".zip";
+				}
+				
+			}
+			
 		}
-		
-		log.info("File '" + path + "' verified.");
+
+		if (!suppressLogging) {
+			log.debug("File '" + path + "' verified as '" + extension + "'");
+		}
 		
 		return true;
 		
+	}
+	
+	public static final boolean verify(final Path path) {
+		return verify(path, false);
 	}
 	
 	public static long getChecksum(final Path path) throws IOException {
@@ -117,7 +138,7 @@ public class FileHelper {
 		
 		long checksum = checkedStream.getChecksum().getValue();
 		
-		log.info("Checksum (" + checksum + ") created for file: " + path);
+		log.debug("Checksum (" + checksum + ") created for file: " + path);
 		
 		return checksum;
 		

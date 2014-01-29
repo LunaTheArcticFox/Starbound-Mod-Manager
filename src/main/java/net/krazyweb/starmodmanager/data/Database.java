@@ -324,16 +324,20 @@ public class Database {
 				Set<Mod> mods = null;
 				
 				try {
-					if (mod.getChecksum() != FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).toPath())) {
-						log.debug("Mod file checksum mismatch: " + mod.getArchiveName());
-						//TODO Get path
+					
+					long checksum = FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).toPath());
+					
+					if (mod.getChecksum() != checksum) {
+						log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
+						//TODO Get path instead of using File, make this threaded
 						mods = Mod.load(Paths.get(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
 					} else {
 						mods = new HashSet<>();
 						mods.add(mod);
 					}
+					
 				} catch (IOException e) {
-					log.error("", e);
+					log.error("", e); //TODO Better error message
 				}
 				
 				if (mods != null && !mods.isEmpty()) {

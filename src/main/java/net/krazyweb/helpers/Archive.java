@@ -115,7 +115,7 @@ public class Archive {
 			inArchive.close();
 			randomAccessFile.close();
 			
-			log.info("Time to extract '" + path + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
+			log.debug("Time to extract '" + path + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
@@ -155,7 +155,7 @@ public class Archive {
 			zipOutput.close();
 			fileOutput.close();
 			
-			log.info("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
+			log.debug("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
 			
 			return true;
 		
