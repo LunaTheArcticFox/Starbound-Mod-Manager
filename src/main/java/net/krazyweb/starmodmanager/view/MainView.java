@@ -268,6 +268,12 @@ public class MainView extends Application {
 		});
 		
 		new MessageDialogue().start("TEMP", "NOTIFICATION", MessageType.INFO);
+		ConfirmDialogue dialogue = new ConfirmDialogue();
+		dialogue.start("Really PLACEHOLDER?", "PLACEHOLDER");
+		
+		if (dialogue.getResult()) {
+			log.debug("TRUE");
+		}
 		
 	}
 	
