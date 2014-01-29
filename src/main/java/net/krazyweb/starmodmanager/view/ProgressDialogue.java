@@ -5,8 +5,11 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class ProgressDialogue {
+	
+	//TODO Major changes to this, see MessageDialogue
 
 	private Stage stage;
 	
@@ -22,10 +25,11 @@ public class ProgressDialogue {
 		return new Scene(p, 300, 150);		
 	}
 	
-	public void start(final Stage stage, final String windowTitle) {
-		this.stage = stage;
+	public void start(final String windowTitle) {
+		stage = new Stage();
 		stage.setScene(createPreloaderScene());
 		stage.setTitle(windowTitle);
+		stage.initStyle(StageStyle.UTILITY);
 		stage.show();
 	}
 	

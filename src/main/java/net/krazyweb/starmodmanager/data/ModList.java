@@ -13,7 +13,6 @@ import java.util.Set;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
-import javafx.stage.Stage;
 import main.java.net.krazyweb.helpers.Archive;
 import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.view.ModListView;
@@ -54,7 +53,7 @@ public class ModList {
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(new Stage(), Localizer.getMessage("modlist.addingmods"));
+		progress.start(Localizer.getMessage("modlist.addingmods"));
 		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 

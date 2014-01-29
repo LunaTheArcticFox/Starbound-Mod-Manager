@@ -25,9 +25,11 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
+import main.java.net.krazyweb.starmodmanager.view.MessageDialogue.MessageType;
 
 import org.apache.log4j.Logger;
 
@@ -62,7 +64,7 @@ public class MainView extends Application {
 		 * loading progress dialogue. If someone thinks up a way, please add it.
 		 */
 		final ProgressDialogue startup = new ProgressDialogue();
-		startup.start(primaryStage, "Starbound Mod Manager - Loading");
+		startup.start("Starbound Mod Manager - Loading");
 		
 		//TODO Verify file write permissions and capability
 		
@@ -110,6 +112,7 @@ public class MainView extends Application {
 		dataThread.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
+				startup.close();
 				buildMainUI();
 			}
 		});
@@ -176,6 +179,7 @@ public class MainView extends Application {
 		stackPane.getChildren().add(root);
 		
 		final Scene scene = new Scene(stackPane, 683, 700);
+		primaryStage.initStyle(StageStyle.DECORATED);
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
 		primaryStage.setScene(scene);
@@ -262,6 +266,8 @@ public class MainView extends Application {
 			}
 			
 		});
+		
+		new MessageDialogue().start("TEMP", "NOTIFICATION", MessageType.INFO);
 		
 	}
 	
