@@ -57,6 +57,17 @@ public class Settings {
 		
 	}
 	
+	public static void initializePostDB() {
+		
+		if (Database.getPropertyString("hasrun", "false").equals("false")) {
+			//Set all default properties here
+			Database.setProperty("widowwidth", 683);
+			Database.setProperty("widowheight", 700);
+			
+		}
+		
+	}
+	
 	private static final void identifyOS() {
 		
 		updateProgress(0, 4);
@@ -113,7 +124,7 @@ public class Settings {
 			console.setThreshold(Level.OFF);
 			file.setThreshold(Level.WARN);
 		} else {
-			console.setThreshold(Level.TRACE);
+			console.setThreshold(Level.DEBUG);
 			file.setThreshold(Level.OFF);
 		}
 		
@@ -182,6 +193,14 @@ public class Settings {
 
 	public static void setModsInstallDirectory(final Path modsInstallDirectory) {
 		Settings.modsInstallDirectory = modsInstallDirectory;
+	}
+	
+	public static int getWindowWidth() {
+		return Database.getPropertyInt("windowwidth", 683);
+	}
+	
+	public static int getWindowHeight() {
+		return Database.getPropertyInt("windowheight", 700);
 	}
 	
 }

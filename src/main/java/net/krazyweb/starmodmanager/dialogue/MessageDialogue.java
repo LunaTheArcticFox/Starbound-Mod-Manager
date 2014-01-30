@@ -12,6 +12,10 @@ import main.java.net.krazyweb.starmodmanager.data.Localizer;
 
 public class MessageDialogue {
 	
+	//TODO Make generic
+	//An application close request MUST close all other dialogues
+	//Otherwise the program doesn't actually close
+	
 	public static enum MessageType {
 		INFO, ERROR
 	}

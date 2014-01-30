@@ -11,6 +11,8 @@ import javafx.stage.StageStyle;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 
 public class ConfirmDialogue {
+
+	//TODO Make generic
 	
 	private Stage stage;
 	

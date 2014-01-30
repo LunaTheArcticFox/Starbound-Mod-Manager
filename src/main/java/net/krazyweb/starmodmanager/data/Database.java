@@ -39,17 +39,17 @@ public class Database {
 		complete = false;
 		
 		updateProgress(0, 2);
-		updateMessage("Connecting to the Database");
+		updateMessage("Connecting to the Database"); //TODO Remove
 		
 		connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
 		
 		updateProgress(1, 2);
-		updateMessage("Creating Default Tables");
+		updateMessage("Creating Default Tables"); //TODO Remove
 		
 		createTables();
 
 		updateProgress(2, 2);
-		updateMessage("Complete");
+		updateMessage("Complete"); //TODO Remove
 		
 		complete = true;
 		
@@ -81,6 +81,8 @@ public class Database {
 
 		Statement tableCreator = connection.createStatement();
 		tableCreator.execute(sb.toString());
+
+		log.debug("'" + sb.toString() + "' executed.");
 		
 		sb = new StringBuilder();
 		sb.append("CREATE TABLE IF NOT EXISTS ");
@@ -94,6 +96,8 @@ public class Database {
 		tableCreator.execute(sb.toString());
 		
 		tableCreator.closeOnCompletion();
+		
+		log.debug("'" + sb.toString() + "' executed.");
 		
 	}
 	
@@ -162,6 +166,7 @@ public class Database {
 			statement.setString(15, mod.getInternalName());
 			
 			statement.executeUpdate();
+			log.trace("Statement Executed: " + statement.toString());
 			statement.closeOnCompletion();
 			
 		} else {
@@ -208,6 +213,7 @@ public class Database {
 			statement.setString(14, fileList.toString());
 			
 			statement.execute();
+			log.trace("Statement Executed: " + statement.toString());
 			statement.closeOnCompletion();
 			
 		}
@@ -222,6 +228,7 @@ public class Database {
 		
 		Statement delete = connection.createStatement();
 		delete.execute(query.toString());
+		log.trace("Statement Executed: " + query.toString());
 		delete.closeOnCompletion();
 		
 	}
@@ -239,6 +246,37 @@ public class Database {
 		modQuery.setString(1, mod.getInternalName());
 		
 		ResultSet results = modQuery.executeQuery();
+
+		log.trace("Statement Executed: " + query.toString());
+		
+		if (!hasRows(results)) {
+			results.close();
+			modQuery.close();
+			return false;
+		}
+		
+		results.close();
+		modQuery.close();
+		
+		return true;
+		
+	}
+	
+	private static boolean containsProperty(final String property) throws SQLException {
+		
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT property FROM ");
+		query.append(SETTINGS_TABLE_NAME);
+		query.append(" WHERE property = ?");
+		query.append(" LIMIT 1");
+		
+		PreparedStatement modQuery = connection.prepareStatement(query.toString());
+		modQuery.setString(1, property);
+		
+		ResultSet results = modQuery.executeQuery();
+
+		log.trace("Statement Executed: " + query.toString());
 		
 		if (!hasRows(results)) {
 			results.close();
@@ -261,10 +299,12 @@ public class Database {
 		
 		query.append("SELECT * FROM ");
 		query.append(MOD_TABLE_NAME);
-
+		
 		PreparedStatement modQuery = connection.prepareStatement(query.toString());
 		
 		ResultSet results = modQuery.executeQuery();
+
+		log.trace("Statement Executed: " + query.toString());
 		
 		if (hasRows(results)) {
 			
@@ -363,6 +403,112 @@ public class Database {
 		}
 		
 		return modList;
+		
+	}
+	
+	private static String getSettingsValue(final String property) throws SQLException {
+
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT value FROM ");
+		query.append(SETTINGS_TABLE_NAME);
+		query.append(" WHERE property = ?");
+		query.append(" LIMIT 1");
+		
+		PreparedStatement propertyQuery = connection.prepareStatement(query.toString());
+		propertyQuery.setString(1, property);
+		
+		log.trace("Statement Executed: " + propertyQuery.toString());
+		
+		ResultSet results = propertyQuery.executeQuery();
+		
+		String output = null;
+		
+		if (hasRows(results)) {
+			while (results.next()) {
+				output = results.getString(1);
+				log.debug("'" + output + "' retrieved from database for property '" + property + "'.");
+			}
+		}
+		
+		results.close();
+		propertyQuery.closeOnCompletion();
+		
+		return output;
+		
+	}
+	
+	public static String getPropertyString(final String property, final String defaultValue) {
+		
+		String result = null;
+		
+		try {
+			result = getSettingsValue(property);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
+		}
+		
+		if (result == null) {
+			return defaultValue;
+		}
+		
+		return result;
+		
+	}
+	
+	public static int getPropertyInt(final String property, final int defaultValue) {
+		return Integer.parseInt(getPropertyString(property, "" + defaultValue));
+	}
+	
+	public static void setProperty(final String property, Object value) {
+
+		StringBuilder query = new StringBuilder();
+		
+		try {
+		
+			if (containsProperty(property)) {
+	
+				query.append("UPDATE ");
+				query.append(SETTINGS_TABLE_NAME);
+				query.append(" SET ");
+				query.append("value = ?");
+				query.append("WHERE property = ?");
+				
+				PreparedStatement statement = connection.prepareStatement(query.toString());
+				
+				statement.setString(1, value.toString());
+				statement.setString(2, property);
+				
+				statement.executeUpdate();
+				log.trace("Statement Executed: " + statement.toString());
+				statement.closeOnCompletion();
+				
+			} else {
+			
+				query.append("INSERT INTO ");
+				query.append(SETTINGS_TABLE_NAME).append("(");
+				query.append("property,");
+				query.append("value");
+				query.append(") VALUES(?, ?);");
+				
+				PreparedStatement statement = connection.prepareStatement(query.toString());
+	
+				statement.setString(1, property);
+				statement.setString(2, value.toString());
+				
+				statement.executeUpdate();
+				log.trace("Statement Executed: " + statement.toString());
+				statement.closeOnCompletion();
+			
+			}
+		
+		} catch (final SQLException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
+		}
+		
+		log.debug("'" + property + "' -> '" + value + "' added to database.");
 		
 	}
 	

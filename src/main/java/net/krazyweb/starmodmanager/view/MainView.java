@@ -95,12 +95,12 @@ public class MainView extends Application {
 							Database.initialize();
 						} catch (SQLException e) {
 							//TODO Notify user of failed database connection
-							e.printStackTrace();
+							log.error("", e);
 						}
 					}
 				}.start();
 				
-				this.updateMessage("Loading...");
+				this.updateMessage("Initializing...");
 				
 				while (!Settings.isComplete() || !Database.isComplete()) {
 					this.updateProgress((Settings.getProgress() / 2.0) + (Database.getProgress() / 2.0), 1.0);
@@ -133,7 +133,12 @@ public class MainView extends Application {
 	}
 	
 	protected void buildMainUI() {
-			
+		
+		/* 
+		 * TODO Add this to the progress bar for loading the program.
+		 * This will require lots of refactoring
+		 */
+		
 		final VBox root = new VBox();
 		
 		AnchorPane topBar = new AnchorPane();
@@ -183,7 +188,7 @@ public class MainView extends Application {
 		final StackPane stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		final Scene scene = new Scene(stackPane, 683, 700);
+		final Scene scene = new Scene(stackPane, Settings.getWindowWidth(), Settings.getWindowHeight());
 		primaryStage.initStyle(StageStyle.DECORATED);
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
@@ -278,6 +283,8 @@ public class MainView extends Application {
 		if (dialogue.getResult()) {
 			log.debug("TRUE");
 		}
+		
+		log.debug(Database.getPropertyString("windowwidth", "NULL"));
 		
 	}
 	
