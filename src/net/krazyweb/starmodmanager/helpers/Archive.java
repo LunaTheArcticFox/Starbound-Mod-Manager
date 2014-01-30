@@ -66,6 +66,8 @@ public class Archive {
 				
 				final ArchiveFile file = new ArchiveFile();
 				
+				modBaseDirectory = "";
+				
 				file.setPath(item.getPath().replaceAll("\\\\", "/"));
 				
 				if (item.isFolder()) {

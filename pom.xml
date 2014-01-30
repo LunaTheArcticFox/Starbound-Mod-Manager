@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>Starbound-Mod-Manager</groupId>
 	<artifactId>Starbound-Mod-Manager</artifactId>
-	<version>1.5.8</version>
+	<version>1.5.9</version>
 	<name>Starbound Mod Manager</name>
 	<description>A mod manager for starbound</description>
 	<build>
