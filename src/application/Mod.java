@@ -192,6 +192,8 @@ public class Mod {
 		archive.extract();
 		archive.extractToFolder(new File(Configuration.modsInstallFolder.getAbsolutePath() + File.separator + internalName));
 		
+		System.out.println(internalName);
+		
 		installed = true;
 		
 		try {

@@ -62,11 +62,11 @@ public class Archive {
 			RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
 			ISevenZipInArchive inArchive = SevenZip.openInArchive(null, new RandomAccessFileInStream(randomAccessFile));
 			
+			modBaseDirectory = "";
+			
 			for (final ISimpleInArchiveItem item : inArchive.getSimpleInterface().getArchiveItems()) {
 				
 				final ArchiveFile file = new ArchiveFile();
-				
-				modBaseDirectory = "";
 				
 				file.setPath(item.getPath().replaceAll("\\\\", "/"));
 				
@@ -130,6 +130,8 @@ public class Archive {
 		
 		HashSet<ArchiveFile> filesToRemove = new HashSet<ArchiveFile>();
 		
+		System.out.println(modBaseDirectory + "***********");
+		
 		for (ArchiveFile file : files) {
 			
 			if (!file.getPath().startsWith(modBaseDirectory)) {
@@ -139,6 +141,8 @@ public class Archive {
 			}
 			
 		}
+		
+		files.removeAll(filesToRemove);
 		
 	}
 	

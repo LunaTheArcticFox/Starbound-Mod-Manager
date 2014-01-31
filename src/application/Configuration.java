@@ -67,7 +67,7 @@ public class Configuration {
 		modsInstallFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods");
 		modsPatchesFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods" + File.separator + "patches");
 		
-		File starboundLog = new File(starboundFolder.getAbsolutePath() + File.separator + "starbound.log");
+		/*File starboundLog = new File(starboundFolder.getAbsolutePath() + File.separator + "starbound.log");
 		
 		if (starboundLog.exists()) {
 			
@@ -94,7 +94,7 @@ public class Configuration {
 			
 		} else {
 			new FXDialogueConfirm("Please run Starbound once to enable version checking for mods.").show();
-		}
+		}*/
 		
 		if (!backupFolder.exists()) {
 			backupFolder.mkdir();
@@ -156,7 +156,7 @@ public class Configuration {
 		final File gameDirectory = dirChooser.showDialog(primaryStage);
 		
 		if (gameDirectory == null) {
-			new FXDialogueConfirm("Please choose a folder — The Mod Manager will now Exit.").show();
+			new FXDialogueConfirm("Please choose a folder ï¿½ The Mod Manager will now Exit.").show();
 			System.exit(0);
 		}
 		

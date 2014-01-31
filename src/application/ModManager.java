@@ -34,7 +34,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 9;
+	public static final int PATCH_VERSION = 10;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
