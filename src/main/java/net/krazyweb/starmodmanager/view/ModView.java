@@ -32,7 +32,7 @@ public class ModView extends GridPane {
 		this.mod = mod;
 		this.modList = modList;
 
-		setGridLinesVisible(true);
+		//setGridLinesVisible(true);
 		setHgap(25.0);
 		
 		displayName = new Text(mod.getDisplayName());

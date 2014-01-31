@@ -39,7 +39,7 @@ public class Settings {
 	 * TODO
 	 * Clear log file
 	 * Set logging level (But don't remove errors)
-	 * 
+	 * Clean this file!
 	 */
 	
 	public static void initialize() {
@@ -54,17 +54,6 @@ public class Settings {
 		updateProgress(4, 4);
 		updateMessage("Settings Initialized Successfully");
 		complete = true;
-		
-	}
-	
-	public static void initializePostDB() {
-		
-		if (Database.getPropertyString("hasrun", "false").equals("false")) {
-			//Set all default properties here
-			Database.setProperty("widowwidth", 683);
-			Database.setProperty("widowheight", 700);
-			
-		}
 		
 	}
 	
@@ -151,8 +140,7 @@ public class Settings {
 	}
 	
 	protected static Locale getLocale() {
-		//TODO Get actual localization from database
-		return new Locale("en", "US");
+		return new Locale(Database.getPropertyString("language", "en"), Database.getPropertyString("region", "US"));
 	}
 
 	public static OS getOperatingSystem() {

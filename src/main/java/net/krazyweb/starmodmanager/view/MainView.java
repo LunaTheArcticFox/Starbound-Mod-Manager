@@ -54,7 +54,7 @@ public class MainView extends Application {
 	private boolean dragOver = false;
 	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(final Stage primaryStage) {
 		
 		this.primaryStage = primaryStage;
 		
@@ -83,7 +83,6 @@ public class MainView extends Application {
 					public void run() {
 						this.setName("Settings Initialization");
 						Settings.initialize();
-						Localizer.initialize();
 					}
 				}.start();
 				
@@ -105,6 +104,8 @@ public class MainView extends Application {
 				while (!Settings.isComplete() || !Database.isComplete()) {
 					this.updateProgress((Settings.getProgress() / 2.0) + (Database.getProgress() / 2.0), 1.0);
 				}
+
+				Localizer.initialize();
 				
 				this.updateMessage("Complete!");
 				this.updateProgress(1.0, 1.0);
@@ -137,6 +138,7 @@ public class MainView extends Application {
 		/* 
 		 * TODO Add this to the progress bar for loading the program.
 		 * This will require lots of refactoring
+		 * This method was getting way too long anyway
 		 */
 		
 		final VBox root = new VBox();
@@ -281,10 +283,9 @@ public class MainView extends Application {
 		dialogue.start("Really PLACEHOLDER?", "PLACEHOLDER");
 		
 		if (dialogue.getResult()) {
+			Database.setProperty("windowwidth", 1000);
 			log.debug("TRUE");
 		}
-		
-		log.debug(Database.getPropertyString("windowwidth", "NULL"));
 		
 	}
 	
@@ -318,7 +319,11 @@ public class MainView extends Application {
 	}
 	
 	public static void main(String[] args) {
-		launch(args);
+		try {
+			launch(args);
+		} catch (final Exception e) {
+			log.error("Initializing Mod Manager OR Uncaught Exception", e);
+		}
 	}
 	
 }
