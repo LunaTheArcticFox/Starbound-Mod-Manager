@@ -44,8 +44,6 @@ public class Database extends Observable implements Progressable {
 	
 	private ReadOnlyDoubleProperty progress;
 	private ReadOnlyStringProperty message;
-	private double manualProgress;
-	private boolean workDone;
 	
 	private Database() {
 		
@@ -334,16 +332,140 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	public List<Mod> getModList() throws SQLException {
+	protected List<String> getModNames() throws SQLException {
+
+		List<String> output = new ArrayList<>();
 		
-		workDone = false;
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT * FROM ");
+		query.append(MOD_TABLE_NAME);
+		
+		PreparedStatement modQuery = connection.prepareStatement(query.toString());
+		
+		ResultSet results = modQuery.executeQuery();
+
+		if (hasRows(results)) {
+			while (results.next()) {
+				output.add(results.getString("internalName") + "\n" + results.getString("archiveName"));
+			}
+		}
+		
+		return output;
+		
+	}
+	
+	protected List<Mod> getModByName(final String modName) throws SQLException {
+		
+		List<Mod> output = new ArrayList<>();
+		
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT * FROM ");
+		query.append(MOD_TABLE_NAME);
+		query.append(" WHERE internalName = ?");
+		query.append(" LIMIT 1");
+		
+		PreparedStatement modQuery = connection.prepareStatement(query.toString());
+		modQuery.setString(1, modName);
+		
+		ResultSet results = modQuery.executeQuery();
+
+		log.trace("Statement Executed: " + query.toString());
+		
+		if (hasRows(results)) {
+			
+			log.debug("Mod found in database: " + modName);
+			
+			results.next();
 				
+			Mod mod = new Mod();
+			
+			mod.setInternalName(results.getString("internalName"));
+			mod.setArchiveName(results.getString("archiveName"));
+			mod.setDisplayName(results.getString("displayName"));
+			mod.setModVersion(results.getString("modVersion"));
+			mod.setGameVersion(results.getString("gameVersion"));
+			mod.setAuthor(results.getString("author"));
+			mod.setDescription(results.getString("description"));
+			mod.setURL(results.getString("url"));
+			mod.setChecksum(results.getLong("checksum"));
+			mod.setOrder(results.getInt("loadOrder"));
+			mod.setHidden(results.getInt("hidden") == 1);
+			mod.setInstalled(results.getInt("installed") == 1);
+			
+			Set<String> dependencies = new HashSet<>();
+			
+			for (String data : results.getString("dependencies").split("\n")) {
+				dependencies.add(data);
+			}
+			
+			mod.setDependencies(dependencies);
+			
+			Set<ModFile> files = new HashSet<>();
+			
+			for (String data : results.getString("files").split("\n")) {
+				
+				String[] fields = data.split(":::");
+				
+				ModFile file = new ModFile();
+				
+				file.setPath(Paths.get(fields[0]));
+				file.setJson(Boolean.parseBoolean(fields[1]));
+				file.setIgnored(Boolean.parseBoolean(fields[2]));
+				file.setAutoMerged(Boolean.parseBoolean(fields[3]));
+				
+				files.add(file);
+				
+			}
+			
+			mod.setFiles(files);
+			
+			//TODO Paths, Files
+			if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) {
+				deleteMod(mod);
+				return null;
+			}
+			
+			Set<Mod> mods = null;
+			
+			try {
+				
+				long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath());
+				
+				if (mod.getChecksum() != checksum) {
+					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
+					//TODO Get path instead of using File
+					mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
+				} else {
+					mods = new HashSet<>();
+					mods.add(mod);
+				}
+				
+			} catch (IOException e) {
+				log.error("", e); //TODO Better error message
+			}
+			
+			if (mods != null && !mods.isEmpty()) {
+				for (Mod m : mods) {
+					output.add(m);
+				}
+			}
+
+		}
+		
+		results.close();
+		modQuery.closeOnCompletion();
+		
+		return output;
+		
+	}
+	
+	protected List<Mod> getModList() throws SQLException {
+		
 		List<Mod> modList = new ArrayList<Mod>();
 
 		StringBuilder query = new StringBuilder();
-		
-		int numberOfMods = 0;
-		int currentMod = 1;
 		
 		query.append("SELECT * FROM ");
 		query.append(MOD_TABLE_NAME);
@@ -355,14 +477,6 @@ public class Database extends Observable implements Progressable {
 		log.trace("Statement Executed: " + query.toString());
 		
 		if (hasRows(results)) {
-			
-			while (results.next()) {
-				numberOfMods++;
-			}
-			
-			results.close();
-			
-			results = modQuery.executeQuery();
 			
 			log.debug("Mods found in database: ");
 			
@@ -442,9 +556,6 @@ public class Database extends Observable implements Progressable {
 					}
 				}
 				
-				manualProgress = 0.5 * (1.0 / (double) numberOfMods) * (double) currentMod;
-				currentMod++;
-				
 			}
 
 		}
@@ -460,9 +571,6 @@ public class Database extends Observable implements Progressable {
 			mod.setOrder(modList.indexOf(mod));
 			log.debug("[" + mod.getOrder() + "] " + mod.getInternalName());
 		}
-		
-		workDone = true;
-		manualProgress = 1.0;
 		
 		return modList;
 		
@@ -603,7 +711,7 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	private void getNewMods(final List<Mod> modList) {
+	protected void getNewMods(final List<Mod> modList) {
 		
 		//Collect all filenames of already recognized mods
 		Set<String> currentArchives = new HashSet<>();
@@ -626,8 +734,6 @@ public class Database extends Observable implements Progressable {
 		
 		archives.removeAll(toRemove);
 		
-		int current = 1;
-		
 		for (Path path : archives) {
 			
 			Set<Mod> mods = Mod.load(path, modList.size());
@@ -639,9 +745,6 @@ public class Database extends Observable implements Progressable {
 			for (Mod mod : mods) {
 				modList.add(mod);
 			}
-
-			manualProgress = 0.5 * (1.0 / (double) archives.size()) * (double) current + 0.5;
-			current++;
 			
 		}
 		
@@ -675,16 +778,6 @@ public class Database extends Observable implements Progressable {
 		thread.setName("Database Task Thread");
 		thread.setDaemon(true);
 		thread.start();
-	}
-
-	@Override
-	public double getProgress() {
-		return manualProgress;
-	}
-
-	@Override
-	public boolean isDone() {
-		return workDone;
 	}
 	
 }

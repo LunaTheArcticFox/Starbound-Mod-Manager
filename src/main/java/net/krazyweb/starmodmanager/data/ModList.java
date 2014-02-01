@@ -43,70 +43,12 @@ public class ModList extends Observable implements Progressable {
 	
 	public void load() {
 		
-		task = new Task<Void>() {
-
-			@Override
-			protected Void call() throws Exception {
-
-				this.updateMessage("Loading Mod List");
-				this.updateProgress(0.0, 1.0);
-				
-				Thread thread = new Thread() {
-					@Override
-					public void run() {
-						try {
-							mods = Database.getInstance().getModList();
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							log.error("", e);
-						}
-					}
-				};
-				
-				thread.setName("Database Work Thread");
-				thread.start();
-				
-				while (!Database.getInstance().isDone()) {
-					this.updateProgress(Database.getInstance().getProgress(), 1.0);
-					Thread.sleep(50);
-				}
-				
-				for (Mod mod : mods) {
-					mod.setOrder(mods.indexOf(mod));
-				}
-				
-				this.updateProgress(1.0, 1.0);
-				
-				/*
-				 * This gives the UI thread time to visually update to 100%
-				 * before the dialogue closes without adding noticeable time
-				 * to the loading process.
-				 */
-				Thread.sleep(15);
-				
-				return null;
-				
-			}
-			
-		};
+		GetModListTask t = new GetModListTask(this);
 		
-		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(final WorkerStateEvent event) {
-				setChanged();
-				notifyObservers("modlistloaded");
-			}
-		});
+		this.setProgress(t.progressProperty());
+		this.setMessage(t.messageProperty());
 		
-		task.setOnFailed(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(final WorkerStateEvent event) {
-				log.error("", task.getException());
-			}
-		});
-		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
+		this.task = t;
 		
 	}
 	
@@ -386,6 +328,12 @@ public class ModList extends Observable implements Progressable {
 		}*/
 	}
 	
+	protected void setModList(final List<Mod> list) {
+		this.mods = list;
+		setChanged();
+		this.notifyObservers("modlistupdated");
+	}
+	
 	private void setProgress(final ReadOnlyDoubleProperty progress) {
 		this.progress = progress;
 	}
@@ -410,18 +358,6 @@ public class ModList extends Observable implements Progressable {
 		thread.setName("Settings Task Thread");
 		thread.setDaemon(true);
 		thread.start();
-	}
-
-	@Override
-	public double getProgress() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean isDone() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 	
 }

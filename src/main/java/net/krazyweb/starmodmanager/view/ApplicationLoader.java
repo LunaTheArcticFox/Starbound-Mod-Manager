@@ -125,7 +125,7 @@ public class ApplicationLoader implements Observer {
 				case "localizerloaded":
 					loadModList();
 					break;
-				case "modlistloaded":
+				case "modlistupdated":
 					completeLoading();
 					break;
 			}

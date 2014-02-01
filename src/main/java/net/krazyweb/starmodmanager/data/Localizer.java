@@ -215,17 +215,5 @@ public class Localizer extends Observable implements Progressable, Observer {
 		}
 		
 	}
-
-	@Override
-	public double getProgress() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean isDone() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 	
 }

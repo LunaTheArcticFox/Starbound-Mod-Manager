@@ -159,7 +159,7 @@ public class MainView implements Observer {
 	
 	private void buildActionButtons() {
 		
-		quickBackupButton = new Button("Backup");
+		quickBackupButton = new Button();
 		quickBackupButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -251,6 +251,12 @@ public class MainView implements Observer {
 		backupListButton.setText(Localizer.getInstance().getMessage("navbartabs.backups"));
 		settingsButton.setText(Localizer.getInstance().getMessage("navbartabs.settings"));
 		aboutButton.setText(Localizer.getInstance().getMessage("navbartabs.about"));
+		
+		//TODO Remove, these are for testing and will have no text later
+		quickBackupButton.setText("No Function");
+		lockButton.setText("fl-SB");
+		refreshButton.setText("de-DE");
+		expandButton.setText("en-US");
 		
 	}
 	

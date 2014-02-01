@@ -248,17 +248,5 @@ public class Settings extends Observable implements Progressable {
 		thread.setDaemon(true);
 		thread.start();
 	}
-
-	@Override
-	public double getProgress() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean isDone() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 	
 }
