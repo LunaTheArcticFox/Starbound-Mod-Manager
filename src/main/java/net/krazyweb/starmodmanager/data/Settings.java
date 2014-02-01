@@ -5,13 +5,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Observable;
+
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-public class Settings {
+public class Settings extends Observable implements Progressable {
 
 	private static final Logger log = Logger.getLogger(Settings.class);
 	
@@ -31,9 +39,163 @@ public class Settings {
 	private static OS operatingSystem;
 	private static String operatingSystemName;
 	
-	private static String message;
-	private static double progress;
-	private static boolean complete = false;
+	//private static String message;
+	//private static double progress;
+	
+	private static Settings instance;
+	
+	private Task<?> task;
+	
+	private ReadOnlyDoubleProperty progress;
+	private ReadOnlyStringProperty message;
+	
+	private Map<String, String> settings;
+	
+	private Settings() {
+		
+	}
+	
+	public static Settings getInstance() {
+		if (instance == null) {
+			synchronized (Settings.class) {
+				instance = new Settings();
+			}
+		}
+		return instance;
+	}
+	
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
+	}
+	
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
+	}
+
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
+	}
+
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
+	}
+
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Settings Task Thread");
+		thread.setDaemon(true);
+		thread.start();
+	}
+	
+	/*
+	 * Sets the appropriate logging levels for the logger based on launch conditions.
+	 * If the program is launched from a .jar file, then the console logging is turned off.
+	 * Otherwise, it is left on and file logging is turned off.
+	 * TODO Add user configurable logging levels per appender.
+	 */
+	public void configureLogger() {
+		
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				this.updateMessage("Configuring Logger");
+				this.updateProgress(0.0, 4.0);
+				
+				identifyOS();
+				
+				ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
+				FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
+				
+				this.updateProgress(1.0, 4.0);
+				
+				//Print program information before adjusting loggers.
+				console.setThreshold(Level.TRACE);
+				file.setThreshold(Level.TRACE);
+				
+				this.updateProgress(2.0, 4.0);
+
+				log.info("[Application Launched]");
+				log.info("Starbound Mod Manager - Version " + VERSION_STRING);
+				log.info("Running on " + operatingSystemName);
+
+				this.updateProgress(3.0, 4.0);
+
+				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
+					console.setThreshold(Level.OFF);
+					file.setThreshold(Level.WARN);
+				} else {
+					console.setThreshold(Level.DEBUG);
+					file.setThreshold(Level.OFF);
+				}
+				
+				//TODO
+				setModsDirectory(Paths.get("mods/"));
+				setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
+
+				this.updateProgress(4.0, 4.0);
+
+				return null;
+				
+			}
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("loggerconfigured");
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
+		
+	}
+	
+	public void load() {
+		
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				this.updateMessage("Loading Settings From Database");
+				this.updateProgress(0.0, 1.0);
+
+				Thread.sleep(1000);
+				
+				settings = Database.getInstance().getProperties();
+
+				this.updateProgress(1.0, 1.0);
+
+				Thread.sleep(1000);
+				
+				return null;
+				
+			}
+			
+			
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("settingsloaded");
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
+		
+	}
 	
 	/*
 	 * TODO
@@ -42,7 +204,7 @@ public class Settings {
 	 * Clean this file!
 	 */
 	
-	public static void initialize() {
+	/*public static void initialize() {
 		
 		complete = false;
 		
@@ -55,12 +217,10 @@ public class Settings {
 		updateMessage("Settings Initialized Successfully");
 		complete = true;
 		
-	}
+	}*/
 	
-	private static final void identifyOS() {
+	private final void identifyOS() {
 		
-		updateProgress(0, 4);
-		updateMessage("Identifying Operating System");
 		
 		operatingSystemName = System.getProperty("os.name").toLowerCase();
 		
@@ -81,43 +241,6 @@ public class Settings {
 		operatingSystemName = System.getProperty("os.name");
 		
 	}
-	
-	/*
-	 * Sets the appropriate logging levels for the logger based on launch conditions.
-	 * If the program is launched from a .jar file, then the console logging is turned off.
-	 * Otherwise, it is left on and file logging is turned off.
-	 * TODO Add user configurable logging levels per appender.
-	 */
-	private static final void configureLogger() {
-		
-		updateProgress(1, 4);
-		updateMessage("Starting Logger");
-		
-		ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
-		FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
-		
-		//Print program information before muting loggers.
-		console.setThreshold(Level.TRACE);
-		file.setThreshold(Level.TRACE);
-		
-		log.info("======================");
-		log.info("[Application Launched]");
-		log.info("Starbound Mod Manager - Version " + VERSION_STRING);
-		log.info("Running on " + operatingSystemName);
-		log.info("----------------------");
-
-		updateProgress(2, 4);
-		updateMessage("Setting Logger Thresholds");
-		
-		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-			console.setThreshold(Level.OFF);
-			file.setThreshold(Level.WARN);
-		} else {
-			console.setThreshold(Level.DEBUG);
-			file.setThreshold(Level.OFF);
-		}
-		
-	}
 
 	public static Path getModsDirectory() {
 		return modsDirectory;
@@ -125,8 +248,6 @@ public class Settings {
 
 	public static void setModsDirectory(final Path modsDirectory) {
 
-		updateProgress(3, 4);
-		updateMessage("Creating Mods Directory");
 		
 		Settings.modsDirectory = modsDirectory;
 		if (Files.notExists(modsDirectory)) {
@@ -149,26 +270,6 @@ public class Settings {
 
 	public static void setOperatingSystem(final OS operatingSystem) {
 		Settings.operatingSystem = operatingSystem;
-	}
-	
-	private static void updateProgress(final double amount, final double total) {
-		progress = (double) amount / (double) total;
-	}
-	
-	private static void updateMessage(final String m) {
-		message = m;
-	}
-
-	public static double getProgress() {
-		return progress;
-	}
-
-	public static String getMessage() {
-		return message;
-	}
-	
-	public static boolean isComplete() {
-		return complete;
 	}
 	
 	public static String getVersion() {

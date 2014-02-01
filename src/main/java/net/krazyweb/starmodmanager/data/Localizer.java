@@ -2,23 +2,78 @@ package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.UnsupportedEncodingException;
 import java.util.MissingResourceException;
+import java.util.Observable;
 import java.util.ResourceBundle;
+
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
 import org.apache.log4j.Logger;
 
 import com.ibm.icu.text.MessageFormat;
 
-public class Localizer {
+public class Localizer extends Observable implements Progressable {
 	
 	private static final Logger log = Logger.getLogger(Localizer.class);
 	
-	private static ResourceBundle bundle;
+	private static Localizer instance;
 	
-	public static void initialize() {
-		bundle = ResourceBundle.getBundle("strings", Settings.getLocale());
+	private Task<?> task;
+	private ReadOnlyDoubleProperty progress;
+	private ReadOnlyStringProperty message;
+	
+	private ResourceBundle bundle;
+	
+	private Localizer() {
+		
 	}
 	
-	public static String getMessage(final String key, final boolean suppressLogging) {
+	public static Localizer getInstance() {
+		if (instance == null) {
+			synchronized (Localizer.class) {
+				instance = new Localizer();
+			}
+		}
+		return instance;
+	}
+	
+	public void initialize() {
+		
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				this.updateMessage("Loading Localizer");
+				this.updateProgress(0.0, 1.0);
+
+				bundle = ResourceBundle.getBundle("strings", Settings.getLocale());
+				
+				this.updateProgress(1.0, 1.0);
+				
+				return null;
+				
+			}
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("localizerloaded");
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
+		
+	}
+	
+	public String getMessage(final String key, final boolean suppressLogging) {
 		
 		String output = "";
 		
@@ -59,11 +114,11 @@ public class Localizer {
 		
 	}
 	
-	public static String getMessage(final String key) {
+	public String getMessage(final String key) {
 		return getMessage(key, false);
 	}
 	
-	public static String formatMessage(final boolean suppressLogging, final String key, final Object... messageArguments) {
+	public String formatMessage(final boolean suppressLogging, final String key, final Object... messageArguments) {
 		
 		MessageFormat formatter = null;
 		
@@ -99,10 +154,34 @@ public class Localizer {
 		
 	}
 	
-	public static String formatMessage(final String key, final Object... messageArguments) {
+	public String formatMessage(final String key, final Object... messageArguments) {
 		return formatMessage(false, key, messageArguments);
 	}
 	
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
+	}
 	
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
+	}
+
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
+	}
+
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
+	}
+
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Localizer Task Thread");
+		thread.setDaemon(true);
+		thread.start();
+	}
 	
 }

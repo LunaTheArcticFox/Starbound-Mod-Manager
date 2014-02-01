@@ -12,16 +12,24 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Observable;
 import java.util.Set;
 
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import main.java.net.krazyweb.helpers.FileHelper;
 
 import org.apache.log4j.Logger;
 
 
-public class Database {
+public class Database extends Observable implements Progressable {
 	
 	private static final Logger log = Logger.getLogger(Database.class);
 	
@@ -30,28 +38,87 @@ public class Database {
 	
 	private static Connection connection;
 
-	private static String message;
-	private static double progress;
-	private static boolean complete = false;
-	
-	public static void initialize() throws SQLException {
-		
-		complete = false;
-		
-		updateProgress(0, 2);
-		updateMessage("Connecting to the Database"); //TODO Remove
-		
-		connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
-		
-		updateProgress(1, 2);
-		updateMessage("Creating Default Tables"); //TODO Remove
-		
-		createTables();
+	private static Database instance;
 
-		updateProgress(2, 2);
-		updateMessage("Complete"); //TODO Remove
+	private Task<?> task;
+	
+	private ReadOnlyDoubleProperty progress;
+	private ReadOnlyStringProperty message;
+	
+	private Database() {
 		
-		complete = true;
+	}
+	
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
+	}
+	
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
+	}
+
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
+	}
+
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
+	}
+
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Database Task Thread");
+		thread.setDaemon(true);
+		thread.start();
+	}
+	
+	public static Database getInstance() {
+		if (instance == null) {
+			synchronized (Database.class) {
+				instance = new Database();
+			}
+		}
+		return instance;
+	}
+	
+	public void initialize() {
+		
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				this.updateMessage("Connecting to Database");
+				this.updateProgress(0.0, 2.0);
+				
+				connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
+
+				this.updateMessage("Creating Default Tables");
+				this.updateProgress(1.0, 2.0);
+
+				createTables();
+				
+				this.updateProgress(2.0, 2.0);
+				
+				return null;
+				
+			}
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("databaseinitialized");
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
 		
 	}
 	
@@ -291,7 +358,7 @@ public class Database {
 		
 	}
 	
-	public static List<Mod> getModList() throws SQLException {
+	public List<Mod> getModList() throws SQLException {
 		
 		List<Mod> modList = new ArrayList<Mod>();
 
@@ -438,6 +505,35 @@ public class Database {
 		
 	}
 	
+	protected Map<String, String> getProperties() throws SQLException {
+		
+		Map<String, String> properties = new HashMap<>();
+
+		StringBuilder query = new StringBuilder();
+		
+		query.append("SELECT * FROM ");
+		query.append(SETTINGS_TABLE_NAME);
+		
+		PreparedStatement propertyQuery = connection.prepareStatement(query.toString());
+		
+		log.trace("Statement Executed: " + propertyQuery.toString());
+		
+		ResultSet results = propertyQuery.executeQuery();
+		
+		if (hasRows(results)) {
+			while (results.next()) {
+				properties.put(results.getString(1), results.getString(2));
+				log.debug("'" + results.getString(2) + "' retrieved from database for property '" + results.getString(1) + "'.");
+			}
+		}
+		
+		results.close();
+		propertyQuery.closeOnCompletion();
+		
+		return properties;
+		
+	}
+	
 	public static String getPropertyString(final String property, final String defaultValue) {
 		
 		String result = null;
@@ -553,26 +649,6 @@ public class Database {
 	
 	private static boolean hasRows(final ResultSet resultSet) throws SQLException {
 		return resultSet.isBeforeFirst();
-	}
-	
-	private static void updateProgress(final double amount, final double total) {
-		progress = (double) amount / (double) total;
-	}
-	
-	private static void updateMessage(final String m) {
-		message = m;
-	}
-
-	public static double getProgress() {
-		return progress;
-	}
-
-	public static String getMessage() {
-		return message;
-	}
-	
-	public static boolean isComplete() {
-		return complete;
 	}
 	
 }

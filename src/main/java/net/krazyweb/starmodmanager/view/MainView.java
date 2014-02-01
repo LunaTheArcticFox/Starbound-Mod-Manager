@@ -3,13 +3,9 @@ package main.java.net.krazyweb.starmodmanager.view;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.application.Application;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -28,21 +24,19 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import main.java.net.krazyweb.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.controllers.ModManager;
 import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
 import main.java.net.krazyweb.starmodmanager.dialogue.ConfirmDialogue;
 import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
 import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
-import main.java.net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
 import org.apache.log4j.Logger;
 
-public class MainView extends Application {
+public class MainView {
 	
 	private static final Logger log = Logger.getLogger(MainView.class);
-	
-	private Stage primaryStage;
 	
 	private ModListView modListView;
 	private BackupListView backupListView;
@@ -52,86 +46,6 @@ public class MainView extends Application {
 	private ScrollPane mainContentPane;
 	
 	private boolean dragOver = false;
-	
-	@Override
-	public void start(final Stage primaryStage) {
-		
-		this.primaryStage = primaryStage;
-		
-		initialize();
-		
-	}
-	
-	private void initialize() {
-		
-		/*
-		 * Currently there's no good way that I can think of to localize the initial
-		 * loading progress dialogue. If someone thinks up a way, please add it.
-		 */
-		final ProgressDialogue startup = new ProgressDialogue();
-		startup.start("Starbound Mod Manager - Loading");
-		
-		//TODO Verify file write permissions and capability
-		
-		Task<Integer> dataThread = new Task<Integer>() {
-
-			@Override
-			protected Integer call() throws Exception {
-				
-				new Thread() {
-					@Override
-					public void run() {
-						this.setName("Settings Initialization");
-						Settings.initialize();
-					}
-				}.start();
-				
-				new Thread() {
-					@Override
-					public void run() {
-						this.setName("Database Initialization");
-						try {
-							Database.initialize();
-						} catch (SQLException e) {
-							//TODO Notify user of failed database connection
-							log.error("", e);
-						}
-					}
-				}.start();
-				
-				this.updateMessage("Initializing...");
-				
-				while (!Settings.isComplete() || !Database.isComplete()) {
-					this.updateProgress((Settings.getProgress() / 2.0) + (Database.getProgress() / 2.0), 1.0);
-				}
-
-				Localizer.initialize();
-				
-				this.updateMessage("Complete!");
-				this.updateProgress(1.0, 1.0);
-				
-				return 1;
-				
-			}
-		};
-		
-		dataThread.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent t) {
-				startup.close();
-				buildMainUI();
-			}
-		});
-		
-		startup.bar.progressProperty().bind(dataThread.progressProperty());
-		startup.text.textProperty().bind(dataThread.messageProperty());
-		
-		Thread t = new Thread(dataThread);
-		t.setName("Initialization Thread");
-		t.setDaemon(true);
-		t.start();
-		
-	}
 	
 	protected void buildMainUI() {
 		
@@ -145,7 +59,7 @@ public class MainView extends Application {
 		
 		AnchorPane topBar = new AnchorPane();
 		
-		Text appName = new Text(Localizer.getMessage("appName"));
+		Text appName = new Text(Localizer.getInstance().getMessage("appName"));
 		Text versionName = new Text(Settings.getVersion());
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
@@ -185,18 +99,17 @@ public class MainView extends Application {
 		
 		root.getChildren().add(tabsBar);
 		root.getChildren().add(mainContentPane);
-		root.prefHeightProperty().bind(primaryStage.heightProperty());
+		root.prefHeightProperty().bind(ModManager.getPrimaryStage().heightProperty());
 		
 		final StackPane stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
 		final Scene scene = new Scene(stackPane, Settings.getWindowWidth(), Settings.getWindowHeight());
-		primaryStage.initStyle(StageStyle.DECORATED);
-		primaryStage.setMinWidth(683);
-		primaryStage.setMinHeight(700);
-		primaryStage.setScene(scene);
-		primaryStage.setTitle(Localizer.formatMessage("windowTitle", Settings.getVersion()));
-		primaryStage.show();
+		Stage stage = ModManager.getPrimaryStage();
+		
+		stage.setScene(scene);
+		stage.setTitle(Localizer.getInstance().formatMessage("windowTitle", Settings.getVersion()));
+		stage.show();
 		
 		scene.setOnDragOver(new EventHandler<DragEvent>() {
 

@@ -8,52 +8,90 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
 import java.util.Set;
 
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import main.java.net.krazyweb.helpers.Archive;
 import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
-import main.java.net.krazyweb.starmodmanager.view.ModListView;
 
 import org.apache.log4j.Logger;
 
-public class ModList {
+public class ModList extends Observable implements Progressable {
 	
 	private static final Logger log = Logger.getLogger(ModList.class);
 	
 	private boolean locked;
 	
-	private final ModListView modListView;
+	//private final ModListView modListView;
 	
 	private List<Mod> mods;
+
+	private Task<?> task;
 	
-	public ModList(final ModListView modListView) {
+	private ReadOnlyDoubleProperty progress;
+	private ReadOnlyStringProperty message;
+	
+	public ModList() {
 		
-		this.modListView = modListView;
+	}
+	
+	public void load() {
 		
-		//TODO Get locked status from settings.
-		try {
-			
-			mods = Database.getModList();
-			
-			for (Mod mod : mods) {
-				mod.setOrder(mods.indexOf(mod));
-				Database.updateMod(mod);
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				this.updateMessage("Loading Mod List");
+				this.updateProgress(0.0, 1.0);
+				
+				mods = Database.getInstance().getModList();
+				
+				for (Mod mod : mods) {
+					mod.setOrder(mods.indexOf(mod));
+					Database.updateMod(mod);
+				}
+				
+				Thread.sleep(1000);
+				
+				this.updateProgress(1.0, 1.0);
+				
+				return null;
+				
 			}
 			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("modlistloaded");
+			}
+		});
+		
+		task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				log.error("", task.getException());
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
 		
 	}
 	
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(Localizer.getMessage("modlist.addingmods"));
+		progress.start(Localizer.getInstance().getMessage("modlist.addingmods"));
 		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 
@@ -66,7 +104,7 @@ public class ModList {
 					
 					Path file = files.get(i);
 					
-					this.updateMessage(Localizer.getMessage("modlist.loadingmod") + file.getFileName());
+					this.updateMessage(Localizer.getInstance().getMessage("modlist.loadingmod") + file.getFileName());
 					
 					Set<Mod> modsToAdd = Mod.load(file, mods.size());
 					
@@ -258,7 +296,7 @@ public class ModList {
 
 		List<Mod> modListCopy = new ArrayList<>(mods);
 		
-		modListView.updateModList(modListCopy);
+		//modListView.updateModList(modListCopy);
 		
 	}
 	
@@ -330,11 +368,37 @@ public class ModList {
 	}
 	
 	public void refreshMods() {
-		try {
+		/*try {
 			Database.getModList();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
+		}*/
+	}
+	
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
+	}
+	
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
+	}
+
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
+	}
+
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
+	}
+
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Settings Task Thread");
+		thread.setDaemon(true);
+		thread.start();
 	}
 	
 }
