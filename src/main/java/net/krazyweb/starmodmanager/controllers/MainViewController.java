@@ -11,11 +11,9 @@ public class MainViewController extends Observable {
 	
 	public MainViewController(final ModList modList) {
 		
-		
-		
-	}
-	
-	public void show() {
+		view = new MainView(this);
+		view.build();
+		view.show();
 		
 	}
 	

@@ -1,12 +1,8 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Properties;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -33,9 +29,6 @@ public class Settings extends Observable implements Progressable {
 		WINDOWS, MACOS, LINUX32, LINUX64;
 	}
 	
-	private static Path modsDirectory;
-	private static Path modsInstallDirectory;
-	
 	private static OS operatingSystem;
 	private static String operatingSystemName;
 	
@@ -50,6 +43,7 @@ public class Settings extends Observable implements Progressable {
 	private ReadOnlyStringProperty message;
 	
 	private Map<String, String> settings;
+	private Properties defaultProperties;
 	
 	private Settings() {
 		
@@ -134,8 +128,8 @@ public class Settings extends Observable implements Progressable {
 				}
 				
 				//TODO
-				setModsDirectory(Paths.get("mods/"));
-				setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
+				//setModsDirectory(Paths.get("mods/"));
+				//setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
 
 				this.updateProgress(4.0, 4.0);
 
@@ -166,21 +160,22 @@ public class Settings extends Observable implements Progressable {
 			protected Void call() throws Exception {
 
 				this.updateMessage("Loading Settings From Database");
-				this.updateProgress(0.0, 1.0);
+				this.updateProgress(0.0, 2.0);
 
-				Thread.sleep(1000);
-				
 				settings = Database.getInstance().getProperties();
 
-				this.updateProgress(1.0, 1.0);
+				this.updateProgress(1.0, 2.0);
+				
+				defaultProperties = new Properties();
+				defaultProperties.load(Settings.class.getClassLoader().getResourceAsStream("defaultsettings.properties"));
 
-				Thread.sleep(1000);
+				this.updateProgress(2.0, 2.0);
+				
+				log.debug("Properties File Loaded");
 				
 				return null;
 				
 			}
-			
-			
 			
 		};
 		
@@ -192,48 +187,32 @@ public class Settings extends Observable implements Progressable {
 			}
 		});
 		
+		task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				log.error("", task.getException());
+			}
+		});
+		
 		this.setProgress(task.progressProperty());
 		this.setMessage(task.messageProperty());
 		
 	}
 	
-	/*
-	 * TODO
-	 * Clear log file
-	 * Set logging level (But don't remove errors)
-	 * Clean this file!
-	 */
-	
-	/*public static void initialize() {
-		
-		complete = false;
-		
-		identifyOS();
-		configureLogger();
-		setModsDirectory(Paths.get("mods/"));
-		setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
-		
-		updateProgress(4, 4);
-		updateMessage("Settings Initialized Successfully");
-		complete = true;
-		
-	}*/
-	
 	private final void identifyOS() {
-		
 		
 		operatingSystemName = System.getProperty("os.name").toLowerCase();
 		
 		if (operatingSystemName.contains("win")) {
-			setOperatingSystem(OS.WINDOWS);
+			operatingSystem = OS.WINDOWS;
 		} else if (operatingSystemName.contains("mac")) {
-			setOperatingSystem(OS.MACOS);
+			operatingSystem = OS.MACOS;
 		} else if (operatingSystemName.contains("nix") || operatingSystemName.contains("nux") || operatingSystemName.contains("aix")) {
 			
 			if (System.getProperty("os.arch").contains("64")) {
-				setOperatingSystem(OS.LINUX64);
+				operatingSystem = OS.LINUX64;
 			} else {
-				setOperatingSystem(OS.LINUX32);
+				operatingSystem = OS.LINUX32;
 			}
 			
 		}
@@ -242,6 +221,35 @@ public class Settings extends Observable implements Progressable {
 		
 	}
 
+	public OS getOperatingSystem() {
+		return operatingSystem;
+	}
+
+	
+	public String getPropertyString(final String key) {
+		
+		if (settings.containsKey(key)) {
+			return settings.get(key);
+		}
+		
+		if (defaultProperties.containsKey(key)) {
+			return defaultProperties.getProperty(key);
+		} else {
+			log.warn("Could not find property: " + key);
+			return null;
+		}
+		
+	}
+	
+	public int getPropertyInt(final String key) {
+		return Integer.parseInt(getPropertyString(key));
+	}
+	
+	public String getVersion() {
+		return VERSION_STRING;
+	}
+	
+/*
 	public static Path getModsDirectory() {
 		return modsDirectory;
 	}
@@ -264,16 +272,9 @@ public class Settings extends Observable implements Progressable {
 		return new Locale(Database.getPropertyString("language", "en"), Database.getPropertyString("region", "US"));
 	}
 
-	public static OS getOperatingSystem() {
-		return operatingSystem;
-	}
 
 	public static void setOperatingSystem(final OS operatingSystem) {
 		Settings.operatingSystem = operatingSystem;
-	}
-	
-	public static String getVersion() {
-		return VERSION_STRING;
 	}
 
 	public static Path getModsInstallDirectory() {
@@ -290,6 +291,6 @@ public class Settings extends Observable implements Progressable {
 	
 	public static int getWindowHeight() {
 		return Database.getPropertyInt("windowheight", 700);
-	}
+	}*/
 	
 }

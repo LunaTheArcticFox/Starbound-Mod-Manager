@@ -5,9 +5,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -22,78 +26,91 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import main.java.net.krazyweb.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.controllers.MainViewController;
 import main.java.net.krazyweb.starmodmanager.controllers.ModManager;
-import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
-import main.java.net.krazyweb.starmodmanager.dialogue.ConfirmDialogue;
-import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
-import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.log4j.Logger;
 
-public class MainView {
+public class MainView implements Observer {
 	
 	private static final Logger log = Logger.getLogger(MainView.class);
 	
-	private ModListView modListView;
-	private BackupListView backupListView;
-	private SettingsView settingsView;
-	private AboutView aboutView;
-	
+	private MainViewController controller;
+	private boolean dragOver = false;
+
+	private VBox root;
+	private StackPane stackPane;
 	private ScrollPane mainContentPane;
 	
-	private boolean dragOver = false;
+	private Text appName;
+	private Text versionName;
 	
-	protected void buildMainUI() {
+	private Button modListButton;
+	private Button backupListButton;
+	private Button settingsButton;
+	private Button aboutButton;
+	
+	private Button quickBackupButton;
+	private Button lockButton;
+	private Button refreshButton;
+	private Button expandButton;
+	
+	public MainView(final MainViewController c) {
+		this.controller = c;
+		Localizer.getInstance().addObserver(this);
+	}
+	
+	public void build() {
 		
-		/* 
-		 * TODO Add this to the progress bar for loading the program.
-		 * This will require lots of refactoring
-		 * This method was getting way too long anyway
-		 */
+		appName = new Text(Localizer.getInstance().getMessage("appName"));
+		versionName = new Text(Settings.getInstance().getVersion());
 		
-		final VBox root = new VBox();
-		
-		AnchorPane topBar = new AnchorPane();
-		
-		Text appName = new Text(Localizer.getInstance().getMessage("appName"));
-		Text versionName = new Text(Settings.getVersion());
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
 		AnchorPane.setRightAnchor(versionName, 19.0);
 		AnchorPane.setTopAnchor(versionName, 21.0);
-		
+
+		AnchorPane topBar = new AnchorPane();
 		topBar.getChildren().addAll(appName, versionName);
 
+		root = new VBox();
 		root.getChildren().add(topBar);
 		
-		AnchorPane tabsBar = new AnchorPane();
-		NavBarTabs pageTabs = new NavBarTabs(this);
+		HBox pageTabs = new HBox();
 		HBox buttons = new HBox();
 		
-		buttons.getChildren().add(new NavBarButtons(this));
+		buildTabs();
+		buildActionButtons();
+		
+		pageTabs.getChildren().addAll(
+			modListButton,
+			backupListButton,
+			settingsButton,
+			aboutButton
+		);
+		
+		buttons.getChildren().addAll(
+			quickBackupButton,
+			lockButton,
+			refreshButton,
+			expandButton
+		);
 		
 		AnchorPane.setLeftAnchor(pageTabs, 19.0);
 		AnchorPane.setTopAnchor(pageTabs, 19.0);
 		
 		AnchorPane.setRightAnchor(buttons, 19.0);
 		AnchorPane.setTopAnchor(buttons, 19.0);
-		
+
+		AnchorPane tabsBar = new AnchorPane();
 		tabsBar.getChildren().addAll(pageTabs, buttons);
-		
-		modListView = new ModListView(this);
-		backupListView = new BackupListView();
-		settingsView = new SettingsView();
-		aboutView = new AboutView();
 		
 		mainContentPane = new ScrollPane();
 		mainContentPane.setFitToHeight(true);
 		mainContentPane.setFitToWidth(true);
-		
-		showModList();
 		
 		VBox.setVgrow(mainContentPane, Priority.ALWAYS);
 		
@@ -101,20 +118,98 @@ public class MainView {
 		root.getChildren().add(mainContentPane);
 		root.prefHeightProperty().bind(ModManager.getPrimaryStage().heightProperty());
 		
-		final StackPane stackPane = new StackPane();
+		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		final Scene scene = new Scene(stackPane, Settings.getWindowWidth(), Settings.getWindowHeight());
+		final Scene scene = new Scene(stackPane, Settings.getInstance().getPropertyInt("windowwidth"), Settings.getInstance().getPropertyInt("windowheight"));
 		Stage stage = ModManager.getPrimaryStage();
 		
 		stage.setScene(scene);
-		stage.setTitle(Localizer.getInstance().formatMessage("windowTitle", Settings.getVersion()));
-		stage.show();
+		stage.setTitle(Localizer.getInstance().formatMessage("windowTitle", Settings.getInstance().getVersion()));
+		
+		setDragEvents(scene, stackPane, root);
+		
+	}
+	
+	private void buildTabs() {
+
+		modListButton = new Button(Localizer.getInstance().getMessage("navbartabs.mods"));
+		modListButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		backupListButton = new Button(Localizer.getInstance().getMessage("navbartabs.backups"));
+		backupListButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		settingsButton = new Button(Localizer.getInstance().getMessage("navbartabs.settings"));
+		settingsButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		aboutButton = new Button(Localizer.getInstance().getMessage("navbartabs.about"));
+		aboutButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+	}
+	
+	private void buildActionButtons() {
+		
+		quickBackupButton = new Button("Backup");
+		quickBackupButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		lockButton = new Button("Lock");
+		lockButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		refreshButton = new Button("Refresh");
+		refreshButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+		expandButton = new Button("Expand");
+		expandButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				//TODO Functionality
+			}
+		});
+		
+	}
+	
+	private void setDragEvents(final Scene scene, final StackPane stackPane, final VBox root) {
 		
 		scene.setOnDragOver(new EventHandler<DragEvent>() {
 
 			@Override
-			public void handle(DragEvent event) {
+			public void handle(final DragEvent event) {
+				
 				
                 Dragboard db = event.getDragboard();
                 
@@ -126,14 +221,14 @@ public class MainView {
 					for (File file : db.getFiles()) {
 						if (FileHelper.verify(Paths.get(file.getPath()), dragOver)) {
 							filesAccepted = true;
-							fileName += Localizer.formatMessage(dragOver, "inquotes", file.getName()) + "\n";
+							fileName += Localizer.getInstance().formatMessage(dragOver, "inquotes", file.getName()) + "\n";
 						}
 					}
                 	
 					if (filesAccepted) {
 						event.acceptTransferModes(TransferMode.COPY);
 						if (!dragOver) {
-							Text text = new Text(Localizer.formatMessage("mainview.addmods", db.getFiles().size(), fileName));
+							Text text = new Text(Localizer.getInstance().formatMessage("mainview.addmods", db.getFiles().size(), fileName));
 							text.setFill(Color.WHITE);
 							text.setFont(Font.font("Verdana", 32));
 							stackPane.getChildren().addAll(new Rectangle(683, 700, new Color(0.0, 0.0, 0.0, 0.8)), text);
@@ -178,7 +273,7 @@ public class MainView {
 						toAdd.add(file.toPath());
 						log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
 					}
-					modListView.addMods(toAdd);
+					//modListView.addMods(toAdd); TODO
 				}
 				
 				event.setDropCompleted(success);
@@ -191,52 +286,15 @@ public class MainView {
 			
 		});
 		
-		new MessageDialogue().start("TEMP", "NOTIFICATION", MessageType.INFO);
-		ConfirmDialogue dialogue = new ConfirmDialogue();
-		dialogue.start("Really PLACEHOLDER?", "PLACEHOLDER");
-		
-		if (dialogue.getResult()) {
-			Database.setProperty("windowwidth", 1000);
-			log.debug("TRUE");
-		}
-		
 	}
 	
-	protected void toggleLockModList() {
-		log.debug("(Un)Locking mod list!");
-		modListView.toggleLock();
+	public void show() {
+		ModManager.getPrimaryStage().show();
 	}
-	
-	protected void showModList() {
-		log.debug("Setting view to mod list.");
-		mainContentPane.setContent(modListView);
-	}
-	
-	protected void showBackupList() {
-		log.debug("Setting view to backup list.");
-		mainContentPane.setContent(backupListView);
-	}
-	
-	protected void showSettings() {
-		log.debug("Setting view to settings.");
-		mainContentPane.setContent(settingsView);
-	}
-	
-	protected void showAbout() {
-		log.debug("Setting view to about.");
-		mainContentPane.setContent(aboutView);
-	}
-	
-	protected Stage getStage() {
-		return primaryStage;
-	}
-	
-	public static void main(String[] args) {
-		try {
-			launch(args);
-		} catch (final Exception e) {
-			log.error("Initializing Mod Manager OR Uncaught Exception", e);
-		}
+
+	@Override
+	public void update(final Observable observable, final Object message) {
+		//TODO
 	}
 	
 }

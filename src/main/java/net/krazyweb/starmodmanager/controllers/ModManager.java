@@ -1,7 +1,5 @@
 package main.java.net.krazyweb.starmodmanager.controllers;
 
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;

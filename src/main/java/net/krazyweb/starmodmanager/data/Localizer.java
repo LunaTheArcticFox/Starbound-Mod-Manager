@@ -1,8 +1,10 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Observable;
+import java.util.Observer;
 import java.util.ResourceBundle;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -15,11 +17,15 @@ import org.apache.log4j.Logger;
 
 import com.ibm.icu.text.MessageFormat;
 
-public class Localizer extends Observable implements Progressable {
+public class Localizer extends Observable implements Progressable, Observer {
+	
+	//TODO refresh locale on settings change, then notify
 	
 	private static final Logger log = Logger.getLogger(Localizer.class);
 	
 	private static Localizer instance;
+	
+	private Locale locale;
 	
 	private Task<?> task;
 	private ReadOnlyDoubleProperty progress;
@@ -28,7 +34,7 @@ public class Localizer extends Observable implements Progressable {
 	private ResourceBundle bundle;
 	
 	private Localizer() {
-		
+		Settings.getInstance().addObserver(this);
 	}
 	
 	public static Localizer getInstance() {
@@ -49,8 +55,10 @@ public class Localizer extends Observable implements Progressable {
 
 				this.updateMessage("Loading Localizer");
 				this.updateProgress(0.0, 1.0);
-
-				bundle = ResourceBundle.getBundle("strings", Settings.getLocale());
+				
+				locale = new Locale(Settings.getInstance().getPropertyString("language"), Settings.getInstance().getPropertyString("region"));
+				
+				bundle = ResourceBundle.getBundle("strings", locale);
 				
 				this.updateProgress(1.0, 1.0);
 				
@@ -123,7 +131,7 @@ public class Localizer extends Observable implements Progressable {
 		MessageFormat formatter = null;
 		
 		try {
-			formatter = new MessageFormat(bundle.getString(key.toLowerCase()), Settings.getLocale());
+			formatter = new MessageFormat(bundle.getString(key.toLowerCase()), locale);
 		} catch (final IllegalArgumentException e) {
 			if (!suppressLogging) {
 				log.warn("Could not parse pattern for '" + key.toLowerCase() + "':", e);
@@ -134,7 +142,7 @@ public class Localizer extends Observable implements Progressable {
 			return "INVALID PROPERTY: " + key;
 		}
 		
-		formatter.setLocale(Settings.getLocale());
+		formatter.setLocale(locale);
 		
 		String formatted = "CHAR ENCODING ERROR";
 		
@@ -182,6 +190,11 @@ public class Localizer extends Observable implements Progressable {
 		thread.setName("Localizer Task Thread");
 		thread.setDaemon(true);
 		thread.start();
+	}
+
+	@Override
+	public void update(final Observable observable, final Object message) {
+		//TODO
 	}
 	
 }

@@ -102,6 +102,8 @@ public class ApplicationLoader implements Observer {
 		
 		new MainViewController(modList);
 		
+		view.close();
+		
 	}
 
 	@Override

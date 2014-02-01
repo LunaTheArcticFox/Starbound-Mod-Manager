@@ -423,7 +423,7 @@ public class Database extends Observable implements Progressable {
 				
 				mod.setFiles(files);
 				
-				if (!new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).exists()) {
+				if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) {
 					deleteMod(mod);
 					continue;
 				}
@@ -432,12 +432,12 @@ public class Database extends Observable implements Progressable {
 				
 				try {
 					
-					long checksum = FileHelper.getChecksum(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).toPath());
+					long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath());
 					
 					if (mod.getChecksum() != checksum) {
 						log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
 						//TODO Get path instead of using File, make this threaded
-						mods = Mod.load(Paths.get(new File(Settings.getModsDirectory() + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
+						mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
 					} else {
 						mods = new HashSet<>();
 						mods.add(mod);
@@ -614,14 +614,14 @@ public class Database extends Observable implements Progressable {
 		Set<String> currentArchives = new HashSet<>();
 		
 		for (Mod mod : modList) {
-			currentArchives.add(Settings.getModsDirectory().toAbsolutePath() + File.separator + mod.getArchiveName());
+			currentArchives.add(Paths.get(Settings.getInstance().getPropertyString("modsdir")).toAbsolutePath() + File.separator + mod.getArchiveName());
 		}
 		
 		//List all the archives in the mods directory, then remove already recognized mods
 		Set<Path> archives = new HashSet<>();
 		Set<Path> toRemove = new HashSet<>();
 		
-		FileHelper.listFiles(Settings.getModsDirectory(), archives);
+		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives);
 		
 		for (Path path : archives) {
 			if (currentArchives.contains(path.toString())) {

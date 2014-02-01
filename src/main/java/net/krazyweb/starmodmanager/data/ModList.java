@@ -130,7 +130,7 @@ public class ModList extends Observable implements Progressable {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while getting mods!", addModsTask.getException());
 				progress.close();
-				updateView();
+				//updateView();
 			}
 		});
 		
@@ -138,7 +138,7 @@ public class ModList extends Observable implements Progressable {
 			@Override
 			public void handle(WorkerStateEvent t) {
 				progress.close();
-				updateView();
+				//updateView();
 			}
 		});
 		
@@ -165,7 +165,7 @@ public class ModList extends Observable implements Progressable {
 		}
 		
 		try {
-			FileHelper.deleteFile(Paths.get(Settings.getModsDirectory() + File.separator + mod.getArchiveName()));
+			FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -173,7 +173,7 @@ public class ModList extends Observable implements Progressable {
 		
 		mods.remove(mod);
 		
-		updateView();
+		//updateView();
 		
 	}
 	
@@ -190,9 +190,9 @@ public class ModList extends Observable implements Progressable {
 				//Copy the non-conflicting files to a new patch folder
 				//
 				
-				Archive archive = new Archive(Settings.getModsDirectory() + File.separator + mod.getArchiveName());
+				Archive archive = new Archive(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName());
 				archive.extract();
-				archive.extractToFolder(new File(Settings.getModsInstallDirectory().toString() + File.separator + mod.getInternalName()));
+				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName()));
 				
 				mod.setInstalled(true);
 				
@@ -209,14 +209,14 @@ public class ModList extends Observable implements Progressable {
 			public void handle(WorkerStateEvent t) {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while installing mods!", installModsTask.getException());
-				updateView();
+				//updateView();
 			}
 		});
 		
 		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				updateView();
+				//updateView();
 			}
 		});
 		
@@ -237,7 +237,7 @@ public class ModList extends Observable implements Progressable {
 				log.info("Uninstalling mod: " + mod.getInternalName());
 
 				try {
-					FileHelper.deleteFile(Paths.get(Settings.getModsInstallDirectory().toString() + File.separator + mod.getInternalName()));
+					FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName()));
 				} catch (IOException e) {
 					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
 				}
@@ -257,14 +257,14 @@ public class ModList extends Observable implements Progressable {
 			public void handle(WorkerStateEvent t) {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while uninstalling mods!", installModsTask.getException());
-				updateView();
+				//updateView();
 			}
 		});
 		
 		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				updateView();
+				//updateView();
 			}
 		});
 		
@@ -284,21 +284,10 @@ public class ModList extends Observable implements Progressable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		updateView();
+		//updateView();
 		
 	}
 	
-	public void requestUpdate() {
-		updateView();
-	}
-	
-	private void updateView() {
-
-		List<Mod> modListCopy = new ArrayList<>(mods);
-		
-		//modListView.updateModList(modListCopy);
-		
-	}
 	
 	/*
 	 * See: http://stackoverflow.com/questions/4938626/moving-items-around-in-an-arraylist
@@ -355,12 +344,12 @@ public class ModList extends Observable implements Progressable {
 	
 	public void lockList() {
 		locked = true;
-		updateView();
+		//updateView();
 	}
 	
 	public void unlockList() {
 		locked = false;
-		updateView();
+		//updateView();
 	}
 	
 	public boolean isLocked() {
