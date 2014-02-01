@@ -1,10 +1,5 @@
 package main.java.net.krazyweb.starmodmanager.view;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -14,8 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -26,9 +19,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import main.java.net.krazyweb.helpers.FileHelper;
-import main.java.net.krazyweb.starmodmanager.controllers.MainViewController;
-import main.java.net.krazyweb.starmodmanager.controllers.ModManager;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
 
@@ -36,10 +26,10 @@ import org.apache.log4j.Logger;
 
 public class MainView implements Observer {
 	
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(MainView.class);
 	
 	private MainViewController controller;
-	private boolean dragOver = false;
 
 	private VBox root;
 	private StackPane stackPane;
@@ -58,15 +48,15 @@ public class MainView implements Observer {
 	private Button refreshButton;
 	private Button expandButton;
 	
-	public MainView(final MainViewController c) {
+	protected MainView(final MainViewController c) {
 		this.controller = c;
 		Localizer.getInstance().addObserver(this);
 	}
 	
-	public void build() {
+	protected void build() {
 		
-		appName = new Text(Localizer.getInstance().getMessage("appName"));
-		versionName = new Text(Settings.getInstance().getVersion());
+		appName = new Text();
+		versionName = new Text();
 		
 		AnchorPane.setTopAnchor(appName, 21.0);
 		AnchorPane.setLeftAnchor(appName, 19.0);
@@ -116,7 +106,6 @@ public class MainView implements Observer {
 		
 		root.getChildren().add(tabsBar);
 		root.getChildren().add(mainContentPane);
-		root.prefHeightProperty().bind(ModManager.getPrimaryStage().heightProperty());
 		
 		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
@@ -125,43 +114,44 @@ public class MainView implements Observer {
 		Stage stage = ModManager.getPrimaryStage();
 		
 		stage.setScene(scene);
-		stage.setTitle(Localizer.getInstance().formatMessage("windowTitle", Settings.getInstance().getVersion()));
 		
 		setDragEvents(scene, stackPane, root);
+		
+		updateStrings();
 		
 	}
 	
 	private void buildTabs() {
 
-		modListButton = new Button(Localizer.getInstance().getMessage("navbartabs.mods"));
+		modListButton = new Button();
 		modListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.modTabClicked();
 			}
 		});
 		
-		backupListButton = new Button(Localizer.getInstance().getMessage("navbartabs.backups"));
+		backupListButton = new Button();
 		backupListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.backupsTabClicked();
 			}
 		});
 		
-		settingsButton = new Button(Localizer.getInstance().getMessage("navbartabs.settings"));
+		settingsButton = new Button();
 		settingsButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.settingsTabClicked();
 			}
 		});
 		
-		aboutButton = new Button(Localizer.getInstance().getMessage("navbartabs.about"));
+		aboutButton = new Button();
 		aboutButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.aboutTabClicked();
 			}
 		});
 		
@@ -173,7 +163,7 @@ public class MainView implements Observer {
 		quickBackupButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.backupButtonClicked();
 			}
 		});
 		
@@ -181,7 +171,7 @@ public class MainView implements Observer {
 		lockButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.lockButtonClicked();
 			}
 		});
 		
@@ -189,7 +179,7 @@ public class MainView implements Observer {
 		refreshButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.refreshButtonClicked();
 			}
 		});
 		
@@ -197,7 +187,7 @@ public class MainView implements Observer {
 		expandButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				//TODO Functionality
+				controller.expandButtonClicked();
 			}
 		});
 		
@@ -209,39 +199,7 @@ public class MainView implements Observer {
 
 			@Override
 			public void handle(final DragEvent event) {
-				
-				
-                Dragboard db = event.getDragboard();
-                
-                if (db.hasFiles()) {
-
-                	boolean filesAccepted = false;
-                	String fileName = "\n";
-                	
-					for (File file : db.getFiles()) {
-						if (FileHelper.verify(Paths.get(file.getPath()), dragOver)) {
-							filesAccepted = true;
-							fileName += Localizer.getInstance().formatMessage(dragOver, "inquotes", file.getName()) + "\n";
-						}
-					}
-                	
-					if (filesAccepted) {
-						event.acceptTransferModes(TransferMode.COPY);
-						if (!dragOver) {
-							Text text = new Text(Localizer.getInstance().formatMessage("mainview.addmods", db.getFiles().size(), fileName));
-							text.setFill(Color.WHITE);
-							text.setFont(Font.font("Verdana", 32));
-							stackPane.getChildren().addAll(new Rectangle(683, 700, new Color(0.0, 0.0, 0.0, 0.8)), text);
-							dragOver = true;
-						}
-					} else {
-						event.consume();
-					}
-                    
-                } else {
-                    event.consume();
-                }
-				
+               controller.filesDraggedOver(event);
 			}
 			
 		});
@@ -250,9 +208,7 @@ public class MainView implements Observer {
 
 			@Override
 			public void handle(DragEvent event) {
-				stackPane.getChildren().clear();
-				stackPane.getChildren().add(root);
-				dragOver = false;
+				controller.dragExited();
 			}
 			
 		});
@@ -261,40 +217,50 @@ public class MainView implements Observer {
 
 			@Override
 			public void handle(DragEvent event) {
-				
-				Dragboard db = event.getDragboard();
-			   
-				boolean success = false;
-				
-				if (db.hasFiles()) {
-					success = true;
-					List<Path> toAdd = new ArrayList<>();
-					for (File file : db.getFiles()) {
-						toAdd.add(file.toPath());
-						log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
-					}
-					//modListView.addMods(toAdd); TODO
-				}
-				
-				event.setDropCompleted(success);
-				event.consume();
-				
-				stackPane.getChildren().clear();
-				stackPane.getChildren().add(root);
-				
+				controller.filesDropped(event);
 			}
 			
 		});
 		
 	}
 	
-	public void show() {
+	protected void showOverlay(final String message) {
+		Text text = new Text(message);
+		text.setFill(Color.WHITE);
+		text.setFont(Font.font("Verdana", 32));
+		stackPane.getChildren().addAll(new Rectangle(ModManager.getPrimaryStage().getWidth(), ModManager.getPrimaryStage().getHeight(), new Color(0.0, 0.0, 0.0, 0.8)), text);
+	}
+	
+	protected void hideOverlay() {
+		stackPane.getChildren().clear();
+		stackPane.getChildren().add(root);
+	}
+	
+	protected void show() {
 		ModManager.getPrimaryStage().show();
 	}
 
+	private void updateStrings() {
+		
+		ModManager.getPrimaryStage().setTitle(Localizer.getInstance().formatMessage("windowtitle", Settings.getInstance().getVersion()));
+		
+		appName.setText(Localizer.getInstance().getMessage("appname"));
+		versionName.setText(Settings.getInstance().getVersion());
+
+		modListButton.setText(Localizer.getInstance().getMessage("navbartabs.mods"));
+		backupListButton.setText(Localizer.getInstance().getMessage("navbartabs.backups"));
+		settingsButton.setText(Localizer.getInstance().getMessage("navbartabs.settings"));
+		aboutButton.setText(Localizer.getInstance().getMessage("navbartabs.about"));
+		
+	}
+	
 	@Override
 	public void update(final Observable observable, final Object message) {
-		//TODO
+		
+		if (observable instanceof Localizer && message.equals("localechanged")) {
+			updateStrings();
+		}
+		
 	}
 	
 }

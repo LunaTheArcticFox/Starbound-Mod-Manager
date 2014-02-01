@@ -44,35 +44,11 @@ public class Database extends Observable implements Progressable {
 	
 	private ReadOnlyDoubleProperty progress;
 	private ReadOnlyStringProperty message;
+	private double manualProgress;
+	private boolean workDone;
 	
 	private Database() {
 		
-	}
-	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Database Task Thread");
-		thread.setDaemon(true);
-		thread.start();
 	}
 	
 	public static Database getInstance() {
@@ -360,9 +336,14 @@ public class Database extends Observable implements Progressable {
 	
 	public List<Mod> getModList() throws SQLException {
 		
+		workDone = false;
+				
 		List<Mod> modList = new ArrayList<Mod>();
 
 		StringBuilder query = new StringBuilder();
+		
+		int numberOfMods = 0;
+		int currentMod = 1;
 		
 		query.append("SELECT * FROM ");
 		query.append(MOD_TABLE_NAME);
@@ -374,6 +355,14 @@ public class Database extends Observable implements Progressable {
 		log.trace("Statement Executed: " + query.toString());
 		
 		if (hasRows(results)) {
+			
+			while (results.next()) {
+				numberOfMods++;
+			}
+			
+			results.close();
+			
+			results = modQuery.executeQuery();
 			
 			log.debug("Mods found in database: ");
 			
@@ -436,7 +425,7 @@ public class Database extends Observable implements Progressable {
 					
 					if (mod.getChecksum() != checksum) {
 						log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
-						//TODO Get path instead of using File, make this threaded
+						//TODO Get path instead of using File
 						mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
 					} else {
 						mods = new HashSet<>();
@@ -453,6 +442,9 @@ public class Database extends Observable implements Progressable {
 					}
 				}
 				
+				manualProgress = 0.5 * (1.0 / (double) numberOfMods) * (double) currentMod;
+				currentMod++;
+				
 			}
 
 		}
@@ -468,6 +460,9 @@ public class Database extends Observable implements Progressable {
 			mod.setOrder(modList.indexOf(mod));
 			log.debug("[" + mod.getOrder() + "] " + mod.getInternalName());
 		}
+		
+		workDone = true;
+		manualProgress = 1.0;
 		
 		return modList;
 		
@@ -608,7 +603,7 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	private static void getNewMods(final List<Mod> modList) {
+	private void getNewMods(final List<Mod> modList) {
 		
 		//Collect all filenames of already recognized mods
 		Set<String> currentArchives = new HashSet<>();
@@ -631,6 +626,8 @@ public class Database extends Observable implements Progressable {
 		
 		archives.removeAll(toRemove);
 		
+		int current = 1;
+		
 		for (Path path : archives) {
 			
 			Set<Mod> mods = Mod.load(path, modList.size());
@@ -642,6 +639,9 @@ public class Database extends Observable implements Progressable {
 			for (Mod mod : mods) {
 				modList.add(mod);
 			}
+
+			manualProgress = 0.5 * (1.0 / (double) archives.size()) * (double) current + 0.5;
+			current++;
 			
 		}
 		
@@ -649,6 +649,42 @@ public class Database extends Observable implements Progressable {
 	
 	private static boolean hasRows(final ResultSet resultSet) throws SQLException {
 		return resultSet.isBeforeFirst();
+	}
+	
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
+	}
+	
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
+	}
+
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
+	}
+
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
+	}
+
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Database Task Thread");
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	@Override
+	public double getProgress() {
+		return manualProgress;
+	}
+
+	@Override
+	public boolean isDone() {
+		return workDone;
 	}
 	
 }

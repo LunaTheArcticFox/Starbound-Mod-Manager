@@ -24,6 +24,7 @@ public class LoaderView {
 		stage.setScene(new Scene(p, 300, 150));
 		stage.setTitle("Loading");
 		stage.initStyle(StageStyle.UTILITY);
+		stage.centerOnScreen();
 		stage.show();	
 	}
 	

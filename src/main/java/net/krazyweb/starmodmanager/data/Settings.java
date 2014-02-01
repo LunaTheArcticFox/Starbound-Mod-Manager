@@ -32,9 +32,6 @@ public class Settings extends Observable implements Progressable {
 	private static OS operatingSystem;
 	private static String operatingSystemName;
 	
-	//private static String message;
-	//private static double progress;
-	
 	private static Settings instance;
 	
 	private Task<?> task;
@@ -56,32 +53,6 @@ public class Settings extends Observable implements Progressable {
 			}
 		}
 		return instance;
-	}
-	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Settings Task Thread");
-		thread.setDaemon(true);
-		thread.start();
 	}
 	
 	/*
@@ -126,10 +97,6 @@ public class Settings extends Observable implements Progressable {
 					console.setThreshold(Level.DEBUG);
 					file.setThreshold(Level.OFF);
 				}
-				
-				//TODO
-				//setModsDirectory(Paths.get("mods/"));
-				//setModsInstallDirectory(Paths.get("D:\\Games\\Steam\\steamapps\\common\\Starbound\\mods"));
 
 				this.updateProgress(4.0, 4.0);
 
@@ -245,52 +212,53 @@ public class Settings extends Observable implements Progressable {
 		return Integer.parseInt(getPropertyString(key));
 	}
 	
+	public void setProperty(final String key, final Object property) {
+		settings.put(key, property.toString());
+		setChanged();
+		notifyObservers("propertychanged:" + key);
+		log.debug("Property Changed: " + key + " -- " + property);
+	}
+	
 	public String getVersion() {
 		return VERSION_STRING;
 	}
 	
-/*
-	public static Path getModsDirectory() {
-		return modsDirectory;
-	}
-
-	public static void setModsDirectory(final Path modsDirectory) {
-
-		
-		Settings.modsDirectory = modsDirectory;
-		if (Files.notExists(modsDirectory)) {
-			try {
-				Files.createDirectories(modsDirectory);
-			} catch (IOException e) {
-				log.error("Error creating mods directory.", e);
-			}
-		}
-		
+	private void setProgress(final ReadOnlyDoubleProperty progress) {
+		this.progress = progress;
 	}
 	
-	protected static Locale getLocale() {
-		return new Locale(Database.getPropertyString("language", "en"), Database.getPropertyString("region", "US"));
+	private void setMessage(final ReadOnlyStringProperty message) {
+		this.message = message; 
 	}
 
-
-	public static void setOperatingSystem(final OS operatingSystem) {
-		Settings.operatingSystem = operatingSystem;
+	@Override
+	public ReadOnlyDoubleProperty getProgressProperty() {
+		return progress;
 	}
 
-	public static Path getModsInstallDirectory() {
-		return modsInstallDirectory;
+	@Override
+	public ReadOnlyStringProperty getMessageProperty() {
+		return message;
 	}
 
-	public static void setModsInstallDirectory(final Path modsInstallDirectory) {
-		Settings.modsInstallDirectory = modsInstallDirectory;
+	@Override
+	public void processTask() {
+		Thread thread = new Thread(task);
+		thread.setName("Settings Task Thread");
+		thread.setDaemon(true);
+		thread.start();
 	}
-	
-	public static int getWindowWidth() {
-		return Database.getPropertyInt("windowwidth", 683);
+
+	@Override
+	public double getProgress() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
-	
-	public static int getWindowHeight() {
-		return Database.getPropertyInt("windowheight", 700);
-	}*/
+
+	@Override
+	public boolean isDone() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

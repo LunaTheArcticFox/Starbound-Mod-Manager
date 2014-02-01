@@ -8,6 +8,9 @@ public interface Progressable {
 	public ReadOnlyDoubleProperty getProgressProperty();
 	public ReadOnlyStringProperty getMessageProperty();
 	
+	public double getProgress();
+	public boolean isDone();
+	
 	public void processTask();
 	
 }

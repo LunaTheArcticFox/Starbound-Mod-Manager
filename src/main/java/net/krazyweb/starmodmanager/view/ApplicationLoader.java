@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.controllers;
+package main.java.net.krazyweb.starmodmanager.view;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -9,7 +9,6 @@ import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.ModList;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
-import main.java.net.krazyweb.starmodmanager.view.LoaderView;
 
 import org.apache.log4j.Logger;
 

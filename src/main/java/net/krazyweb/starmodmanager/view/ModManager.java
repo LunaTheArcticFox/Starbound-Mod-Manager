@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.controllers;
+package main.java.net.krazyweb.starmodmanager.view;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -14,6 +14,7 @@ public class ModManager extends Application {
 		primaryStage.initStyle(StageStyle.DECORATED);
 		primaryStage.setMinWidth(683);
 		primaryStage.setMinHeight(700);
+		primaryStage.centerOnScreen();
 		new ApplicationLoader();
 	}
 	

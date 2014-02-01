@@ -19,8 +19,6 @@ import com.ibm.icu.text.MessageFormat;
 
 public class Localizer extends Observable implements Progressable, Observer {
 	
-	//TODO refresh locale on settings change, then notify
-	
 	private static final Logger log = Logger.getLogger(Localizer.class);
 	
 	private static Localizer instance;
@@ -56,9 +54,7 @@ public class Localizer extends Observable implements Progressable, Observer {
 				this.updateMessage("Loading Localizer");
 				this.updateProgress(0.0, 1.0);
 				
-				locale = new Locale(Settings.getInstance().getPropertyString("language"), Settings.getInstance().getPropertyString("region"));
-				
-				bundle = ResourceBundle.getBundle("strings", locale);
+				setLocale(Settings.getInstance().getPropertyString("locale"));
 				
 				this.updateProgress(1.0, 1.0);
 				
@@ -166,6 +162,24 @@ public class Localizer extends Observable implements Progressable, Observer {
 		return formatMessage(false, key, messageArguments);
 	}
 	
+	private void setLocale(final String loc) {
+		
+		String[] splitLocale = loc.split("-");
+		
+		Locale oldLocale = locale;
+		
+		locale = new Locale(splitLocale[0], splitLocale[1]);
+		
+		//Don't reload the language if nothing changed
+		if (oldLocale == null || !oldLocale.equals(locale)) {
+			bundle = ResourceBundle.getBundle("strings", locale);
+			log.debug("Locale set to: " + locale);
+			setChanged();
+			notifyObservers("localechanged");
+		}
+		
+	}
+	
 	private void setProgress(final ReadOnlyDoubleProperty progress) {
 		this.progress = progress;
 	}
@@ -173,7 +187,7 @@ public class Localizer extends Observable implements Progressable, Observer {
 	private void setMessage(final ReadOnlyStringProperty message) {
 		this.message = message; 
 	}
-
+	
 	@Override
 	public ReadOnlyDoubleProperty getProgressProperty() {
 		return progress;
@@ -194,7 +208,24 @@ public class Localizer extends Observable implements Progressable, Observer {
 
 	@Override
 	public void update(final Observable observable, final Object message) {
-		//TODO
+		
+		if (observable instanceof Settings && message.equals("propertychanged:locale")) {
+			log.debug("Locale changed message received.");
+			setLocale(Settings.getInstance().getPropertyString("locale"));
+		}
+		
+	}
+
+	@Override
+	public double getProgress() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isDone() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 }
