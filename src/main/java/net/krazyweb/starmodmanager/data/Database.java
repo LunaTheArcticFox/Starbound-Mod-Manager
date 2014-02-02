@@ -594,6 +594,37 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
+	public void closeConnection() {
+		
+		task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				connection.commit();
+				connection.close();
+				
+				return null;
+				
+			}
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				setChanged();
+				notifyObservers("databaseclosed");
+			}
+		});
+		
+		this.setProgress(task.progressProperty());
+		this.setMessage(task.messageProperty());
+		
+		processTask();
+		
+	}
+	
 	private static boolean hasRows(final ResultSet resultSet) throws SQLException {
 		return resultSet.isBeforeFirst();
 	}

@@ -200,6 +200,7 @@ public class Settings extends Observable implements Progressable {
 		}
 		
 		if (defaultProperties.containsKey(key)) {
+			log.debug("Property '" + key + "' not found in database. Using default value: '" + defaultProperties.getProperty(key) + "'");
 			return defaultProperties.getProperty(key);
 		} else {
 			log.warn("Could not find property: " + key);
@@ -210,6 +211,10 @@ public class Settings extends Observable implements Progressable {
 	
 	public int getPropertyInt(final String key) {
 		return Integer.parseInt(getPropertyString(key));
+	}
+	
+	public double getPropertyDouble(final String key) {
+		return Double.parseDouble(getPropertyString(key));
 	}
 	
 	public void setProperty(final String key, final Object property) {

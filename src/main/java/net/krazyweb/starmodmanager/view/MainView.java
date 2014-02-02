@@ -20,6 +20,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import main.java.net.krazyweb.starmodmanager.ModManager;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
@@ -112,12 +113,13 @@ public class MainView implements Observer {
 		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		final Scene scene = new Scene(stackPane, Settings.getInstance().getPropertyInt("windowwidth"), Settings.getInstance().getPropertyInt("windowheight"));
+		final Scene scene = new Scene(stackPane, Settings.getInstance().getPropertyDouble("windowwidth"), Settings.getInstance().getPropertyDouble("windowheight"));
 		Stage stage = ModManager.getPrimaryStage();
 		
 		stage.setScene(scene);
 		
-		setDragEvents(scene, stackPane, root);
+		setSceneEvents(scene, stackPane, root);
+		setStageEvents();
 		
 		updateStrings();
 		
@@ -195,7 +197,7 @@ public class MainView implements Observer {
 		
 	}
 	
-	private void setDragEvents(final Scene scene, final StackPane stackPane, final VBox root) {
+	private void setSceneEvents(final Scene scene, final StackPane stackPane, final VBox root) {
 		
 		scene.setOnDragOver(new EventHandler<DragEvent>() {
 
@@ -209,7 +211,7 @@ public class MainView implements Observer {
 		scene.setOnDragExited(new EventHandler<DragEvent>() {
 
 			@Override
-			public void handle(DragEvent event) {
+			public void handle(final DragEvent event) {
 				controller.dragExited();
 			}
 			
@@ -218,8 +220,21 @@ public class MainView implements Observer {
 		scene.setOnDragDropped(new EventHandler<DragEvent>() {
 
 			@Override
-			public void handle(DragEvent event) {
+			public void handle(final DragEvent event) {
 				controller.filesDropped(event);
+			}
+			
+		});
+		
+	}
+	
+	private void setStageEvents() {
+		
+		ModManager.getPrimaryStage().setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+			@Override
+			public void handle(final WindowEvent event) {
+				controller.closeRequested(event);
 			}
 			
 		});

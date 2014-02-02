@@ -11,9 +11,13 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
+import javafx.stage.WindowEvent;
 import main.java.net.krazyweb.helpers.FileHelper;
+import main.java.net.krazyweb.starmodmanager.ModManager;
+import main.java.net.krazyweb.starmodmanager.data.Database;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.ModList;
+import main.java.net.krazyweb.starmodmanager.data.Settings;
 import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
 import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
@@ -131,6 +135,15 @@ public class MainViewController extends Observable {
 	protected void dragExited() {
 		dragOver = false;
 		view.hideOverlay();
+	}
+	
+	protected void closeRequested(final WindowEvent event) {
+		
+		Settings.getInstance().setProperty("windowwidth", ModManager.getPrimaryStage().getWidth());
+		Settings.getInstance().setProperty("windowheight", ModManager.getPrimaryStage().getHeight());
+		
+		Database.getInstance().closeConnection();
+		
 	}
 	
 }
