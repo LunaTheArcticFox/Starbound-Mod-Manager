@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import javafx.animation.KeyFrame;
@@ -25,23 +27,27 @@ import main.java.net.krazyweb.starmodmanager.data.ModList;
 
 import org.apache.log4j.Logger;
 
-public class ModListView extends VBox {
+public class ModListView implements Observer {
 	
 	private static final Logger log = Logger.getLogger(ModListView.class);
 	
-	private final ModList modList;
-	
-	private Map<Mod, ModView> modViews;
-	
+	/*private Map<Mod, ModView> modViews;
 	private VBox modsBox;
-	
 	private List<Mod> mods;
+	private double y, mouseY, lastY;*/
 	
-	private double y, mouseY, lastY;
+	private VBox root;
 	
-	public ModListView(final MainView mainView) {
+	private ModListViewController controller;
+	
+	protected ModListView(final ModListViewController c) {
+		this.controller = c;
+		Localizer.getInstance().addObserver(this);
+	}
+	
+	protected void buildUI(final ModList modList) {
 		
-		setSpacing(25.0);
+		root.setSpacing(25.0);
 		
 		modsBox = new VBox();
 		modsBox.setSpacing(25.0);
@@ -267,6 +273,19 @@ public class ModListView extends VBox {
 			modList.unlockList();
 		} else {
 			modList.lockList();
+		}
+		
+	}
+	
+	private void updateStrings() {
+		
+	}
+	
+	@Override
+	public void update(final Observable observable, final Object message) {
+		
+		if (observable instanceof Localizer && message.equals("localechanged")) {
+			updateStrings();
 		}
 		
 	}

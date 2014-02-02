@@ -1,6 +1,9 @@
 package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Observable;
@@ -19,9 +22,41 @@ import com.ibm.icu.text.MessageFormat;
 
 public class Localizer extends Observable implements Progressable, Observer {
 	
+	public static class Language implements Comparable<Language> {
+		
+		private String locale;
+		private String name;
+		
+		private Language(final String locale, final String name) {
+			this.locale = locale;
+			this.name = name;
+		}
+		
+		public String getLocale() {
+			return locale;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		@Override
+		public int compareTo(final Language language) {
+			return name.compareTo(language.name);
+		}
+		
+		@Override
+		public String toString() {
+			return name + "\t (" + locale + ")";
+		}
+		
+	}
+	
 	private static final Logger log = Logger.getLogger(Localizer.class);
 	
 	private static Localizer instance;
+	
+	private List<Language> languages;
 	
 	private Locale locale;
 	
@@ -55,6 +90,14 @@ public class Localizer extends Observable implements Progressable, Observer {
 				this.updateProgress(0.0, 1.0);
 				
 				setLocale(Settings.getInstance().getPropertyString("locale"));
+				
+				languages = new ArrayList<>();
+				Collections.addAll(languages,
+					new Language("en-US", "English"),
+					new Language("de-DE", "Deutsch"),
+					new Language("fl-SB", "Floran")
+				);
+				Collections.sort(languages);
 				
 				this.updateProgress(1.0, 1.0);
 				
@@ -213,6 +256,24 @@ public class Localizer extends Observable implements Progressable, Observer {
 			log.debug("Locale changed message received.");
 			setLocale(Settings.getInstance().getPropertyString("locale"));
 		}
+		
+	}
+	
+	public List<Language> getLanguages() {
+		return new ArrayList<>(languages);
+	}
+	
+	public Language getCurrentLanguage() {
+		
+		String loc = Settings.getInstance().getPropertyString("locale");
+		
+		for (Language l : languages) {
+			if (l.getLocale().equals(loc)) {
+				return l;
+			}
+		}
+		
+		return null;
 		
 	}
 	

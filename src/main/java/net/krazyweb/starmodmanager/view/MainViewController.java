@@ -25,11 +25,15 @@ public class MainViewController extends Observable {
 	
 	private boolean dragOver = false;
 	
+	private SettingsView settingsView;
+	
 	protected MainViewController(final ModList modList) {
 		
 		view = new MainView(this);
 		view.build();
 		view.show();
+		
+		settingsView = new SettingsView();
 		
 	}
 	
@@ -42,7 +46,7 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void settingsTabClicked() {
-		
+		view.setContent(settingsView.getContent());
 	}
 	
 	protected void aboutTabClicked() {

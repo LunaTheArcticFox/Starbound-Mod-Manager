@@ -2,7 +2,6 @@ package main.java.net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -461,121 +459,6 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	protected List<Mod> getModList() throws SQLException {
-		
-		List<Mod> modList = new ArrayList<Mod>();
-
-		StringBuilder query = new StringBuilder();
-		
-		query.append("SELECT * FROM ");
-		query.append(MOD_TABLE_NAME);
-		
-		PreparedStatement modQuery = connection.prepareStatement(query.toString());
-		
-		ResultSet results = modQuery.executeQuery();
-
-		log.trace("Statement Executed: " + query.toString());
-		
-		if (hasRows(results)) {
-			
-			log.debug("Mods found in database: ");
-			
-			while (results.next()) {
-				
-				Mod mod = new Mod();
-				
-				mod.setInternalName(results.getString("internalName"));
-				mod.setArchiveName(results.getString("archiveName"));
-				mod.setDisplayName(results.getString("displayName"));
-				mod.setModVersion(results.getString("modVersion"));
-				mod.setGameVersion(results.getString("gameVersion"));
-				mod.setAuthor(results.getString("author"));
-				mod.setDescription(results.getString("description"));
-				mod.setURL(results.getString("url"));
-				mod.setChecksum(results.getLong("checksum"));
-				mod.setOrder(results.getInt("loadOrder"));
-				mod.setHidden(results.getInt("hidden") == 1);
-				mod.setInstalled(results.getInt("installed") == 1);
-				
-				log.debug(" -> " + mod.getInternalName());
-				
-				Set<String> dependencies = new HashSet<>();
-				
-				for (String data : results.getString("dependencies").split("\n")) {
-					dependencies.add(data);
-				}
-				
-				mod.setDependencies(dependencies);
-				
-				Set<ModFile> files = new HashSet<>();
-				
-				for (String data : results.getString("files").split("\n")) {
-					
-					String[] fields = data.split(":::");
-					
-					ModFile file = new ModFile();
-					
-					file.setPath(Paths.get(fields[0]));
-					file.setJson(Boolean.parseBoolean(fields[1]));
-					file.setIgnored(Boolean.parseBoolean(fields[2]));
-					file.setAutoMerged(Boolean.parseBoolean(fields[3]));
-					
-					files.add(file);
-					
-				}
-				
-				mod.setFiles(files);
-				
-				if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) {
-					deleteMod(mod);
-					continue;
-				}
-				
-				Set<Mod> mods = null;
-				
-				try {
-					
-					long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath());
-					
-					if (mod.getChecksum() != checksum) {
-						log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
-						//TODO Get path instead of using File
-						mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
-					} else {
-						mods = new HashSet<>();
-						mods.add(mod);
-					}
-					
-				} catch (IOException e) {
-					log.error("", e); //TODO Better error message
-				}
-				
-				if (mods != null && !mods.isEmpty()) {
-					for (Mod m : mods) {
-						modList.add(m);
-					}
-				}
-				
-			}
-
-		}
-		
-		results.close();
-		modQuery.closeOnCompletion();
-		
-		getNewMods(modList);
-		
-		Collections.sort(modList, new Mod.ModOrderComparator());
-		
-		for (Mod mod : modList) {
-			mod.setOrder(modList.indexOf(mod));
-			log.debug("[" + mod.getOrder() + "] " + mod.getInternalName());
-		}
-		
-		return modList;
-		
-	}
-	
 	private static String getSettingsValue(final String property) throws SQLException {
 
 		StringBuilder query = new StringBuilder();
@@ -708,45 +591,6 @@ public class Database extends Observable implements Progressable {
 		}
 		
 		log.debug("'" + property + "' -> '" + value + "' added to database.");
-		
-	}
-	
-	protected void getNewMods(final List<Mod> modList) {
-		
-		//Collect all filenames of already recognized mods
-		Set<String> currentArchives = new HashSet<>();
-		
-		for (Mod mod : modList) {
-			currentArchives.add(Paths.get(Settings.getInstance().getPropertyString("modsdir")).toAbsolutePath() + File.separator + mod.getArchiveName());
-		}
-		
-		//List all the archives in the mods directory, then remove already recognized mods
-		Set<Path> archives = new HashSet<>();
-		Set<Path> toRemove = new HashSet<>();
-		
-		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives);
-		
-		for (Path path : archives) {
-			if (currentArchives.contains(path.toString())) {
-				toRemove.add(path);
-			}
-		}
-		
-		archives.removeAll(toRemove);
-		
-		for (Path path : archives) {
-			
-			Set<Mod> mods = Mod.load(path, modList.size());
-			
-			if (mods == null || mods.isEmpty()) {
-				continue;
-			}
-			
-			for (Mod mod : mods) {
-				modList.add(mod);
-			}
-			
-		}
 		
 	}
 	

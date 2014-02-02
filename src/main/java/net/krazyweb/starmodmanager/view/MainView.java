@@ -5,6 +5,7 @@ import java.util.Observer;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -238,6 +239,10 @@ public class MainView implements Observer {
 	
 	protected void show() {
 		ModManager.getPrimaryStage().show();
+	}
+	
+	protected void setContent(final Node content) {
+		mainContentPane.setContent(content);
 	}
 
 	private void updateStrings() {

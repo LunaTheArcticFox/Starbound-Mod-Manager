@@ -216,6 +216,7 @@ public class Settings extends Observable implements Progressable {
 		settings.put(key, property.toString());
 		setChanged();
 		notifyObservers("propertychanged:" + key);
+		Database.setProperty(key, property);
 		log.debug("Property Changed: " + key + " -- " + property);
 	}
 	
