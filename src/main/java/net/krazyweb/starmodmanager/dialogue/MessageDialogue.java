@@ -6,8 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 
 public class MessageDialogue {
@@ -20,41 +20,60 @@ public class MessageDialogue {
 		INFO, ERROR
 	}
 	
+	public static enum DialogueAction {
+	    YES, NO, CANCEL, OK, CLOSED
+	}
+	
 	private Stage stage;
-	
-	private Text message;
+	private GridPane root;
+
+	private String title;
+	private Text messageText;
 	private Button confirmButton;
-	private Text placeholderImage;
+	private Text iconPlaceholder;
 	
-	private Scene createDialogue() {
+	private DialogueAction actionPerformed;
+	
+	public MessageDialogue(final String message, final String title, final MessageType messageType) {
+		build(message, title, messageType);
+		show();
+	}
+	
+	private void build(final String message, final String title, final MessageType messageType) {
 		
-		GridPane pane = new GridPane();
+		this.title = title;
 		
-		placeholderImage = new Text("[PLACEHOLDER]");
-		message = new Text("[PLACEHOLDER]");
-		confirmButton = new Button(Localizer.getMessage("messagedialogue.okay"));
+		root = new GridPane();
+		
+		iconPlaceholder = new Text("[PLACEHOLDER]");
+		messageText = new Text(message);
+		confirmButton = new Button(Localizer.getInstance().getMessage("messagedialogue.okay"));
 		
 		confirmButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				actionPerformed = DialogueAction.OK;
 				stage.close();
 			}
 		});
 		
-		pane.add(placeholderImage, 1, 1);
-		pane.add(message, 2, 1);
-		pane.add(confirmButton, 2, 2);
-		
-		return new Scene(pane, 500, 200);
+		root.add(iconPlaceholder, 1, 1);
+		root.add(messageText, 2, 1);
+		root.add(confirmButton, 2, 2);
 		
 	}
 	
-	public void start(final String message, final String windowTitle, final MessageType type) {
+	private void show() {
 		stage = new Stage();
-		stage.setScene(createDialogue());
-		stage.setTitle(windowTitle);
-		stage.initStyle(StageStyle.UTILITY);
+		stage.setScene(new Scene(root));
+		stage.setTitle(title);
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.setResizable(false);
 		stage.showAndWait();
+	}
+	
+	public DialogueAction getResult() {
+		return actionPerformed;
 	}
 	
 }

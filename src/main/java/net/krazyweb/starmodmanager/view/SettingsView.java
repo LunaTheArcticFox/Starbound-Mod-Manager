@@ -43,6 +43,9 @@ public class SettingsView implements Observer {
 	private Text checkVersionTitle;
 	private CheckBox checkVersionBox;
 	
+	private Text backupSavesOnLaunchTitle;
+	private CheckBox backupSavesOnLaunchBox;
+	
 	private Text confirmButtonDelayTitle;
 	private TextField confirmButtonDelayField;
 	
@@ -92,6 +95,11 @@ public class SettingsView implements Observer {
 		checkVersionTitle = new Text();
 		checkVersionContainer.getChildren().addAll(checkVersionBox, checkVersionTitle);
 
+		HBox backupSavesOnLaunchContainer = new HBox();
+		backupSavesOnLaunchBox = new CheckBox();
+		backupSavesOnLaunchTitle = new Text();
+		backupSavesOnLaunchContainer.getChildren().addAll(backupSavesOnLaunchBox, backupSavesOnLaunchTitle);
+
 		HBox confirmButtonDelayContainer = new HBox();
 		confirmButtonDelayField = new TextField();
 		confirmButtonDelayTitle = new Text();
@@ -102,6 +110,7 @@ public class SettingsView implements Observer {
 			modInstallPathContainer,
 			languages,
 			checkVersionContainer,
+			backupSavesOnLaunchContainer,
 			confirmButtonDelayContainer
 		);
 		
@@ -124,6 +133,8 @@ public class SettingsView implements Observer {
 		modInstallPathButton.setText(">>");
 		
 		checkVersionTitle.setText(Localizer.getInstance().getMessage("settings.checkversion"));
+		
+		backupSavesOnLaunchTitle.setText(Localizer.getInstance().getMessage("settings.backuponlaunch"));
 		
 		confirmButtonDelayTitle.setText(Localizer.getInstance().getMessage("settings.confirmdelay"));
 		confirmButtonDelayField.setText(Settings.getInstance().getPropertyString("confirmdelay"));

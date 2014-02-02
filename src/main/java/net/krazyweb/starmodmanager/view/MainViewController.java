@@ -10,10 +10,12 @@ import java.util.Observable;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.VBox;
 import main.java.net.krazyweb.helpers.FileHelper;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.ModList;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
+import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.log4j.Logger;
 
@@ -34,15 +36,16 @@ public class MainViewController extends Observable {
 		view.show();
 		
 		settingsView = new SettingsView();
-		
+
 	}
 	
 	protected void modTabClicked() {
-		
+		view.setContent(new VBox());
 	}
 	
 	protected void backupsTabClicked() {
-		
+		MessageDialogue m = new MessageDialogue("Test Message", "Test Title", MessageType.INFO);
+		log.debug(m.getResult());
 	}
 	
 	protected void settingsTabClicked() {
@@ -58,15 +61,15 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void lockButtonClicked() {
-		Settings.getInstance().setProperty("locale", "fl-SB");
+		
 	}
 	
 	protected void refreshButtonClicked() {
-		Settings.getInstance().setProperty("locale", "de-DE");
+		
 	}
 	
 	protected void expandButtonClicked() {
-		Settings.getInstance().setProperty("locale", "en-US");
+		
 	}
 	
 	protected void filesDraggedOver(final DragEvent event) {

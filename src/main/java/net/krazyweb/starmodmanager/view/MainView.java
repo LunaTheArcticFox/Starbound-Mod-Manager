@@ -20,6 +20,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import main.java.net.krazyweb.starmodmanager.ModManager;
 import main.java.net.krazyweb.starmodmanager.data.Localizer;
 import main.java.net.krazyweb.starmodmanager.data.Settings;
 
@@ -259,9 +260,9 @@ public class MainView implements Observer {
 		
 		//TODO Remove, these are for testing and will have no text later
 		quickBackupButton.setText("No Function");
-		lockButton.setText("fl-SB");
-		refreshButton.setText("de-DE");
-		expandButton.setText("en-US");
+		lockButton.setText("No Function");
+		refreshButton.setText("No Function");
+		expandButton.setText("No Function");
 		
 	}
 	

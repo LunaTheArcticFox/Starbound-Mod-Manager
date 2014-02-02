@@ -1,8 +1,9 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package main.java.net.krazyweb.starmodmanager;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import main.java.net.krazyweb.starmodmanager.view.ApplicationLoader;
 
 public class ModManager extends Application {
 	

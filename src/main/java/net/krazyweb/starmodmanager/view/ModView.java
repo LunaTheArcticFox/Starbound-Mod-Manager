@@ -36,10 +36,10 @@ public class ModView extends GridPane {
 		setHgap(25.0);
 		
 		displayName = new Text(mod.getDisplayName());
-		statusText = new Text(Localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		statusText = new Text(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		modVersion = new Text(mod.getModVersion());
 		
-		installButton = new Button(Localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		installButton = new Button(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		Button hideButton = new Button("HID");
 		hideButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -110,7 +110,7 @@ public class ModView extends GridPane {
 	
 	public void update() {
 		
-		installButton.setText(Localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		installButton.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		installButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -123,7 +123,7 @@ public class ModView extends GridPane {
 			}
 		});
 		
-		statusText.setText(Localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		statusText.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		
 	}
 	
