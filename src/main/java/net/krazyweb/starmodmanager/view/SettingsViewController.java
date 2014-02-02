@@ -1,5 +1,7 @@
 package net.krazyweb.starmodmanager.view;
 
+import org.apache.log4j.Logger;
+
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -9,6 +11,8 @@ import net.krazyweb.starmodmanager.data.Localizer.Language;
 import net.krazyweb.starmodmanager.data.Settings;
 
 public class SettingsViewController {
+	
+	private static final Logger log = Logger.getLogger(SettingsViewController.class);
 	
 	private SettingsView view;
 	
@@ -37,8 +41,30 @@ public class SettingsViewController {
 		
 	}
 	
+	protected void gamePathChanged(final String path) {
+		//TODO Validate the path
+		log.debug(path);
+	}
+	
+	protected void modsPathChanged(final String path) {
+		//TODO Validate the path
+		log.debug(path);
+	}
+	
 	protected void languageChanged(final Language language) {
 		Settings.getInstance().setProperty("locale", language.getLocale());
+	}
+	
+	protected void checkVersionChanged(final boolean checked) {
+		
+	}
+	
+	protected void backupSavesOnLaunchChanged(final boolean checked) {
+		
+	}
+	
+	protected void confirmButtonDelayChanged(final String value) {
+		Settings.getInstance().setProperty("confirmdelay", value);
 	}
 	
 }

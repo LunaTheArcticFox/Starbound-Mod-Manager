@@ -1,5 +1,7 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
@@ -215,6 +217,14 @@ public class Settings extends Observable implements Progressable {
 	
 	public double getPropertyDouble(final String key) {
 		return Double.parseDouble(getPropertyString(key));
+	}
+	
+	public boolean getPropertyBoolean(final String key) {
+		return Boolean.parseBoolean(getPropertyString(key));
+	}
+	
+	public Path getPropertyPath(final String key) {
+		return Paths.get(getPropertyString(key));
 	}
 	
 	public void setProperty(final String key, final Object property) {

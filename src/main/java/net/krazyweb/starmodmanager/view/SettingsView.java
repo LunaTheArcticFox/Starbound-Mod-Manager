@@ -16,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import net.krazyweb.jfx.controls.NumericTextField;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Localizer.Language;
 import net.krazyweb.starmodmanager.data.Settings;
@@ -34,9 +35,9 @@ public class SettingsView implements Observer {
 	private TextField gamePathField;
 	private Button gamePathButton;
 	
-	private Text modInstallPathTitle;
-	private TextField modInstallPathField;
-	private Button modInstallPathButton;
+	private Text modsPathTitle;
+	private TextField modsPathField;
+	private Button modsPathButton;
 	
 	private ComboBox<Language> languages;
 
@@ -47,7 +48,7 @@ public class SettingsView implements Observer {
 	private CheckBox backupSavesOnLaunchBox;
 	
 	private Text confirmButtonDelayTitle;
-	private TextField confirmButtonDelayField;
+	private NumericTextField confirmButtonDelayField;
 	
 	private SettingsViewController controller;
 	
@@ -69,26 +70,19 @@ public class SettingsView implements Observer {
 		gamePathContainer.add(gamePathField, 1, 2);
 		gamePathContainer.add(gamePathButton, 2, 2);
 		
-		modInstallPathTitle = new Text();
-		modInstallPathField = new TextField();
-		modInstallPathButton = new Button();
+		modsPathTitle = new Text();
+		modsPathField = new TextField();
+		modsPathButton = new Button();
 
 		GridPane modInstallPathContainer = new GridPane();
-		modInstallPathContainer.add(modInstallPathTitle, 1, 1);
-		modInstallPathContainer.add(modInstallPathField, 1, 2);
-		modInstallPathContainer.add(modInstallPathButton, 2, 2);
+		modInstallPathContainer.add(modsPathTitle, 1, 1);
+		modInstallPathContainer.add(modsPathField, 1, 2);
+		modInstallPathContainer.add(modsPathButton, 2, 2);
 		
 		ObservableList<Language> options = FXCollections.observableArrayList(Localizer.getInstance().getLanguages());
 		
 		languages = new ComboBox<>(options);
 		languages.setValue(Localizer.getInstance().getCurrentLanguage());
-		
-		languages.valueProperty().addListener(new ChangeListener<Language>() {
-			@Override
-			public void changed(ObservableValue<? extends Language> ov,	Language oldValue, Language newValue) {
-				controller.languageChanged(newValue);
-			}
-		});
 		
 		HBox checkVersionContainer = new HBox();
 		checkVersionBox = new CheckBox();
@@ -101,7 +95,7 @@ public class SettingsView implements Observer {
 		backupSavesOnLaunchContainer.getChildren().addAll(backupSavesOnLaunchBox, backupSavesOnLaunchTitle);
 
 		HBox confirmButtonDelayContainer = new HBox();
-		confirmButtonDelayField = new TextField();
+		confirmButtonDelayField = new NumericTextField();
 		confirmButtonDelayTitle = new Text();
 		confirmButtonDelayContainer.getChildren().addAll(confirmButtonDelayField, confirmButtonDelayTitle);
 		
@@ -114,7 +108,65 @@ public class SettingsView implements Observer {
 			confirmButtonDelayContainer
 		);
 		
+		createListeners();
 		updateStrings();
+		
+	}
+	
+	private void createListeners() {
+		
+		gamePathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
+				if (!newValue) {
+					controller.gamePathChanged(gamePathField.getText());
+				}
+			}
+		});
+
+		modsPathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
+				if (!newValue) {
+					controller.modsPathChanged(modsPathField.getText());
+				}
+			}
+		});
+		
+		languages.valueProperty().addListener(new ChangeListener<Language>() {
+			@Override
+			public void changed(ObservableValue<? extends Language> ov,	Language oldValue, Language newValue) {
+				controller.languageChanged(newValue);
+			}
+		});
+
+		checkVersionBox.selectedProperty().setValue(Settings.getInstance().getPropertyBoolean("checkversiononlaunch"));
+		checkVersionBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
+				controller.checkVersionChanged(newValue);
+			}
+		});
+
+		backupSavesOnLaunchBox.selectedProperty().setValue(Settings.getInstance().getPropertyBoolean("backuponlaunch"));
+		backupSavesOnLaunchBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
+				controller.backupSavesOnLaunchChanged(newValue);
+			}
+		});
+
+		confirmButtonDelayField.setMinValue(0);
+		confirmButtonDelayField.setMaxValue(10);
+		confirmButtonDelayField.setDefaultValue(0);
+		confirmButtonDelayField.focusedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
+				if (!newValue) {
+					controller.confirmButtonDelayChanged(confirmButtonDelayField.getText());
+				}
+			}
+		});
 		
 	}
 	
@@ -125,12 +177,12 @@ public class SettingsView implements Observer {
 	private void updateStrings() {
 		
 		gamePathTitle.setText(Localizer.getInstance().getMessage("settings.starboundpath"));
-		gamePathField.setText(Settings.getInstance().getPropertyString("starboundpath"));
-		gamePathButton.setText(">>");
+		gamePathField.setText(Settings.getInstance().getPropertyPath("starboundpath").toAbsolutePath().toString());
+		gamePathButton.setText(">>"); //TODO Replace with image
 
-		modInstallPathTitle.setText(Localizer.getInstance().getMessage("settings.modsinstallpath"));
-		modInstallPathField.setText(Settings.getInstance().getPropertyString("modsinstalldir"));
-		modInstallPathButton.setText(">>");
+		modsPathTitle.setText(Localizer.getInstance().getMessage("settings.modspath"));
+		modsPathField.setText(Settings.getInstance().getPropertyPath("modsdir").toAbsolutePath().toString());
+		modsPathButton.setText(">>"); //TODO Replace with image
 		
 		checkVersionTitle.setText(Localizer.getInstance().getMessage("settings.checkversion"));
 		
@@ -146,8 +198,6 @@ public class SettingsView implements Observer {
 		
 		if (observable instanceof Localizer && message.equals("localechanged")) {
 			updateStrings();
-		} else if (observable instanceof Settings && message.equals("propertychanged:starboundpath")) {
-			
 		}
 		
 	}
