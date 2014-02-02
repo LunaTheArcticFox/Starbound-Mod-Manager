@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import org.apache.log4j.Logger;
 

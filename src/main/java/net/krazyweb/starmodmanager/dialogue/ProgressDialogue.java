@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.dialogue;
+package net.krazyweb.starmodmanager.dialogue;
 
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressBar;

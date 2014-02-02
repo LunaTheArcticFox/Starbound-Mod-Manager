@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.data;
+package net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ import java.util.Set;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
-import main.java.net.krazyweb.helpers.FileHelper;
+import net.krazyweb.helpers.FileHelper;
 
 import org.apache.log4j.Logger;
 

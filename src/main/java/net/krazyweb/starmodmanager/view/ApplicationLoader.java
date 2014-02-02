@@ -1,14 +1,14 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import java.util.Observable;
 import java.util.Observer;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import main.java.net.krazyweb.starmodmanager.data.Database;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.ModList;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.Database;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Settings;
 
 import org.apache.log4j.Logger;
 

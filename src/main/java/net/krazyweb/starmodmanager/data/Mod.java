@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.data;
+package net.krazyweb.starmodmanager.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -15,10 +15,10 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import main.java.net.krazyweb.helpers.Archive;
-import main.java.net.krazyweb.helpers.ArchiveFile;
-import main.java.net.krazyweb.helpers.FileHelper;
-import main.java.net.krazyweb.helpers.JSONHelper;
+import net.krazyweb.helpers.Archive;
+import net.krazyweb.helpers.ArchiveFile;
+import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.helpers.JSONHelper;
 
 import org.apache.log4j.Logger;
 

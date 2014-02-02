@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -12,14 +12,14 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
-import main.java.net.krazyweb.helpers.FileHelper;
-import main.java.net.krazyweb.starmodmanager.ModManager;
-import main.java.net.krazyweb.starmodmanager.data.Database;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.ModList;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
-import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue;
-import main.java.net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
+import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.starmodmanager.ModManager;
+import net.krazyweb.starmodmanager.data.Database;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.log4j.Logger;
 

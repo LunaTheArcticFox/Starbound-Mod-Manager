@@ -1,12 +1,12 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import main.java.net.krazyweb.starmodmanager.ModManager;
-import main.java.net.krazyweb.starmodmanager.data.Localizer.Language;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.ModManager;
+import net.krazyweb.starmodmanager.data.Localizer.Language;
+import net.krazyweb.starmodmanager.data.Settings;
 
 public class SettingsViewController {
 	

@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.dialogue;
+package net.krazyweb.starmodmanager.dialogue;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -8,7 +8,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.Localizer;
 
 public class MessageDialogue {
 	

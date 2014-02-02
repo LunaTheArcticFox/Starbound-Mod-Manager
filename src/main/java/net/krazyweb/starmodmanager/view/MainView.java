@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -21,9 +21,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import main.java.net.krazyweb.starmodmanager.ModManager;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.ModManager;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.Settings;
 
 import org.apache.log4j.Logger;
 

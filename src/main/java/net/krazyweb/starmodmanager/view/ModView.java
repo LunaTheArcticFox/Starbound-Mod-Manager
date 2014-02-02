@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -6,9 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.Mod;
-import main.java.net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.Mod;
+import net.krazyweb.starmodmanager.data.ModList;
 
 import org.apache.log4j.Logger;
 

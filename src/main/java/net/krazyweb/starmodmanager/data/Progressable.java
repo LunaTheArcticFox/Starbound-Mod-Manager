@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.data;
+package net.krazyweb.starmodmanager.data;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyStringProperty;

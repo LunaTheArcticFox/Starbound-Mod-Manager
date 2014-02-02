@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.data;
+package net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +16,9 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
-import main.java.net.krazyweb.helpers.Archive;
-import main.java.net.krazyweb.helpers.FileHelper;
-import main.java.net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
+import net.krazyweb.helpers.Archive;
+import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
 import org.apache.log4j.Logger;
 

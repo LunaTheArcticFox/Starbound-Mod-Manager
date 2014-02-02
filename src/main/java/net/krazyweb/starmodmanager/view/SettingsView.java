@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.starmodmanager.view;
+package net.krazyweb.starmodmanager.view;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -16,9 +16,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import main.java.net.krazyweb.starmodmanager.data.Localizer;
-import main.java.net.krazyweb.starmodmanager.data.Localizer.Language;
-import main.java.net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.Localizer.Language;
+import net.krazyweb.starmodmanager.data.Settings;
 
 import org.apache.log4j.Logger;
 

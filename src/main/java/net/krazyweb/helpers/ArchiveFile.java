@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.helpers;
+package net.krazyweb.helpers;
 
 import java.nio.file.Path;
 

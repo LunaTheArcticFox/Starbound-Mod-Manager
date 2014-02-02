@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.helpers;
+package net.krazyweb.helpers;
 
 import javax.json.JsonObject;
 

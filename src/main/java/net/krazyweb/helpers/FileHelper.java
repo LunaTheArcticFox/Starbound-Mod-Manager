@@ -1,4 +1,4 @@
-package main.java.net.krazyweb.helpers;
+package net.krazyweb.helpers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
-import main.java.net.krazyweb.helpers.FileCopier.TreeCopier;
+import net.krazyweb.helpers.FileCopier.TreeCopier;
 
 import org.apache.log4j.Logger;
 
