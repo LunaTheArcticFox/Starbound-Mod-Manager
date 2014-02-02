@@ -114,7 +114,8 @@ public class SettingsView implements Observer {
 	}
 	
 	private void createListeners() {
-		
+
+		gamePathField.setText(Settings.getInstance().getPropertyPath("starboundpath").toAbsolutePath().toString());
 		gamePathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -124,6 +125,7 @@ public class SettingsView implements Observer {
 			}
 		});
 
+		modsPathField.setText(Settings.getInstance().getPropertyPath("modsdir").toAbsolutePath().toString());
 		modsPathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -159,6 +161,7 @@ public class SettingsView implements Observer {
 		confirmButtonDelayField.setMinValue(0);
 		confirmButtonDelayField.setMaxValue(10);
 		confirmButtonDelayField.setDefaultValue(0);
+		confirmButtonDelayField.setText(Settings.getInstance().getPropertyString("confirmdelay"));
 		confirmButtonDelayField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
@@ -177,19 +180,14 @@ public class SettingsView implements Observer {
 	private void updateStrings() {
 		
 		gamePathTitle.setText(Localizer.getInstance().getMessage("settings.starboundpath"));
-		gamePathField.setText(Settings.getInstance().getPropertyPath("starboundpath").toAbsolutePath().toString());
 		gamePathButton.setText(">>"); //TODO Replace with image
 
 		modsPathTitle.setText(Localizer.getInstance().getMessage("settings.modspath"));
-		modsPathField.setText(Settings.getInstance().getPropertyPath("modsdir").toAbsolutePath().toString());
 		modsPathButton.setText(">>"); //TODO Replace with image
 		
 		checkVersionTitle.setText(Localizer.getInstance().getMessage("settings.checkversion"));
-		
 		backupSavesOnLaunchTitle.setText(Localizer.getInstance().getMessage("settings.backuponlaunch"));
-		
 		confirmButtonDelayTitle.setText(Localizer.getInstance().getMessage("settings.confirmdelay"));
-		confirmButtonDelayField.setText(Settings.getInstance().getPropertyString("confirmdelay"));
 		
 	}
 	
