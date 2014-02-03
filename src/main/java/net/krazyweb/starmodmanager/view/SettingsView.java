@@ -21,6 +21,7 @@ import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Localizer.Language;
 import net.krazyweb.starmodmanager.data.Settings;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 
@@ -49,6 +50,8 @@ public class SettingsView implements Observer {
 	
 	private Text confirmButtonDelayTitle;
 	private NumericTextField confirmButtonDelayField;
+	
+	private ComboBox<Level> loggerLevels; //TODO
 	
 	private SettingsViewController controller;
 	

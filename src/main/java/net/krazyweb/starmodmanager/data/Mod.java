@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Observable;
 import java.util.Set;
 
 import javax.json.Json;
@@ -22,9 +23,13 @@ import net.krazyweb.helpers.JSONHelper;
 
 import org.apache.log4j.Logger;
 
-public class Mod {
+public class Mod extends Observable {
 	
 	private static final Logger log = Logger.getLogger(Mod.class);
+	
+	private static final String NO_DESCRIPTION = "StarboundModManager___NO_DESCRIPTION_FOR_MOD";
+	private static final String NO_AUTHOR = "StarboundModManager___NO_AUTHOR_FOR_MOD";
+	private static final String NO_VERSION = "StarboundModManager___NO_VERSION_FOR_MOD";
 	
 	private String internalName;
 	private String displayName;
@@ -106,10 +111,10 @@ public class Mod {
 				JsonObject metadata = obj.getJsonObject("metadata");
 				
 				mod.setDisplayName(JSONHelper.getString(metadata, "displayname", mod.getInternalName()));
-				mod.setAuthor(JSONHelper.getString(metadata, "author", Localizer.getInstance().getMessage("mod.unknownauthor")));
-				mod.setDescription(JSONHelper.getString(metadata, "description", Localizer.getInstance().getMessage("mod.nodescription")));
+				mod.setAuthor(JSONHelper.getString(metadata, "author", NO_AUTHOR));
+				mod.setDescription(JSONHelper.getString(metadata, "description", NO_DESCRIPTION));
 				mod.setURL(JSONHelper.getString(metadata, "support_url", ""));
-				mod.setModVersion(JSONHelper.getString(metadata, "version", Localizer.getInstance().getMessage("mod.unknownversion")));
+				mod.setModVersion(JSONHelper.getString(metadata, "version", NO_VERSION));
 				
 				if (obj.containsKey("ignoredfiles")) {
 					JsonArray arr = obj.getJsonArray("ignoredfiles");
@@ -121,10 +126,10 @@ public class Mod {
 			} else {
 				
 				mod.setDisplayName(mod.getInternalName());
-				mod.setAuthor(Localizer.getInstance().getMessage("mod.unknownauthor"));
-				mod.setDescription(Localizer.getInstance().getMessage("mod.nodescription"));
+				mod.setAuthor(NO_AUTHOR);
+				mod.setDescription(NO_DESCRIPTION);
 				mod.setURL("");
-				mod.setModVersion(Localizer.getInstance().getMessage("mod.unknownversion"));
+				mod.setModVersion(NO_VERSION);
 				
 			}
 			
@@ -258,6 +263,9 @@ public class Mod {
 	}
 
 	public String getModVersion() {
+		if (modVersion.equals(NO_VERSION)) {
+			return Localizer.getInstance().getMessage("mod.unknownversion");
+		}
 		return modVersion;
 	}
 
@@ -274,6 +282,9 @@ public class Mod {
 	}
 
 	public String getAuthor() {
+		if (author.equals(NO_AUTHOR)) {
+			return Localizer.getInstance().getMessage("mod.unknownauthor");
+		}
 		return author;
 	}
 
@@ -282,6 +293,9 @@ public class Mod {
 	}
 
 	public String getDescription() {
+		if (description.equals(NO_DESCRIPTION)) {
+			return Localizer.getInstance().getMessage("mod.nodescription");
+		}
 		return description;
 	}
 
@@ -327,6 +341,8 @@ public class Mod {
 
 	protected void setInstalled(final boolean installed) {
 		this.installed = installed;
+		setChanged();
+		notifyObservers("installstatuschanged");
 	}
 
 	public Set<String> getDependencies() {

@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -105,6 +106,8 @@ public class MainView implements Observer {
 		mainContentPane = new ScrollPane();
 		mainContentPane.setFitToHeight(true);
 		mainContentPane.setFitToWidth(true);
+		mainContentPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		mainContentPane.setHbarPolicy(ScrollBarPolicy.NEVER);
 		
 		VBox.setVgrow(mainContentPane, Priority.ALWAYS);
 		
@@ -281,6 +284,10 @@ public class MainView implements Observer {
 	
 	protected void setContent(final Node content) {
 		mainContentPane.setContent(content);
+	}
+	
+	protected ScrollPane getContent() {
+		return mainContentPane;
 	}
 	
 	protected Scene getScene() {

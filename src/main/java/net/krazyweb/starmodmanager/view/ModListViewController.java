@@ -30,6 +30,7 @@ public class ModListViewController {
 	private ModListView view;
 	
 	private double y, lastY, mouseY;
+	private int lastIndex;
 	
 	protected ModListViewController(final ModListView view, final ModList modList) {
 		
@@ -40,7 +41,7 @@ public class ModListViewController {
 		this.view.build();
 		
 		for (final Mod mod : modList.getMods()) {
-			ModView m = new ModView(mod);
+			ModView m = new ModView(mod, modList);
 			modViews.add(m);
 			this.view.addMod(m);
 		}
@@ -86,47 +87,56 @@ public class ModListViewController {
 	}
 	
 	protected void modViewMousePressed(final ModView modView, final MouseEvent event) {
-		lastY = y = modView.getContent().getLayoutY();
+		y = modView.getContent().getTranslateY();
+		lastY = y + modView.getContent().getLayoutY();
 		mouseY = event.getSceneY();
-		modView.getContent().toFront();		
+		lastIndex = modList.getMods().indexOf(modView.getMod());
+		modView.getContent().toFront();
 	}
 	
 	protected void modViewMouseDragged(final ModView modView, final MouseEvent event) {
 
-		lastY = modView.getContent().getLayoutY();
-		modView.getContent().setLayoutY(y + event.getSceneY() - mouseY);
+		modView.getContent().setTranslateY((int) (y + event.getSceneY() - mouseY));
 		
-		if (modView.getContent().getLayoutY() < view.getModsBox().getLayoutY()) {
-			modView.getContent().setLayoutY(view.getModsBox().getLayoutY());
+		double position = modView.getContent().getLayoutY() + modView.getContent().getTranslateY();
+		
+		if (position <= 0) {
+			modView.getContent().setTranslateY(0 - modView.getContent().getLayoutY());
 		}
 		
-		if (modView.getContent().getLayoutY() + modView.getContent().getHeight() > view.getModsBox().getLayoutY() + view.getModsBox().getHeight()) {
-			modView.getContent().setLayoutY(view.getModsBox().getLayoutY() + view.getModsBox().getHeight() - modView.getContent().getHeight());
+		if (position + modView.getContent().getHeight() >= view.getModsBox().getHeight()) {
+			modView.getContent().setTranslateY(view.getModsBox().getHeight() - modView.getContent().getLayoutY() - modView.getContent().getHeight());
 		}
 		
-		if (modList.getMods().indexOf(modView.getMod()) > 0 && modView.getContent().getLayoutY() < lastY) {
+		if (modList.getMods().indexOf(modView.getMod()) > 0 && position < lastY) {
 			
-			final ModView mv = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) - 1));
+			final ModView otherModView = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) - 1));
 			
-			if (!mv.moving && mv.getContent().getLayoutY() > modView.getContent().getLayoutY() - 16) { //16  = half the node height
-				mv.moving = true;
+			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
+			
+			if (!otherModView.moving && otherModViewPos > position - 16) { //16  = half the node height
+				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), 1);
-				view.animate(mv, 57);
+				view.animate(otherModView, 57);
 			}
 			
 		}
 		
-		if (modList.getMods().indexOf(modView.getMod()) < modList.getMods().size() - 1 && modView.getContent().getLayoutY() > lastY) {
+		if (modList.getMods().indexOf(modView.getMod()) < modList.getMods().size() - 1 && position > lastY) {
 			
-			final ModView mv = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) + 1));
+			final ModView otherModView = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) + 1));
 			
-			if (!mv.moving && mv.getContent().getLayoutY() < modView.getContent().getLayoutY() + modView.getContent().getHeight() - 16) { //16  = half the node height
-				mv.moving = true;
+			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
+			
+			if (!otherModView.moving && otherModViewPos < position + modView.getContent().getHeight() - 16) { //16  = half the node height
+				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), -1);
-				view.animate(mv, -57);
+				view.animate(otherModView, -57);
 			}
 			
 		}
+		
+		lastY = position;
 		
 	}
 	
@@ -140,7 +150,16 @@ public class ModListViewController {
 	}
 	
 	protected void modViewMouseReleased(final ModView modView, final MouseEvent e) {
-		modView.getContent().setLayoutY(modList.getMods().indexOf(modView.getMod()) * 57);
+		modView.getContent().setTranslateY(modList.getMods().indexOf(modView.getMod()) * 57 - modView.getContent().getLayoutY());
+		/*
+		 * For some stupid reason that I can't figure out, the mods will not retain
+		 * their positions on screen unless they're removed and re-added to the 
+		 * mod list container.
+		 */
+		view.clearMods();
+		for (ModView mv : modViews) {
+			view.addMod(mv);
+		}
 	}
 	
 }

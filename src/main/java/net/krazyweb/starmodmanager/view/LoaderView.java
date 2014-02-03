@@ -5,7 +5,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 public class LoaderView {
 
@@ -23,7 +22,6 @@ public class LoaderView {
 		stage = new Stage();
 		stage.setScene(new Scene(p, 300, 150));
 		stage.setTitle("Loading");
-		stage.initStyle(StageStyle.UTILITY);
 		stage.centerOnScreen();
 		stage.show();	
 	}

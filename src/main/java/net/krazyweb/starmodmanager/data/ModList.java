@@ -143,6 +143,8 @@ public class ModList extends Observable implements Progressable {
 	
 	public void installMod(final Mod mod) {
 		
+		//TODO Update to use the modlist wide task for progress bars
+		
 		final Task<Integer> installModsTask = new Task<Integer>() {
 
 			@Override
@@ -156,9 +158,7 @@ public class ModList extends Observable implements Progressable {
 				
 				Archive archive = new Archive(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()); //TODO Better Path manipulation
 				archive.extract();
-				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName())); //TODO Better Path manipulation
-				
-				mod.setInstalled(true);
+				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("starboundpath") + File.separator + "mods" + File.separator + mod.getInternalName())); //TODO Better Path manipulation
 				
 				Database.updateMod(mod);
 				
@@ -170,7 +170,7 @@ public class ModList extends Observable implements Progressable {
 		
 		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
-			public void handle(WorkerStateEvent t) {
+			public void handle(final WorkerStateEvent t) {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while installing mods!", installModsTask.getException());
 				//updateView();
@@ -179,8 +179,8 @@ public class ModList extends Observable implements Progressable {
 		
 		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
-			public void handle(WorkerStateEvent t) {
-				//updateView();
+			public void handle(final WorkerStateEvent t) {
+				mod.setInstalled(true);
 			}
 		});
 		
@@ -208,8 +208,6 @@ public class ModList extends Observable implements Progressable {
 					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
 				}
 				
-				mod.setInstalled(false);
-				
 				Database.updateMod(mod);
 				
 				return 1;
@@ -220,7 +218,7 @@ public class ModList extends Observable implements Progressable {
 		
 		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
-			public void handle(WorkerStateEvent t) {
+			public void handle(final WorkerStateEvent t) {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while uninstalling mods!", installModsTask.getException());
 				//updateView();
@@ -229,8 +227,8 @@ public class ModList extends Observable implements Progressable {
 		
 		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
-			public void handle(WorkerStateEvent t) {
-				//updateView();
+			public void handle(final WorkerStateEvent t) {
+				mod.setInstalled(false);
 			}
 		});
 		
