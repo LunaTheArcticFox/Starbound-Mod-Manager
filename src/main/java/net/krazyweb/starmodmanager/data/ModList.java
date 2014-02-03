@@ -129,7 +129,7 @@ public class ModList extends Observable implements Progressable {
 		}
 		
 		try {
-			FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()));
+			FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName())); //TODO Better Path manipulation
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -154,9 +154,9 @@ public class ModList extends Observable implements Progressable {
 				//Copy the non-conflicting files to a new patch folder
 				//
 				
-				Archive archive = new Archive(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName());
+				Archive archive = new Archive(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()); //TODO Better Path manipulation
 				archive.extract();
-				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName()));
+				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName())); //TODO Better Path manipulation
 				
 				mod.setInstalled(true);
 				
@@ -201,7 +201,9 @@ public class ModList extends Observable implements Progressable {
 				log.info("Uninstalling mod: " + mod.getInternalName());
 
 				try {
-					FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsinstalldir") + File.separator + mod.getInternalName()));
+					FileHelper.deleteFile(
+						Settings.getInstance().getPropertyPath("starboundpath").resolve(mod.getInternalName()) //TODO Better Path Example
+					);
 				} catch (IOException e) {
 					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
 				}
@@ -292,8 +294,6 @@ public class ModList extends Observable implements Progressable {
 				e.printStackTrace();
 			}
 		}
-		
-		//updateView();
 		
 	}
 	

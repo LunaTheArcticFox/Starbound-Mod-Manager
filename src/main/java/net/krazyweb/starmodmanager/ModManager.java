@@ -13,8 +13,6 @@ public class ModManager extends Application {
 	public void start(final Stage primaryStage) throws Exception {
 		primary = primaryStage;
 		primaryStage.initStyle(StageStyle.DECORATED);
-		primaryStage.setMinWidth(683);
-		primaryStage.setMinHeight(700);
 		primaryStage.centerOnScreen();
 		new ApplicationLoader();
 	}

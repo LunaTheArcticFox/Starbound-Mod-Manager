@@ -63,7 +63,7 @@ public class FileHelper {
 		byte[] fileBytes = null;
 		
 		try {
-			fileBytes = Files.readAllBytes(path);
+			fileBytes = Files.readAllBytes(path); //TODO Don't read all bytes, just get the first X
 		} catch (final IOException e) {
 			if (!suppressLogging) {
 				log.error("Reading all bytes from file '" + fileName + "' to get the signature.", e);

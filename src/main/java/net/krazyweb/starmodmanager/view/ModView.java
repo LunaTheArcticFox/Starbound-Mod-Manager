@@ -1,23 +1,30 @@
 package net.krazyweb.starmodmanager.view;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import java.util.Observable;
+import java.util.Observer;
+
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Mod;
-import net.krazyweb.starmodmanager.data.ModList;
 
 import org.apache.log4j.Logger;
 
-public class ModView extends GridPane {
+public class ModView implements Observer {
 	
 	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ModView.class);
 	
-	protected boolean moving = false;
+	private ModViewController controller;
+	
+	private Mod mod;
+	
+	protected boolean moving;
+	
+	private GridPane root;
+	
+	/*protected boolean moving = false;
 	protected final Mod mod;
 	private final ModList modList;
 	
@@ -25,9 +32,38 @@ public class ModView extends GridPane {
 	private final Text statusText;
 	private final Text displayName;
 	private final Text modVersion;
-	private final HBox buttons;
+	private final HBox buttons;*/
 	
-	protected ModView(final Mod mod, final ModList modList) {
+	protected ModView(final Mod mod) {
+		this.mod = mod;
+		controller = new ModViewController(this);
+		Localizer.getInstance().addObserver(this);
+	}
+	
+	protected void build() {
+		
+		root = new GridPane();
+		root.add(new Text("TEST"), 1, 1);
+		
+		root.setGridLinesVisible(true);
+		root.setHgap(25.0);
+		
+		Button hideButton = new Button("HID");
+		root.add(hideButton, 2, 2);
+		
+		createListeners();
+		
+	}
+	
+	protected void createListeners() {
+		
+	}
+	
+	protected Mod getMod() {
+		return mod;
+	}
+	
+	/*protected ModView(final Mod mod, final ModList modList) {
 		
 		this.mod = mod;
 		this.modList = modList;
@@ -125,6 +161,23 @@ public class ModView extends GridPane {
 		
 		statusText.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		
+	}*/
+
+	private void updateStrings() {
 	}
+	
+	protected GridPane getContent() {
+		return root;
+	}
+	
+	@Override
+	public void update(final Observable observable, final Object message) {
+		
+		if (observable instanceof Localizer && message.equals("localechanged")) {
+			updateStrings();
+		}
+		
+	}
+
 	
 }

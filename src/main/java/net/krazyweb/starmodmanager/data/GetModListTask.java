@@ -42,6 +42,8 @@ public class GetModListTask extends Task<Void> {
 	@Override
 	protected Void call() throws Exception {
 		
+		// TODO Remove mods from database when archive has been deleted
+		
 		this.updateMessage("Loading Mod List");
 		this.updateProgress(0.0, 1.0);
 
@@ -54,8 +56,10 @@ public class GetModListTask extends Task<Void> {
 		
 		for (final String modData : modsInDatabase) {
 			modNames.add(modData.split("\n")[0]);
-			currentArchives.add(Paths.get(Settings.getInstance().getPropertyString("modsdir")).toAbsolutePath() + File.separator + modData.split("\n")[1]);
+			currentArchives.add(Paths.get(Settings.getInstance().getPropertyString("modsdir")).toAbsolutePath() + File.separator + modData.split("\n")[1]); //TODO Better Path manipulation
 		}
+		
+		log.debug(modNames);
 		
 		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives);
 		
@@ -73,7 +77,7 @@ public class GetModListTask extends Task<Void> {
 		mods = new ArrayList<>();
 		
 		for (final String modName : modsInDatabase) {
-			mods.addAll(Database.getInstance().getModByName(modName));
+			mods.addAll(Database.getInstance().getModByName(modName.split("\n")[0]));
 			this.updateProgress((double) count, (double) total);
 			count++;
 		}

@@ -420,7 +420,7 @@ public class Database extends Observable implements Progressable {
 			mod.setFiles(files);
 			
 			//TODO Paths, Files
-			if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) {
+			if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) { //TODO Better Path manipulation
 				deleteMod(mod);
 				return null;
 			}
@@ -429,12 +429,12 @@ public class Database extends Observable implements Progressable {
 			
 			try {
 				
-				long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath());
+				long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath()); //TODO Better Path manipulation
 				
 				if (mod.getChecksum() != checksum) {
 					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
 					//TODO Get path instead of using File
-					mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder());
+					mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder()); //TODO Better Path manipulation
 				} else {
 					mods = new HashSet<>();
 					mods.add(mod);

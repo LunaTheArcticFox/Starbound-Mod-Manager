@@ -129,7 +129,7 @@ public class Mod {
 			}
 			
 			try {
-				mod.setChecksum(FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.archiveName).toPath()));
+				mod.setChecksum(FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.archiveName).toPath())); //TODO Better Path manipulation
 			} catch (IOException e) {
 				log.error("Setting Checksum", e);
 			}
@@ -230,7 +230,7 @@ public class Mod {
 				Archive newArchive = new Archive(subDir + ".zip");
 				newArchive.getFiles().addAll(files);
 				
-				newArchive.writeToFile(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + newArchive.getFileName()));
+				newArchive.writeToFile(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + newArchive.getFileName())); //TODO Better Path manipulation
 				
 				archives.add(newArchive);
 				

@@ -176,7 +176,7 @@ public class Archive {
 					continue;
 				}
 				
-				File destination = new File(folder.getAbsolutePath() + File.separator + file.getPath());
+				File destination = new File(folder.getAbsolutePath() + File.separator + file.getPath()); //TODO Better Path manipulation
 				destination.getParentFile().mkdirs();
 				
 				OutputStream out = new FileOutputStream(destination);

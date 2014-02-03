@@ -34,6 +34,7 @@ public class MainView implements Observer {
 	
 	private MainViewController controller;
 
+	private Scene scene;
 	private VBox root;
 	private StackPane stackPane;
 	private ScrollPane mainContentPane;
@@ -113,8 +114,29 @@ public class MainView implements Observer {
 		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		final Scene scene = new Scene(stackPane, Settings.getInstance().getPropertyDouble("windowwidth"), Settings.getInstance().getPropertyDouble("windowheight"));
+		scene = new Scene(stackPane, Settings.getInstance().getPropertyDouble("windowwidth"), Settings.getInstance().getPropertyDouble("windowheight"));
+		
 		Stage stage = ModManager.getPrimaryStage();
+		
+		/*
+		 * Similar to pre-rendering the views of each tab, to set the
+		 * correct window size (including borders, making it an unknown value)
+		 * to maintain a minimum canvas size (known), an empty scene with the
+		 * wanted values must be rendered in a fully transparent window.
+		 * The stage width/height is then the real minimum size that is
+		 * desired, so that value is plugged in for future use.
+		 * Once all that is done, hide the stage, change the opacity back to 1.0,
+		 * then add in the real scene.
+		 */
+		stage.setOpacity(0.0);
+		stage.setScene(new Scene(new VBox(), 683, 700));
+		stage.show();
+		
+		stage.setMinWidth(stage.getWidth());
+		stage.setMinHeight(stage.getHeight());
+		
+		stage.hide();
+		stage.setOpacity(1.0);
 		
 		stage.setScene(scene);
 		
@@ -245,7 +267,7 @@ public class MainView implements Observer {
 		Text text = new Text(message);
 		text.setFill(Color.WHITE);
 		text.setFont(Font.font("Verdana", 32));
-		stackPane.getChildren().addAll(new Rectangle(ModManager.getPrimaryStage().getWidth(), ModManager.getPrimaryStage().getHeight(), new Color(0.0, 0.0, 0.0, 0.8)), text);
+		stackPane.getChildren().addAll(new Rectangle(root.getWidth(), root.getHeight(), new Color(0.0, 0.0, 0.0, 0.8)), text);
 	}
 	
 	protected void hideOverlay() {
@@ -259,6 +281,10 @@ public class MainView implements Observer {
 	
 	protected void setContent(final Node content) {
 		mainContentPane.setContent(content);
+	}
+	
+	protected Scene getScene() {
+		return scene;
 	}
 
 	private void updateStrings() {

@@ -10,10 +10,8 @@ import java.util.Observable;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import net.krazyweb.helpers.FileHelper;
-import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Database;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.ModList;
@@ -26,12 +24,14 @@ import org.apache.log4j.Logger;
 public class MainViewController extends Observable {
 	
 	private static final Logger log = Logger.getLogger(MainViewController.class);
-	
+
 	private MainView view;
+	private ModListView modListView;
+	private SettingsView settingsView;
+	
+	private ModList modList;
 	
 	private boolean dragOver = false;
-	
-	private SettingsView settingsView;
 	
 	protected MainViewController(final ModList modList) {
 		
@@ -39,12 +39,17 @@ public class MainViewController extends Observable {
 		view.build();
 		view.show();
 		
+		modListView = new ModListView(modList);
 		settingsView = new SettingsView();
-
+		
+		view.setContent(modListView.getContent());
+		
+		this.modList = modList;
+		
 	}
 	
 	protected void modTabClicked() {
-		view.setContent(new VBox());
+		view.setContent(modListView.getContent());
 	}
 	
 	protected void backupsTabClicked() {
@@ -122,7 +127,7 @@ public class MainViewController extends Observable {
 				toAdd.add(file.toPath());
 				log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
 			}
-			//modListView.addMods(toAdd); TODO
+			modList.addMods(toAdd);
 		}
 		
 		event.setDropCompleted(success);
@@ -139,8 +144,8 @@ public class MainViewController extends Observable {
 	
 	protected void closeRequested(final WindowEvent event) {
 		
-		Settings.getInstance().setProperty("windowwidth", ModManager.getPrimaryStage().getWidth());
-		Settings.getInstance().setProperty("windowheight", ModManager.getPrimaryStage().getHeight());
+		Settings.getInstance().setProperty("windowwidth", view.getScene().getWidth());
+		Settings.getInstance().setProperty("windowheight", view.getScene().getHeight());
 		
 		Database.getInstance().closeConnection();
 		

@@ -1,34 +1,130 @@
 package net.krazyweb.starmodmanager.view;
 
+import java.util.Observable;
+import java.util.Observer;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.ModList;
+
 import org.apache.log4j.Logger;
 
-public class ModListView /*implements Observer*/ {
+public class ModListView implements Observer {
 	
 	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ModListView.class);
 	
-	/*private Map<Mod, ModView> modViews;
-	private VBox modsBox;
-	private List<Mod> mods;
-	private double y, mouseY, lastY;
-	
 	private VBox root;
+	private VBox modsBox;
+	
+	private Button addModButton;
 	
 	private ModListViewController controller;
 	
-	protected ModListView(final ModListViewController c) {
-		this.controller = c;
+	protected ModListView(final ModList modList) {
+		this.controller = new ModListViewController(this, modList);
 		Localizer.getInstance().addObserver(this);
 	}
 	
-	protected void buildUI(final ModList modList) {
+	protected void build() {
+		
+		root = new VBox();
+		root.setSpacing(25.0);
+		
+		modsBox = new VBox();
+		modsBox.setSpacing(25.0);
+		
+		addModButton = new Button();
+		
+		root.getChildren().addAll(
+			modsBox,
+			addModButton
+		);
+		
+		createListeners();
+		updateStrings();
+		
+	}
+	
+	private void createListeners() {
+		
+		addModButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.addModButtonClicked();
+			}
+		});
+		
+	}
+	
+	private void updateStrings() {
+		
+		addModButton.setText(Localizer.getInstance().getMessage("modlistview.addmodsbutton"));
+				
+	}
+	
+	protected Node getContent() {
+		return root;
+	}
+	
+	protected void clearMods() {
+		modsBox.getChildren().clear();
+	}
+	
+	protected void addMod(final ModView modView) {
+		createDragListeners(modView);
+		modsBox.getChildren().add(modView.getContent());
+	}
+	
+	protected void removeMod(final ModView modView) {
+		modsBox.getChildren().remove(modView.getContent());
+	}
+	
+	private void createDragListeners(final ModView modView) {
+		
+		modView.getContent().setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				controller.modViewMousePressed(modView, e);
+				e.consume();
+			}
+		});
+		
+		modView.getContent().setOnMouseDragged(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				controller.modViewMouseDragged(modView, e);
+				e.consume();
+			}
+		});
+		
+		modView.getContent().setOnMouseReleased(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent e) {
+				controller.modViewMouseReleased(modView, e);
+				e.consume();
+			}
+		});
+		
+	}
+	
+	/*protected void buildUI(final ModList modList) {
 		
 		root.setSpacing(25.0);
 		
 		modsBox = new VBox();
 		modsBox.setSpacing(25.0);
 		
-		Button addMod = new Button(Localizer.getMessage("modlistview.addmodsbutton"));
+		Button addMod = new Button();
 		addMod.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
@@ -125,80 +221,8 @@ public class ModListView /*implements Observer*/ {
 		
 		mods.removeAll(toRemove);
 		
-	}
-	
-	private void setDragAndDrop(final ModView modView) {
-		
-		modView.setOnMousePressed(new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(final MouseEvent e) {
-				lastY = y = modView.getLayoutY();
-				mouseY = e.getSceneY();
-				modView.toFront();
-			}
-			
-		});
-		
-		modView.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(final MouseEvent e) {
-
-				lastY = modView.getLayoutY();
-				modView.setLayoutY(y + e.getSceneY() - mouseY);
-				
-				if (modView.getLayoutY() < modsBox.getLayoutY()) {
-					modView.setLayoutY(modsBox.getLayoutY());
-				}
-				
-				if (modView.getLayoutY() + modView.getHeight() > modsBox.getLayoutY() + modsBox.getHeight()) {
-					modView.setLayoutY(modsBox.getLayoutY() + modsBox.getHeight() - modView.getHeight());
-				}
-				
-				if (mods.indexOf(modView.mod) > 0 && modView.getLayoutY() < lastY) {
-					
-					final ModView mv = modViews.get(mods.get(mods.indexOf(modView.mod) - 1));
-					
-					if (!mv.moving && mv.getLayoutY() > modView.getLayoutY() - 16) { //16  = half the node height
-						mv.moving = true;
-						modList.moveMod(modView.mod, 1);
-						getModList();
-						animate(mv, 57);
-					}
-					
-				}
-				
-				if (mods.indexOf(modView.mod) < mods.size() - 1 && modView.getLayoutY() > lastY) {
-					
-					final ModView mv = modViews.get(mods.get(mods.indexOf(modView.mod) + 1));
-					
-					if (!mv.moving && mv.getLayoutY() < modView.getLayoutY() + modView.getHeight() - 16) { //16  = half the node height
-						mv.moving = true;
-						modList.moveMod(modView.mod, -1);
-						getModList();
-						animate(mv, -57);
-					}
-					
-				}
-				
-				e.consume();
-				
-			}
-			
-		});
-		
-		modView.setOnMouseReleased(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(final MouseEvent e) {
-				modView.setLayoutY(y);
-				modList.requestUpdate();
-			}
-		});
-		
-	}
-	
-	private void removeDragAndDrop(final ModView modView) {
+	}*/	
+	/*private void removeDragAndDrop(final ModView modView) {
 		
 		modView.setOnMousePressed(new EventHandler<MouseEvent>() {
 			@Override
@@ -224,13 +248,13 @@ public class ModListView /*implements Observer*/ {
 			}
 		});
 		
-	}
+	}*/
 	
-	private void animate(final ModView modView, final int amount) {
+	protected void animate(final ModView modView, final int amount) {
 		
 		Timeline timeline = new Timeline();
 		timeline.setAutoReverse(false);
-		final KeyValue kv = new KeyValue(modView.layoutYProperty(), modView.getLayoutY() + amount); //Height + spacing
+		final KeyValue kv = new KeyValue(modView.getContent().layoutYProperty(), modView.getContent().getLayoutY() + amount); //Height + spacing
 		final KeyFrame kf = new KeyFrame(Duration.millis(80), kv);
 		timeline.getKeyFrames().add(kf);
 		timeline.setOnFinished(new EventHandler<ActionEvent>() {
@@ -243,7 +267,11 @@ public class ModListView /*implements Observer*/ {
 		
 	}
 	
-	protected void toggleLock() {
+	protected VBox getModsBox() {
+		return modsBox;
+	}
+	
+	/*protected void toggleLock() {
 		
 		if (modList.isLocked()) {
 			modList.unlockList();
@@ -252,18 +280,16 @@ public class ModListView /*implements Observer*/ {
 		}
 		
 	}
-	
-	private void updateStrings() {
 		
 	}*/
 	
-	/*@Override
+	@Override
 	public void update(final Observable observable, final Object message) {
 		
 		if (observable instanceof Localizer && message.equals("localechanged")) {
-			//updateStrings();
+			updateStrings();
 		}
 		
-	}*/
+	}
 
 }
