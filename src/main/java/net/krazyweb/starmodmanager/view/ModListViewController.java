@@ -30,8 +30,7 @@ public class ModListViewController {
 	private ModListView view;
 	
 	private double y, lastY, mouseY;
-	private int lastIndex;
-	
+
 	protected ModListViewController(final ModListView view, final ModList modList) {
 		
 		modViews = new ArrayList<>();
@@ -90,7 +89,6 @@ public class ModListViewController {
 		y = modView.getContent().getTranslateY();
 		lastY = y + modView.getContent().getLayoutY();
 		mouseY = event.getSceneY();
-		lastIndex = modList.getMods().indexOf(modView.getMod());
 		modView.getContent().toFront();
 	}
 	
@@ -152,7 +150,7 @@ public class ModListViewController {
 	protected void modViewMouseReleased(final ModView modView, final MouseEvent e) {
 		modView.getContent().setTranslateY(modList.getMods().indexOf(modView.getMod()) * 57 - modView.getContent().getLayoutY());
 		/*
-		 * For some stupid reason that I can't figure out, the mods will not retain
+		 * For some stupid reason that I can't figure out, the mod panes will not retain
 		 * their positions on screen unless they're removed and re-added to the 
 		 * mod list container.
 		 */

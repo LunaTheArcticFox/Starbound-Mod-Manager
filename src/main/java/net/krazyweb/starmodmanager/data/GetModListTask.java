@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +13,7 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.starmodmanager.data.Mod.ModOrderComparator;
 
 import org.apache.log4j.Logger;
 
@@ -77,10 +79,12 @@ public class GetModListTask extends Task<Void> {
 		mods = new ArrayList<>();
 		
 		for (final String modName : modsInDatabase) {
-			mods.addAll(Database.getInstance().getModByName(modName.split("\n")[0]));
+			mods.add(Database.getInstance().getModByName(modName.split("\n")[0]));
 			this.updateProgress((double) count, (double) total);
 			count++;
 		}
+		
+		Collections.sort(mods, new ModOrderComparator());
 		
 		for (Path path : archives) {
 			
@@ -101,6 +105,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (Mod mod : mods) {
 			mod.setOrder(mods.indexOf(mod));
+			Database.updateMod(mod);
 		}
 		
 		this.updateProgress(1.0, 1.0);

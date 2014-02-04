@@ -129,18 +129,27 @@ public class Settings extends Observable implements Progressable {
 			protected Void call() throws Exception {
 
 				this.updateMessage("Loading Settings From Database");
-				this.updateProgress(0.0, 2.0);
+				this.updateProgress(0.0, 3.0);
 
 				settings = Database.getInstance().getProperties();
 
-				this.updateProgress(1.0, 2.0);
+				this.updateProgress(1.0, 3.0);
 				
 				defaultProperties = new Properties();
 				defaultProperties.load(Settings.class.getClassLoader().getResourceAsStream("defaultsettings.properties"));
 
-				this.updateProgress(2.0, 2.0);
+				this.updateProgress(2.0, 3.0);
+
+				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
+					ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
+					FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
+					console.setThreshold(Level.OFF);
+					file.setThreshold(getPropertyLevel("loggerlevel"));
+				}
+
+				this.updateProgress(3.0, 3.0);
 				
-				log.debug("Properties File Loaded");
+				log.debug("Settings Loaded");
 				
 				return null;
 				
@@ -194,6 +203,12 @@ public class Settings extends Observable implements Progressable {
 		return operatingSystem;
 	}
 
+	public void setLoggerLevel(final Level level) {
+		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
+			FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
+			file.setThreshold(level);
+		}
+	}
 	
 	public String getPropertyString(final String key) {
 		
@@ -225,6 +240,10 @@ public class Settings extends Observable implements Progressable {
 	
 	public Path getPropertyPath(final String key) {
 		return Paths.get(getPropertyString(key));
+	}
+	
+	public Level getPropertyLevel(final String key) {
+		return Level.toLevel(getPropertyString(key));
 	}
 	
 	public void setProperty(final String key, final Object property) {

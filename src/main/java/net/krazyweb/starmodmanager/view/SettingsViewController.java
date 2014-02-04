@@ -1,7 +1,5 @@
 package net.krazyweb.starmodmanager.view;
 
-import org.apache.log4j.Logger;
-
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -9,6 +7,9 @@ import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Localizer.Language;
 import net.krazyweb.starmodmanager.data.Settings;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 public class SettingsViewController {
 	
@@ -55,12 +56,17 @@ public class SettingsViewController {
 		Settings.getInstance().setProperty("locale", language.getLocale());
 	}
 	
+	protected void loggerLevelChanged(final Level level) {
+		Settings.getInstance().setProperty("loggerlevel", level);
+		Settings.getInstance().setLoggerLevel(level);
+	}
+	
 	protected void checkVersionChanged(final boolean checked) {
-		
+		Settings.getInstance().setProperty("checkversiononlaunch", checked);
 	}
 	
 	protected void backupSavesOnLaunchChanged(final boolean checked) {
-		
+		Settings.getInstance().setProperty("backuponlaunch", checked);
 	}
 	
 	protected void confirmButtonDelayChanged(final String value) {

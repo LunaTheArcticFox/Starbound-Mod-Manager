@@ -40,7 +40,7 @@ public class SettingsView implements Observer {
 	private TextField modsPathField;
 	private Button modsPathButton;
 	
-	private ComboBox<Language> languages;
+	private ComboBox<Language> languageSelector;
 
 	private Text checkVersionTitle;
 	private CheckBox checkVersionBox;
@@ -51,7 +51,8 @@ public class SettingsView implements Observer {
 	private Text confirmButtonDelayTitle;
 	private NumericTextField confirmButtonDelayField;
 	
-	private ComboBox<Level> loggerLevels; //TODO
+	private ComboBox<Level> loggerLevelSelector; //TODO
+	private Text loggerLevelTitle;
 	
 	private SettingsViewController controller;
 	
@@ -82,10 +83,24 @@ public class SettingsView implements Observer {
 		modInstallPathContainer.add(modsPathField, 1, 2);
 		modInstallPathContainer.add(modsPathButton, 2, 2);
 		
-		ObservableList<Language> options = FXCollections.observableArrayList(Localizer.getInstance().getLanguages());
+		ObservableList<Language> languageOptions = FXCollections.observableArrayList(Localizer.getInstance().getLanguages());
+		languageSelector = new ComboBox<>(languageOptions);
+		languageSelector.setValue(Localizer.getInstance().getCurrentLanguage());
 		
-		languages = new ComboBox<>(options);
-		languages.setValue(Localizer.getInstance().getCurrentLanguage());
+		ObservableList<Level> loggerLevelOptions = FXCollections.observableArrayList(
+			Level.OFF,
+			Level.FATAL,
+			Level.ERROR,
+			Level.WARN,
+			Level.INFO,
+			Level.DEBUG,
+			Level.TRACE
+		);
+		HBox loggerLevelContainer = new HBox();
+		loggerLevelSelector = new ComboBox<>(loggerLevelOptions);
+		loggerLevelSelector.setValue(Settings.getInstance().getPropertyLevel("loggerlevel"));
+		loggerLevelTitle = new Text();
+		loggerLevelContainer.getChildren().addAll(loggerLevelTitle, loggerLevelSelector);
 		
 		HBox checkVersionContainer = new HBox();
 		checkVersionBox = new CheckBox();
@@ -105,7 +120,8 @@ public class SettingsView implements Observer {
 		root.getChildren().addAll(
 			gamePathContainer,
 			modInstallPathContainer,
-			languages,
+			languageSelector,
+			loggerLevelContainer,
 			checkVersionContainer,
 			backupSavesOnLaunchContainer,
 			confirmButtonDelayContainer
@@ -138,10 +154,17 @@ public class SettingsView implements Observer {
 			}
 		});
 		
-		languages.valueProperty().addListener(new ChangeListener<Language>() {
+		languageSelector.valueProperty().addListener(new ChangeListener<Language>() {
 			@Override
-			public void changed(ObservableValue<? extends Language> ov,	Language oldValue, Language newValue) {
+			public void changed(ObservableValue<? extends Language> ov, Language oldValue, Language newValue) {
 				controller.languageChanged(newValue);
+			}
+		});
+		
+		loggerLevelSelector.valueProperty().addListener(new ChangeListener<Level>() {
+			@Override
+			public void changed(ObservableValue<? extends Level> ov, Level oldValue, Level newValue) {
+				controller.loggerLevelChanged(newValue);
 			}
 		});
 
@@ -187,6 +210,8 @@ public class SettingsView implements Observer {
 
 		modsPathTitle.setText(Localizer.getInstance().getMessage("settings.modspath"));
 		modsPathButton.setText(">>"); //TODO Replace with image
+		
+		loggerLevelTitle.setText(Localizer.getInstance().getMessage("settings.loggerlevel"));
 		
 		checkVersionTitle.setText(Localizer.getInstance().getMessage("settings.checkversion"));
 		backupSavesOnLaunchTitle.setText(Localizer.getInstance().getMessage("settings.backuponlaunch"));

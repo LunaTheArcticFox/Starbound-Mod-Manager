@@ -353,9 +353,9 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	protected List<Mod> getModByName(final String modName) throws SQLException {
+	protected Mod getModByName(final String modName) throws SQLException {
 		
-		List<Mod> output = new ArrayList<>();
+		Mod output = null;
 		
 		StringBuilder query = new StringBuilder();
 		
@@ -444,11 +444,7 @@ public class Database extends Observable implements Progressable {
 				log.error("", e); //TODO Better error message
 			}
 			
-			if (mods != null && !mods.isEmpty()) {
-				for (Mod m : mods) {
-					output.add(m);
-				}
-			}
+			output = mod;
 
 		}
 		

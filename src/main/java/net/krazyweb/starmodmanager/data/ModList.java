@@ -160,8 +160,6 @@ public class ModList extends Observable implements Progressable {
 				archive.extract();
 				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("starboundpath") + File.separator + "mods" + File.separator + mod.getInternalName())); //TODO Better Path manipulation
 				
-				Database.updateMod(mod);
-				
 				return 1;
 				
 			}
@@ -173,7 +171,6 @@ public class ModList extends Observable implements Progressable {
 			public void handle(final WorkerStateEvent t) {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while installing mods!", installModsTask.getException());
-				//updateView();
 			}
 		});
 		
@@ -181,6 +178,12 @@ public class ModList extends Observable implements Progressable {
 			@Override
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(true);
+				try {
+					Database.updateMod(mod);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					log.error("", e);
+				}
 			}
 		});
 		
@@ -201,14 +204,13 @@ public class ModList extends Observable implements Progressable {
 				log.info("Uninstalling mod: " + mod.getInternalName());
 
 				try {
+					log.debug("Deleting from: " + Settings.getInstance().getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
 					FileHelper.deleteFile(
-						Settings.getInstance().getPropertyPath("starboundpath").resolve(mod.getInternalName()) //TODO Better Path Example
+						Settings.getInstance().getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName())
 					);
 				} catch (IOException e) {
 					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
 				}
-				
-				Database.updateMod(mod);
 				
 				return 1;
 				
@@ -229,6 +231,12 @@ public class ModList extends Observable implements Progressable {
 			@Override
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(false);
+				try {
+					Database.updateMod(mod);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					log.error("", e);
+				}
 			}
 		});
 		
