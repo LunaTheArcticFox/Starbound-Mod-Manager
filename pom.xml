@@ -6,6 +6,9 @@
 	<version>2.0.0a</version>
 	<name>Starbound Mod Manager</name>
 	<description>A mod manager for Starbound.</description>
+	<organization>
+		<name>Starbound Mod Manager</name>
+	</organization>
 
 	<build>
 		<plugins>
@@ -23,6 +26,11 @@
 				<version>2.0</version>
 				<configuration>
 					<mainClass>net.krazyweb.starmodmanager.ModManager</mainClass>
+					<identifier>starboundmodmanager</identifier>
+				    <jvmArgs>
+				    	<arg>-Xms32m</arg>
+				    	<arg>-Xmx128m</arg>
+				    </jvmArgs>
 				</configuration>
 			</plugin>
 		</plugins>

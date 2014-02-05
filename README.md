@@ -8,3 +8,4 @@ This project requires Maven.
 To run the project from the command line, use "mvn jfx:run".
 
 To build the project into a runnable .jar file, use "mvn clean jfx:jar".
+To build the project into a native executable for your OS, use "mvn clean jfx:native"
