@@ -61,7 +61,6 @@ public class Settings extends Observable implements Progressable {
 	 * Sets the appropriate logging levels for the logger based on launch conditions.
 	 * If the program is launched from a .jar file, then the console logging is turned off.
 	 * Otherwise, it is left on and file logging is turned off.
-	 * TODO Add user configurable logging levels per appender.
 	 */
 	public void configureLogger() {
 		

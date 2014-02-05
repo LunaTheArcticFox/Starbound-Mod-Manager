@@ -2,6 +2,7 @@ package net.krazyweb.starmodmanager.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -419,8 +420,7 @@ public class Database extends Observable implements Progressable {
 			
 			mod.setFiles(files);
 			
-			//TODO Paths, Files
-			if (!new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).exists()) { //TODO Better Path manipulation
+			if (Files.notExists(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()))) {
 				deleteMod(mod);
 				return null;
 			}
@@ -429,18 +429,17 @@ public class Database extends Observable implements Progressable {
 			
 			try {
 				
-				long checksum = FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).toPath()); //TODO Better Path manipulation
+				long checksum = FileHelper.getChecksum(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()));
 				
 				if (mod.getChecksum() != checksum) {
 					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
-					//TODO Get path instead of using File
-					mods = Mod.load(Paths.get(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()).getPath()), mod.getOrder()); //TODO Better Path manipulation
+					mods = Mod.load(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder());
 				} else {
 					mods = new HashSet<>();
 					mods.add(mod);
 				}
 				
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				log.error("", e); //TODO Better error message
 			}
 			

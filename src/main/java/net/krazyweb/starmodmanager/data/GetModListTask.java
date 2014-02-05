@@ -35,7 +35,7 @@ public class GetModListTask extends Task<Void> {
 		setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				log.error("", getException());
+				log.error("", getException()); //TODO
 			}
 		});
 		
@@ -58,12 +58,12 @@ public class GetModListTask extends Task<Void> {
 		
 		for (final String modData : modsInDatabase) {
 			modNames.add(modData.split("\n")[0]);
-			currentArchives.add(Paths.get(Settings.getInstance().getPropertyString("modsdir")).toAbsolutePath() + File.separator + modData.split("\n")[1]); //TODO Better Path manipulation
+			currentArchives.add(Settings.getInstance().getPropertyPath("modsdir").resolve(modData.split("\n")[1]).toAbsolutePath().toString()); //TODO Better Path manipulation
 		}
 		
 		log.debug(modNames);
 		
-		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives);
+		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives); //TODO investigate using path
 		
 		for (Path path : archives) {
 			if (currentArchives.contains(path.toString())) {
@@ -79,7 +79,10 @@ public class GetModListTask extends Task<Void> {
 		mods = new ArrayList<>();
 		
 		for (final String modName : modsInDatabase) {
-			mods.add(Database.getInstance().getModByName(modName.split("\n")[0]));
+			Mod tempMod = null;
+			if ((tempMod = Database.getInstance().getModByName(modName.split("\n")[0])) != null) {
+				mods.add(tempMod);
+			}
 			this.updateProgress((double) count, (double) total);
 			count++;
 		}
