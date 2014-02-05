@@ -6,11 +6,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.zip.Adler32;
@@ -57,61 +60,60 @@ public class FileHelper {
 			return false;
 		}
 		
-		String fileName = path.getFileName().toString();
 		String extension = "";
 		
-		byte[] fileBytes = null;
-		
+		//TODO Clean this up and close the resources properly.
 		try {
-			fileBytes = Files.readAllBytes(path); //TODO Don't read all bytes, just get the first X
-		} catch (final IOException e) {
-			if (!suppressLogging) {
-				log.error("Reading all bytes from file '" + fileName + "' to get the signature.", e);
-			}
-			return false;
-		}
 		
-		if (fileBytes == null) {
-			if (!suppressLogging) {
-				log.error("File '" + fileName + "' contains no bytes (or none were able to be loaded)!");
-			}
-			return false;
-		}
-		
-		for (char[] array : SIGNATURES) {
+			ByteChannel b = Files.newByteChannel(path, StandardOpenOption.READ);
+			ByteBuffer buffer = ByteBuffer.allocate(10);
+			b.read(buffer);
+			buffer.rewind();
 			
-			char[] signatureBytes = array;
-			
-			boolean typeFound = false;
-			
-			for (int i = 0; i < signatureBytes.length; i++) {
+			for (char[] array : SIGNATURES) {
 				
-				if (fileBytes[i] != (char) signatureBytes[i]) {
+				char[] signatureBytes = array;
+				
+				boolean typeFound = false;
+				
+				for (int i = 0; i < signatureBytes.length; i++) {
+					
+					if (buffer.get() != (char) signatureBytes[i]) {
+						buffer.rewind();
+						break;
+					}
+					
+					if (i == signatureBytes.length - 1) {
+						typeFound = true;
+					}
+					
+				}
+				
+				if (typeFound) {
+					
+					if (signatureBytes == SIG_SEVENZIP) {
+						extension = ".7z";
+					} else if (signatureBytes == SIG_RAR) {
+						extension = ".rar";
+					} else if (signatureBytes == SIG_ZIP) {
+						extension = ".zip";
+					}
+					
 					break;
-				}
-				
-				if (i == signatureBytes.length - 1) {
-					typeFound = true;
+					
 				}
 				
 			}
-			
-			if (typeFound) {
-				
-				if (signatureBytes == SIG_SEVENZIP) {
-					extension = ".7z";
-				} else if (signatureBytes == SIG_RAR) {
-					extension = ".rar";
-				} else if (signatureBytes == SIG_ZIP) {
-					extension = ".zip";
-				}
-				
+	
+			if (!suppressLogging) {
+				log.debug("File '" + path + "' verified as '" + extension + "'");
 			}
 			
-		}
-
-		if (!suppressLogging) {
-			log.debug("File '" + path + "' verified as '" + extension + "'");
+			b.close();
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
 		}
 		
 		return true;

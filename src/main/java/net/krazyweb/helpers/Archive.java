@@ -87,7 +87,7 @@ public class Archive {
 				ExtractOperationResult result;
 
 				final byte[] outputData = new byte[item.getSize().intValue()];
-
+				
 				result = item.extractSlow(new ISequentialOutStream() {
 
 				    int offset = 0;
@@ -103,7 +103,7 @@ public class Archive {
 				});
 				
 				file.setData(outputData);
-	
+				
 				if (result != ExtractOperationResult.OK) {
 					return false;
 				}

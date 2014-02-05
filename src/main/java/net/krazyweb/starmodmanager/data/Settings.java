@@ -1,5 +1,6 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -144,6 +145,10 @@ public class Settings extends Observable implements Progressable {
 					FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
 					console.setThreshold(Level.OFF);
 					file.setThreshold(getPropertyLevel("loggerlevel"));
+				}
+				
+				if (Files.notExists(getPropertyPath("modsdir"))) {
+					Files.createDirectories(getPropertyPath("modsdir"));
 				}
 
 				this.updateProgress(3.0, 3.0);
