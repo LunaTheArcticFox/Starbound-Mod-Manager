@@ -20,11 +20,11 @@ import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class Archive {
 	
-	private static final Logger log = Logger.getLogger(Archive.class);
+	private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(Archive.class);
 	
 	private Path path;
 	private Set<ArchiveFile> files = new HashSet<>();
@@ -55,7 +55,7 @@ public class Archive {
 	
 	public boolean extract() {
 		
-		log.debug("Extracting: " + path);
+		log.debug("Extracting: {}", path);
 		
 		try {
 			
@@ -114,8 +114,8 @@ public class Archive {
 			
 			inArchive.close();
 			randomAccessFile.close();
-			
-			log.debug("Time to extract '" + path + "' to memory: " + (System.currentTimeMillis() - time) + "ms");
+
+			log.debug("Time to extract '{}' to memory: {}ms", path, (System.currentTimeMillis() - time));
 			
 			return true;
 		
@@ -154,8 +154,8 @@ public class Archive {
 			
 			zipOutput.close();
 			fileOutput.close();
-			
-			log.debug("Time to write '" + file.getName() + "': " + (System.currentTimeMillis() - time) + "ms");
+
+			log.debug("Time to write '{}': {}ms", file.getName(), (System.currentTimeMillis() - time));
 			
 			return true;
 		

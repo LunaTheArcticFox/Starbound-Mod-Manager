@@ -26,12 +26,13 @@ import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Settings;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MainView implements Observer {
 	
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(MainView.class);
+	private static final Logger log = LogManager.getLogger(MainView.class);
 	
 	private MainViewController controller;
 

@@ -8,12 +8,13 @@ import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Localizer.Language;
 import net.krazyweb.starmodmanager.data.Settings;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SettingsViewController {
 	
-	private static final Logger log = Logger.getLogger(SettingsViewController.class);
+	private static final Logger log = LogManager.getLogger(SettingsViewController.class);
 	
 	private SettingsView view;
 	

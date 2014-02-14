@@ -12,22 +12,24 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.stage.WindowEvent;
 import net.krazyweb.helpers.FileHelper;
-import net.krazyweb.starmodmanager.data.Database;
+import net.krazyweb.starmodmanager.data.HyperSQLDatabase;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.ModList;
 import net.krazyweb.starmodmanager.data.Settings;
 import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
 import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MainViewController extends Observable {
 	
-	private static final Logger log = Logger.getLogger(MainViewController.class);
+	private static final Logger log = LogManager.getLogger(MainViewController.class);
 
 	private MainView view;
 	private ModListView modListView;
 	private SettingsView settingsView;
+	private AboutView aboutView;
 	
 	private ModList modList;
 	
@@ -41,6 +43,7 @@ public class MainViewController extends Observable {
 		
 		modListView = new ModListView(modList);
 		settingsView = new SettingsView();
+		aboutView = new AboutView();
 		
 		view.setContent(modListView.getContent());
 		
@@ -62,7 +65,7 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void aboutTabClicked() {
-		
+		view.setContent(aboutView.getContent());
 	}
 	
 	protected void backupButtonClicked() {
@@ -147,7 +150,7 @@ public class MainViewController extends Observable {
 		Settings.getInstance().setProperty("windowwidth", view.getScene().getWidth());
 		Settings.getInstance().setProperty("windowheight", view.getScene().getHeight());
 		
-		Database.getInstance().closeConnection();
+		HyperSQLDatabase.getInstance().closeConnection();
 		
 	}
 	

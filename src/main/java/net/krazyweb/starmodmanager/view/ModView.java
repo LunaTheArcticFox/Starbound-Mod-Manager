@@ -14,12 +14,13 @@ import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Mod;
 import net.krazyweb.starmodmanager.data.ModList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ModView implements Observer {
 	
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(ModView.class);
+	private static final Logger log = LogManager.getLogger(ModView.class);
 	
 	private GridPane root;
 	

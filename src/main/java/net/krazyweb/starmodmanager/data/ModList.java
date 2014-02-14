@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Set;
@@ -20,15 +21,16 @@ import net.krazyweb.helpers.Archive;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ModList extends Observable implements Progressable {
 	
-	private static final Logger log = Logger.getLogger(ModList.class);
+	private static final Logger log = LogManager.getLogger(ModList.class);
+	
+	private SettingsModelInterface settings;
 	
 	private boolean locked;
-	
-	//private final ModListView modListView;
 	
 	private List<Mod> mods;
 
@@ -37,8 +39,8 @@ public class ModList extends Observable implements Progressable {
 	private ReadOnlyDoubleProperty progress;
 	private ReadOnlyStringProperty message;
 	
-	public ModList() {
-		
+	public ModList(final SettingsModelFactory settingsFactory) {
+		settings = settingsFactory.getInstance();
 	}
 	
 	public void load() {
@@ -57,6 +59,13 @@ public class ModList extends Observable implements Progressable {
 		final ProgressDialogue progress = new ProgressDialogue();
 		progress.start(Localizer.getInstance().getMessage("modlist.addingmods"));
 		
+		final Set<String> currentMods = new HashSet<>();
+		for (Mod mod : mods) {
+			currentMods.add(mod.getInternalName());
+		}
+		
+		final List<Mod> newMods = new ArrayList<>();
+		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 
 			@Override
@@ -74,7 +83,13 @@ public class ModList extends Observable implements Progressable {
 					
 					if (modsToAdd != null && !modsToAdd.isEmpty()) {
 						for (Mod mod : modsToAdd) {
-							mods.add(mod);
+							if (!currentMods.contains(mod.getInternalName())) {
+								mods.add(mod);
+								newMods.add(mod);
+							} else {
+								//TODO Notify user of mod existence
+								log.debug("Mod already exists, skipping: " + file);
+							}
 						}
 					}
 					
@@ -94,7 +109,6 @@ public class ModList extends Observable implements Progressable {
 				//TODO Appropriate error messages.
 				log.error("Error occurred while getting mods!", addModsTask.getException());
 				progress.close();
-				//updateView();
 			}
 		});
 		
@@ -102,7 +116,10 @@ public class ModList extends Observable implements Progressable {
 			@Override
 			public void handle(WorkerStateEvent t) {
 				progress.close();
-				//updateView();
+				for (Mod mod : newMods) {
+					setChanged();
+					notifyObservers(new Object[] { "modadded", mod });
+				}
 			}
 		});
 		
@@ -123,21 +140,19 @@ public class ModList extends Observable implements Progressable {
 		}
 		
 		try {
-			Database.deleteMod(mod);
+			HyperSQLDatabase.deleteMod(mod);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
 		try {
-			FileHelper.deleteFile(Paths.get(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName())); //TODO Better Path manipulation
+			FileHelper.deleteFile(Paths.get(settings.getPropertyString("modsdir") + File.separator + mod.getArchiveName())); //TODO Better Path manipulation
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		mods.remove(mod);
-		
-		//updateView();
 		
 	}
 	
@@ -156,9 +171,9 @@ public class ModList extends Observable implements Progressable {
 				//Copy the non-conflicting files to a new patch folder
 				//
 				
-				Archive archive = new Archive(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.getArchiveName()); //TODO Better Path manipulation
+				Archive archive = new Archive(settings.getPropertyString("modsdir") + File.separator + mod.getArchiveName()); //TODO Better Path manipulation
 				archive.extract();
-				archive.extractToFolder(new File(Settings.getInstance().getPropertyString("starboundpath") + File.separator + "mods" + File.separator + mod.getInternalName())); //TODO Better Path manipulation
+				archive.extractToFolder(new File(settings.getPropertyString("starboundpath") + File.separator + "mods" + File.separator + mod.getInternalName())); //TODO Better Path manipulation
 				
 				return 1;
 				
@@ -179,7 +194,7 @@ public class ModList extends Observable implements Progressable {
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(true);
 				try {
-					Database.updateMod(mod);
+					HyperSQLDatabase.updateMod(mod);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					log.error("", e);
@@ -204,9 +219,9 @@ public class ModList extends Observable implements Progressable {
 				log.info("Uninstalling mod: " + mod.getInternalName());
 
 				try {
-					log.debug("Deleting from: " + Settings.getInstance().getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
+					log.debug("Deleting from: " + settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
 					FileHelper.deleteFile(
-						Settings.getInstance().getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName())
+						settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName())
 					);
 				} catch (IOException e) {
 					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
@@ -232,7 +247,7 @@ public class ModList extends Observable implements Progressable {
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(false);
 				try {
-					Database.updateMod(mod);
+					HyperSQLDatabase.updateMod(mod);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					log.error("", e);
@@ -251,12 +266,11 @@ public class ModList extends Observable implements Progressable {
 		
 		mod.setHidden(true);
 		try {
-			Database.updateMod(mod);
+			HyperSQLDatabase.updateMod(mod);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//updateView();
 		
 	}
 	
@@ -295,7 +309,7 @@ public class ModList extends Observable implements Progressable {
 			m.setOrder(mods.indexOf(m));
 			log.debug("  [" + m.getOrder() + "] " + m.getInternalName());
 			try {
-				Database.updateMod(m);
+				HyperSQLDatabase.updateMod(m);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -314,12 +328,10 @@ public class ModList extends Observable implements Progressable {
 	
 	public void lockList() {
 		locked = true;
-		//updateView();
 	}
 	
 	public void unlockList() {
 		locked = false;
-		//updateView();
 	}
 	
 	public boolean isLocked() {

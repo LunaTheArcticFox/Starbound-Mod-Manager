@@ -1,16 +1,17 @@
 package net.krazyweb.jfx.controls;
 
-import org.apache.log4j.Logger;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TextField;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class NumericTextField extends TextField {
 	
-	private static final Logger log = Logger.getLogger(NumericTextField.class);
+	private static final Logger log = LogManager.getLogger(NumericTextField.class);
 
 	private IntegerProperty minValue;
 	private IntegerProperty maxValue;

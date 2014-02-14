@@ -3,24 +3,24 @@ package net.krazyweb.starmodmanager.data;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Properties;
+import java.util.Set;
 
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.FileAppender;
 
-public class Settings extends Observable implements Progressable {
+public class Settings implements SettingsModelInterface {
 
-	private static final Logger log = Logger.getLogger(Settings.class);
+	private static final Logger log = LogManager.getLogger(Settings.class);
 	
 	private static final int VERSION_MAJOR = 2;
 	private static final int VERSION_MINOR = 0;
@@ -28,34 +28,19 @@ public class Settings extends Observable implements Progressable {
 	private static final String VERSION_EXTRA = "a";
 	private static final String VERSION_STRING = VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_PATCH + VERSION_EXTRA;
 	
-	private static enum OS {
-		WINDOWS, MACOS, LINUX32, LINUX64;
-	}
-	
 	private static OS operatingSystem;
 	private static String operatingSystemName;
-	
-	private static Settings instance;
-	
-	private Task<?> task;
-	
-	private ReadOnlyDoubleProperty progress;
-	private ReadOnlyStringProperty message;
 	
 	private Map<String, String> settings;
 	private Properties defaultProperties;
 	
-	private Settings() {
-		
-	}
+	private Set<Observer> observers;
 	
-	public static Settings getInstance() {
-		if (instance == null) {
-			synchronized (Settings.class) {
-				instance = new Settings();
-			}
-		}
-		return instance;
+	private DatabaseModelInterface database;
+	
+	protected Settings(final DatabaseModelInterface database) {
+		observers = new HashSet<>();
+		this.database = database;
 	}
 	
 	/*
@@ -63,9 +48,10 @@ public class Settings extends Observable implements Progressable {
 	 * If the program is launched from a .jar file, then the console logging is turned off.
 	 * Otherwise, it is left on and file logging is turned off.
 	 */
-	public void configureLogger() {
+	@Override
+	public Task<Void> getInitializeLoggerTask() {
 		
-		task = new Task<Void>() {
+		final Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
@@ -111,19 +97,18 @@ public class Settings extends Observable implements Progressable {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				setChanged();
 				notifyObservers("loggerconfigured");
 			}
 		});
 		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
+		return task;
 		
 	}
-	
-	public void load() {
+
+	@Override
+	public Task<Void> getLoadSettingsTask() {
 		
-		task = new Task<Void>() {
+		final Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
@@ -131,7 +116,7 @@ public class Settings extends Observable implements Progressable {
 				this.updateMessage("Loading Settings From Database");
 				this.updateProgress(0.0, 3.0);
 
-				settings = Database.getInstance().getProperties();
+				settings = database.getProperties();
 
 				this.updateProgress(1.0, 3.0);
 				
@@ -164,7 +149,6 @@ public class Settings extends Observable implements Progressable {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				setChanged();
 				notifyObservers("settingsloaded");
 			}
 		});
@@ -175,9 +159,8 @@ public class Settings extends Observable implements Progressable {
 				log.error("", task.getException());
 			}
 		});
-		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
+
+		return task;
 		
 	}
 	
@@ -203,17 +186,20 @@ public class Settings extends Observable implements Progressable {
 		
 	}
 
+	@Override
 	public OS getOperatingSystem() {
 		return operatingSystem;
 	}
 
+	@Override
 	public void setLoggerLevel(final Level level) {
 		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
 			FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
 			file.setThreshold(level);
 		}
 	}
-	
+
+	@Override
 	public String getPropertyString(final String key) {
 		
 		if (settings.containsKey(key)) {
@@ -229,63 +215,59 @@ public class Settings extends Observable implements Progressable {
 		}
 		
 	}
-	
+
+	@Override
 	public int getPropertyInt(final String key) {
 		return Integer.parseInt(getPropertyString(key));
 	}
-	
+
+	@Override
 	public double getPropertyDouble(final String key) {
 		return Double.parseDouble(getPropertyString(key));
 	}
-	
+
+	@Override
 	public boolean getPropertyBoolean(final String key) {
 		return Boolean.parseBoolean(getPropertyString(key));
 	}
-	
+
+	@Override
 	public Path getPropertyPath(final String key) {
 		return Paths.get(getPropertyString(key));
 	}
-	
+
+	@Override
 	public Level getPropertyLevel(final String key) {
 		return Level.toLevel(getPropertyString(key));
 	}
-	
+
+	@Override
 	public void setProperty(final String key, final Object property) {
 		settings.put(key, property.toString());
-		setChanged();
 		notifyObservers("propertychanged:" + key);
-		Database.setProperty(key, property);
+		database.setProperty(key, property);
 		log.debug("Property Changed: " + key + " -- " + property);
 	}
-	
+
+	@Override
 	public String getVersion() {
 		return VERSION_STRING;
 	}
+
+	@Override
+	public void addObserver(final Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final Observer observer) {
+		observers.remove(observer);
+	}
 	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Settings Task Thread");
-		thread.setDaemon(true);
-		thread.start();
+	private final void notifyObservers(final String message) {
+		for (final Observer o : observers) {
+			o.update(this, (Object) message);
+		}
 	}
 	
 }

@@ -15,51 +15,39 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
-public class Database extends Observable implements Progressable {
+public class HyperSQLDatabase implements DatabaseModelInterface {
 	
-	private static final Logger log = Logger.getLogger(Database.class);
+	private static final Logger log = LogManager.getLogger(HyperSQLDatabase.class);
 	
 	private static final String MOD_TABLE_NAME = "mods";
 	private static final String SETTINGS_TABLE_NAME = "settings";
 	
-	private static Connection connection;
+	private Connection connection;
 
-	private static Database instance;
-
-	private Task<?> task;
+	private SettingsModelInterface settings;
 	
-	private ReadOnlyDoubleProperty progress;
-	private ReadOnlyStringProperty message;
+	private Set<Observer> observers;
 	
-	private Database() {
-		
+	protected HyperSQLDatabase(final SettingsModelInterface settings) {
+		observers = new HashSet<>();
+		this.settings = settings;
 	}
 	
-	public static Database getInstance() {
-		if (instance == null) {
-			synchronized (Database.class) {
-				instance = new Database();
-			}
-		}
-		return instance;
-	}
-	
-	public void initialize() {
+	@Override
+	public Task<Void> getInitializerTask() {
 		
-		task = new Task<Void>() {
+		final Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
@@ -85,17 +73,50 @@ public class Database extends Observable implements Progressable {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				setChanged();
 				notifyObservers("databaseinitialized");
 			}
 		});
 		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
+		task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				log.error("", task.getException());
+			}
+		});
+		
+		return task;
 		
 	}
 	
-	private static void createTables() throws SQLException {
+	@Override
+	public Task<Void> getCloseTask() {
+
+		final Task<Void> task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+
+				connection.commit();
+				connection.close();
+				
+				return null;
+				
+			}
+			
+		};
+		
+		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(final WorkerStateEvent event) {
+				notifyObservers("databaseclosed");
+			}
+		});
+		
+		return task;
+		
+	}
+	
+	private void createTables() throws SQLException {
 		
 		StringBuilder sb = new StringBuilder();
 		
@@ -145,7 +166,8 @@ public class Database extends Observable implements Progressable {
 	 * updateMod() is used for both updating and adding mods.
 	 * It picks the right one for the mod in question.
 	 */
-	public static void updateMod(final Mod mod) throws SQLException {
+	@Override
+	public void updateMod(final Mod mod) throws SQLException {
 		
 		StringBuilder dependencyList = new StringBuilder();
 		
@@ -260,7 +282,8 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	public static void deleteMod(final Mod mod) throws SQLException {
+	@Override
+	public void deleteMod(final Mod mod) throws SQLException {
 		
 		StringBuilder query = new StringBuilder();
 		query.append("DELETE FROM ").append(MOD_TABLE_NAME);
@@ -273,7 +296,7 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	private static boolean containsMod(final Mod mod) throws SQLException {
+	private boolean containsMod(final Mod mod) throws SQLException {
 		
 		StringBuilder query = new StringBuilder();
 		
@@ -302,7 +325,7 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	private static boolean containsProperty(final String property) throws SQLException {
+	private boolean containsProperty(final String property) throws SQLException {
 		
 		StringBuilder query = new StringBuilder();
 		
@@ -331,7 +354,8 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	protected List<String> getModNames() throws SQLException {
+	@Override
+	public List<String> getModNames() throws SQLException {
 
 		List<String> output = new ArrayList<>();
 		
@@ -354,7 +378,8 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	protected Mod getModByName(final String modName) throws SQLException {
+	@Override
+	public Mod getModByName(final String modName) throws SQLException {
 		
 		Mod output = null;
 		
@@ -420,7 +445,7 @@ public class Database extends Observable implements Progressable {
 			
 			mod.setFiles(files);
 			
-			if (Files.notExists(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()))) {
+			if (Files.notExists(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()))) {
 				deleteMod(mod);
 				return null;
 			}
@@ -429,11 +454,11 @@ public class Database extends Observable implements Progressable {
 			
 			try {
 				
-				long checksum = FileHelper.getChecksum(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()));
+				long checksum = FileHelper.getChecksum(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()));
 				
 				if (mod.getChecksum() != checksum) {
 					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
-					mods = Mod.load(Settings.getInstance().getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder());
+					mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder());
 				} else {
 					mods = new HashSet<>();
 					mods.add(mod);
@@ -454,7 +479,7 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	private static String getSettingsValue(final String property) throws SQLException {
+	private String getSettingsValue(final String property) throws SQLException {
 
 		StringBuilder query = new StringBuilder();
 		
@@ -486,7 +511,8 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	protected Map<String, String> getProperties() throws SQLException {
+	@Override
+	public Map<String, String> getProperties() throws SQLException {
 		
 		Map<String, String> properties = new HashMap<>();
 
@@ -515,7 +541,8 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	public static String getPropertyString(final String property, final String defaultValue) {
+	@Override
+	public String getPropertyString(final String property, final String defaultValue) {
 		
 		String result = null;
 		
@@ -534,11 +561,13 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	public static int getPropertyInt(final String property, final int defaultValue) {
+	@Override
+	public int getPropertyInt(final String property, final int defaultValue) {
 		return Integer.parseInt(getPropertyString(property, "" + defaultValue));
 	}
 	
-	public static void setProperty(final String property, Object value) {
+	@Override
+	public void setProperty(final String property, Object value) {
 
 		StringBuilder query = new StringBuilder();
 		
@@ -589,65 +618,24 @@ public class Database extends Observable implements Progressable {
 		
 	}
 	
-	public void closeConnection() {
-		
-		task = new Task<Void>() {
-
-			@Override
-			protected Void call() throws Exception {
-
-				connection.commit();
-				connection.close();
-				
-				return null;
-				
-			}
-			
-		};
-		
-		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(final WorkerStateEvent event) {
-				setChanged();
-				notifyObservers("databaseclosed");
-			}
-		});
-		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
-		
-		processTask();
-		
-	}
-	
-	private static boolean hasRows(final ResultSet resultSet) throws SQLException {
+	private boolean hasRows(final ResultSet resultSet) throws SQLException {
 		return resultSet.isBeforeFirst();
 	}
+
+	@Override
+	public void addObserver(final Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final Observer observer) {
+		observers.remove(observer);
+	}
 	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Database Task Thread");
-		thread.setDaemon(true);
-		thread.start();
+	private final void notifyObservers(final String message) {
+		for (final Observer o : observers) {
+			o.update(this, (Object) message);
+		}
 	}
 	
 }

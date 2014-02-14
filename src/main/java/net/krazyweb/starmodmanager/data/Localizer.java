@@ -3,85 +3,44 @@ package net.krazyweb.starmodmanager.data;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.ResourceBundle;
+import java.util.Set;
 
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.ibm.icu.text.MessageFormat;
 
-public class Localizer extends Observable implements Progressable, Observer {
+public class Localizer implements LocalizerModelInterface, Observer {
 	
-	public static class Language implements Comparable<Language> {
-		
-		private String locale;
-		private String name;
-		
-		private Language(final String locale, final String name) {
-			this.locale = locale;
-			this.name = name;
-		}
-		
-		public String getLocale() {
-			return locale;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		@Override
-		public int compareTo(final Language language) {
-			return name.compareTo(language.name);
-		}
-		
-		@Override
-		public String toString() {
-			return name + "\t (" + locale + ")";
-		}
-		
-	}
-	
-	private static final Logger log = Logger.getLogger(Localizer.class);
-	
-	private static Localizer instance;
+	private static final Logger log = LogManager.getLogger(Localizer.class);
 	
 	private List<Language> languages;
-	
 	private Locale locale;
-	
-	private Task<?> task;
-	private ReadOnlyDoubleProperty progress;
-	private ReadOnlyStringProperty message;
-	
 	private ResourceBundle bundle;
 	
-	private Localizer() {
-		Settings.getInstance().addObserver(this);
+	private SettingsModelInterface settings;
+	
+	private Set<Observer> observers;
+	
+	protected Localizer(final SettingsModelInterface settings) {
+		observers = new HashSet<>();
+		this.settings = settings;
+		settings.addObserver(this);
 	}
 	
-	public static Localizer getInstance() {
-		if (instance == null) {
-			synchronized (Localizer.class) {
-				instance = new Localizer();
-			}
-		}
-		return instance;
-	}
-	
-	public void initialize() {
+	@Override
+	public Task<Void> getInitializerTask() {
 		
-		task = new Task<Void>() {
+		Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
@@ -89,7 +48,7 @@ public class Localizer extends Observable implements Progressable, Observer {
 				this.updateMessage("Loading Localizer");
 				this.updateProgress(0.0, 1.0);
 				
-				setLocale(Settings.getInstance().getPropertyString("locale"));
+				setLocale(settings.getPropertyString("locale"));
 				
 				languages = new ArrayList<>();
 				Collections.addAll(languages,
@@ -110,16 +69,15 @@ public class Localizer extends Observable implements Progressable, Observer {
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				setChanged();
 				notifyObservers("localizerloaded");
 			}
 		});
 		
-		this.setProgress(task.progressProperty());
-		this.setMessage(task.messageProperty());
+		return task;
 		
 	}
 	
+	@Override
 	public String getMessage(final String key, final boolean suppressLogging) {
 		
 		String output = "";
@@ -160,11 +118,13 @@ public class Localizer extends Observable implements Progressable, Observer {
 		return formatted;
 		
 	}
-	
+
+	@Override
 	public String getMessage(final String key) {
 		return getMessage(key, false);
 	}
-	
+
+	@Override
 	public String formatMessage(final boolean suppressLogging, final String key, final Object... messageArguments) {
 		
 		MessageFormat formatter = null;
@@ -200,11 +160,32 @@ public class Localizer extends Observable implements Progressable, Observer {
 		return formatted;
 		
 	}
-	
+
+	@Override
 	public String formatMessage(final String key, final Object... messageArguments) {
 		return formatMessage(false, key, messageArguments);
 	}
-	
+
+	@Override
+	public List<Language> getLanguages() {
+		return new ArrayList<>(languages);
+	}
+
+	@Override
+	public Language getCurrentLanguage() {
+		
+		String loc = settings.getPropertyString("locale");
+		
+		for (Language l : languages) {
+			if (l.getLocale().equals(loc)) {
+				return l;
+			}
+		}
+		
+		return null;
+		
+	}
+
 	private void setLocale(final String loc) {
 		
 		String[] splitLocale = loc.split("-");
@@ -217,64 +198,35 @@ public class Localizer extends Observable implements Progressable, Observer {
 		if (oldLocale == null || !oldLocale.equals(locale)) {
 			bundle = ResourceBundle.getBundle("strings", locale);
 			log.debug("Locale set to: " + locale);
-			setChanged();
 			notifyObservers("localechanged");
 		}
 		
 	}
 	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-	
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Localizer Task Thread");
-		thread.setDaemon(true);
-		thread.start();
-	}
-
 	@Override
 	public void update(final Observable observable, final Object message) {
 		
 		if (observable instanceof Settings && message.equals("propertychanged:locale")) {
 			log.debug("Locale changed message received.");
-			setLocale(Settings.getInstance().getPropertyString("locale"));
+			setLocale(settings.getPropertyString("locale"));
 		}
 		
 	}
-	
-	public List<Language> getLanguages() {
-		return new ArrayList<>(languages);
+
+	@Override
+	public void addObserver(final Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final Observer observer) {
+		observers.remove(observer);
 	}
 	
-	public Language getCurrentLanguage() {
-		
-		String loc = Settings.getInstance().getPropertyString("locale");
-		
-		for (Language l : languages) {
-			if (l.getLocale().equals(loc)) {
-				return l;
-			}
+	private final void notifyObservers(final String message) {
+		for (final Observer o : observers) {
+			o.update(this, (Object) message);
 		}
-		
-		return null;
-		
 	}
 	
 }

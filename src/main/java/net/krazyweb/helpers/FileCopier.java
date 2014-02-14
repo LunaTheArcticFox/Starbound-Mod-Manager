@@ -47,7 +47,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * Sample code that copies files in a similar manner to the cp(1) program.
@@ -55,7 +57,7 @@ import org.apache.log4j.Logger;
 
 public class FileCopier {
 	
-	private static final Logger log = Logger.getLogger(FileCopier.class);
+	private static final Logger log = LogManager.getLogger(FileCopier.class);
 
 	/**
 	 * Copy source file to target location. If {@code prompt} is true then

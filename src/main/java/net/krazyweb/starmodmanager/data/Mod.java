@@ -21,11 +21,12 @@ import net.krazyweb.helpers.ArchiveFile;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.helpers.JSONHelper;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Mod extends Observable {
 	
-	private static final Logger log = Logger.getLogger(Mod.class);
+	private static final Logger log = LogManager.getLogger(Mod.class);
 	
 	private static final String NO_DESCRIPTION = "StarboundModManager___NO_DESCRIPTION_FOR_MOD";
 	private static final String NO_AUTHOR = "StarboundModManager___NO_AUTHOR_FOR_MOD";
@@ -169,7 +170,7 @@ public class Mod extends Observable {
 			}
 			
 			try {
-				Database.updateMod(mod);
+				HyperSQLDatabase.updateMod(mod);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

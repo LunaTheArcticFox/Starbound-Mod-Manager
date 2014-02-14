@@ -13,12 +13,13 @@ import javafx.util.Duration;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.ModList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ModListView implements Observer {
 	
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(ModListView.class);
+	private static final Logger log = LogManager.getLogger(ModListView.class);
 	
 	private VBox root;
 	private VBox modsBox;

@@ -13,11 +13,12 @@ import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.data.Mod.ModOrderComparator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GetModListTask extends Task<Void> {
 	
-	private static final Logger log = Logger.getLogger(GetModListTask.class);
+	private static final Logger log = LogManager.getLogger(GetModListTask.class);
 	
 	private List<Mod> mods;
 	
@@ -47,7 +48,7 @@ public class GetModListTask extends Task<Void> {
 		this.updateMessage("Loading Mod List");
 		this.updateProgress(0.0, 1.0);
 
-		List<String> modsInDatabase = Database.getInstance().getModNames();
+		List<String> modsInDatabase = HyperSQLDatabase.getInstance().getModNames();
 		List<String> modNames = new ArrayList<>();
 		Set<String> currentArchives = new HashSet<>();
 		
@@ -78,7 +79,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (final String modName : modsInDatabase) {
 			Mod tempMod = null;
-			if ((tempMod = Database.getInstance().getModByName(modName.split("\n")[0])) != null) {
+			if ((tempMod = HyperSQLDatabase.getInstance().getModByName(modName.split("\n")[0])) != null) {
 				mods.add(tempMod);
 			}
 			this.updateProgress((double) count, (double) total);
@@ -106,7 +107,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (Mod mod : mods) {
 			mod.setOrder(mods.indexOf(mod));
-			Database.updateMod(mod);
+			HyperSQLDatabase.updateMod(mod);
 		}
 		
 		this.updateProgress(1.0, 1.0);

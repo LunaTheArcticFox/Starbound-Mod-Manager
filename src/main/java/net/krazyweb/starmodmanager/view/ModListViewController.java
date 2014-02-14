@@ -4,6 +4,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
@@ -16,12 +18,13 @@ import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.Mod;
 import net.krazyweb.starmodmanager.data.ModList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class ModListViewController {
+public class ModListViewController implements Observer {
 	
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(ModListViewController.class);
+	private static final Logger log = LogManager.getLogger(ModListViewController.class);
 	
 	private ModList modList;
 
@@ -32,6 +35,8 @@ public class ModListViewController {
 	private double y, lastY, mouseY;
 
 	protected ModListViewController(final ModListView view, final ModList modList) {
+		
+		modList.addObserver(this);
 		
 		modViews = new ArrayList<>();
 		
@@ -158,6 +163,20 @@ public class ModListViewController {
 		for (ModView mv : modViews) {
 			view.addMod(mv);
 		}
+	}
+
+	@Override
+	public void update(final Observable observable, final Object message) {
+		
+		if (observable instanceof ModList && message instanceof Object[]) {
+			Object[] args = (Object[]) message;
+			if (args[0].equals("modadded")) {
+				ModView newModView = new ModView((Mod) args[1], modList);
+				modViews.add(newModView);
+				view.addMod(newModView);
+			}
+		}
+		
 	}
 	
 }

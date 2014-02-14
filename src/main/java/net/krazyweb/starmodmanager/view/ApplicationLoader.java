@@ -1,35 +1,48 @@
 package net.krazyweb.starmodmanager.view;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import net.krazyweb.starmodmanager.data.Database;
+import javafx.concurrent.Task;
+import net.krazyweb.starmodmanager.data.DatabaseFactory;
+import net.krazyweb.starmodmanager.data.DatabaseModelInterface;
+import net.krazyweb.starmodmanager.data.HyperSQLDatabase;
 import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
-import net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ApplicationLoader implements Observer {
 	
 	@SuppressWarnings("unused")
-	private static final Logger log = Logger.getLogger(ApplicationLoader.class);
+	private static final Logger log = LogManager.getLogger(ApplicationLoader.class);
 	
 	private static final double STEP_MULTIPLIER = 1.0 / 5.0;
 	
 	private LoaderView view;
 	private ModList modList;
 	
+	private SettingsModelInterface settings;
+	private DatabaseModelInterface database;
+	private LocalizerModelInterface localizer;
+	
 	public ApplicationLoader() {
 		
 		view = new LoaderView();
 		view.build();
-
-		Settings.getInstance().addObserver(this);
-		Database.getInstance().addObserver(this);
-		Localizer.getInstance().addObserver(this);
+		
+		settings = new SettingsFactory().getInstance();
+		database = new DatabaseFactory().getInstance();
+		localizer = new LocalizerFactory().getInstance();
+		settings.addObserver(this);
+		database.addObserver(this);
+		localizer.addObserver(this);
 		
 		configureLogger();
 		
@@ -37,51 +50,59 @@ public class ApplicationLoader implements Observer {
 	
 	private void configureLogger() {
 		
-		Settings settings = Settings.getInstance();
-		settings.configureLogger();
+		Task<Void> task = settings.getInitializeLoggerTask();
 		
-		setProgressProperties(settings.getProgressProperty(), settings.getMessageProperty(), 1);
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
 		
-		settings.processTask();
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("Settings Initialization Thread");
+		thread.start();
 		
 	}
 	
 	private void initDatabase() {
 		
-		Database database = Database.getInstance();
-		database.initialize();
-
-		setProgressProperties(database.getProgressProperty(), database.getMessageProperty(), 2);
+		Task<Void> task = database.getInitializerTask();
 		
-		database.processTask();
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("Database Initialization Thread");
+		thread.start();
 		
 	}
 	
 	private void loadSettings() {
 		
-		Settings settings = Settings.getInstance();
-		settings.load();
-
-		setProgressProperties(settings.getProgressProperty(), settings.getMessageProperty(), 3);
+		Task<Void> task = settings.getLoadSettingsTask();
 		
-		settings.processTask();
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("Settings Loading Thread");
+		thread.start();
 		
 	}
 	
 	private void initializeLocalizer() {
 		
-		Localizer localizer = Localizer.getInstance();
-		localizer.initialize();
-
-		setProgressProperties(localizer.getProgressProperty(), localizer.getMessageProperty(), 4);
+		Task<Void> task = localizer.getInitializerTask();
 		
-		localizer.processTask();
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("Localizer Initialization Thread");
+		thread.start();
 		
 	}
 	
 	private void loadModList() {
 		
-		modList = new ModList();
+		modList = new ModList(new SettingsFactory());
 		modList.load();
 		
 		modList.addObserver(this);
@@ -94,9 +115,9 @@ public class ApplicationLoader implements Observer {
 	
 	private void completeLoading() {
 		
-		Settings.getInstance().deleteObserver(this);
-		Database.getInstance().deleteObserver(this);
-		Localizer.getInstance().deleteObserver(this);
+		settings.removeObserver(this);
+		database.removeObserver(this);
+		localizer.removeObserver(this);
 		modList.deleteObserver(this);
 		
 		new MainViewController(modList);
