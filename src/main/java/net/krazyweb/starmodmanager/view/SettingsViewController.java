@@ -1,5 +1,8 @@
 package net.krazyweb.starmodmanager.view;
 
+import java.awt.Desktop;
+import java.io.IOException;
+
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -77,6 +80,17 @@ public class SettingsViewController {
 	
 	protected void confirmButtonDelayChanged(final String value) {
 		settings.setProperty("confirmdelay", value);
+	}
+	
+	protected void openLog() {
+		
+		try {
+			Desktop.getDesktop().open(settings.getPropertyPath("logpath").toFile());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
+		}
+		
 	}
 	
 }

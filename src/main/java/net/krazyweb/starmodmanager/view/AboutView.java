@@ -13,6 +13,7 @@ public class AboutView implements Observer {
 	
 	private VBox root;
 	
+	@SuppressWarnings("unused")
 	private AboutViewController controller;
 
 	private LocalizerModelInterface localizer;

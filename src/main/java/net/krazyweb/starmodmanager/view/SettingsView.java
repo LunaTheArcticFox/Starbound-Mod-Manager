@@ -5,6 +5,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -55,8 +57,10 @@ public class SettingsView implements Observer {
 	private Text confirmButtonDelayTitle;
 	private NumericTextField confirmButtonDelayField;
 	
-	private ComboBox<Level> loggerLevelSelector; //TODO
+	private ComboBox<Level> loggerLevelSelector;
 	private Text loggerLevelTitle;
+	
+	private Button openLogButton;
 	
 	private SettingsViewController controller;
 
@@ -111,6 +115,8 @@ public class SettingsView implements Observer {
 		loggerLevelTitle = new Text();
 		loggerLevelContainer.getChildren().addAll(loggerLevelTitle, loggerLevelSelector);
 		
+		openLogButton = new Button();
+		
 		HBox checkVersionContainer = new HBox();
 		checkVersionBox = new CheckBox();
 		checkVersionTitle = new Text();
@@ -131,6 +137,7 @@ public class SettingsView implements Observer {
 			modInstallPathContainer,
 			languageSelector,
 			loggerLevelContainer,
+			openLogButton,
 			checkVersionContainer,
 			backupSavesOnLaunchContainer,
 			confirmButtonDelayContainer
@@ -174,6 +181,13 @@ public class SettingsView implements Observer {
 			@Override
 			public void changed(ObservableValue<? extends Level> ov, Level oldValue, Level newValue) {
 				controller.loggerLevelChanged(newValue);
+			}
+		});
+		
+		openLogButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.openLog();
 			}
 		});
 
@@ -221,6 +235,8 @@ public class SettingsView implements Observer {
 		modsPathButton.setText(">>"); //TODO Replace with image
 		
 		loggerLevelTitle.setText(localizer.getMessage("settings.loggerlevel"));
+		
+		openLogButton.setText(localizer.getMessage("settings.openlog"));
 		
 		checkVersionTitle.setText(localizer.getMessage("settings.checkversion"));
 		backupSavesOnLaunchTitle.setText(localizer.getMessage("settings.backuponlaunch"));
