@@ -1,7 +1,5 @@
 package net.krazyweb.starmodmanager.view;
 
-import java.util.Observable;
-import java.util.Observer;
 
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
@@ -11,7 +9,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,9 +30,12 @@ public class ModListView implements Observer {
 	
 	private ModListViewController controller;
 	
+	private LocalizerModelInterface localizer;
+	
 	protected ModListView(final ModList modList) {
+		localizer = new LocalizerFactory().getInstance();
+		localizer.addObserver(this);
 		this.controller = new ModListViewController(this, modList);
-		Localizer.getInstance().addObserver(this);
 	}
 	
 	protected void build() {
@@ -66,7 +71,7 @@ public class ModListView implements Observer {
 	
 	private void updateStrings() {
 		
-		addModButton.setText(Localizer.getInstance().getMessage("modlistview.addmodsbutton"));
+		addModButton.setText(localizer.getMessage("modlistview.addmodsbutton"));
 				
 	}
 	

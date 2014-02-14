@@ -123,9 +123,9 @@ public class ApplicationLoader implements Observer {
 		localizer.removeObserver(this);
 		modList.removeObserver(this);
 		
-		new MainViewController(modList);
-		
 		view.close();
+		
+		new MainViewController(modList);
 		
 	}
 

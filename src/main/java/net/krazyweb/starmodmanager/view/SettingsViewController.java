@@ -5,8 +5,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.ModManager;
-import net.krazyweb.starmodmanager.data.Localizer.Language;
-import net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface.Language;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -18,10 +19,14 @@ public class SettingsViewController {
 	
 	private SettingsView view;
 	
+	private SettingsModelInterface settings;
+	
 	protected SettingsViewController(final SettingsView view) {
 		
 		this.view = view;
 		this.view.build();
+		
+		settings = new SettingsFactory().getInstance();
 		
 		/*
 		 * The following essentially pre-renders the view,
@@ -54,24 +59,24 @@ public class SettingsViewController {
 	}
 	
 	protected void languageChanged(final Language language) {
-		Settings.getInstance().setProperty("locale", language.getLocale());
+		settings.setProperty("locale", language.getLocale());
 	}
 	
 	protected void loggerLevelChanged(final Level level) {
-		Settings.getInstance().setProperty("loggerlevel", level);
-		Settings.getInstance().setLoggerLevel(level);
+		settings.setProperty("loggerlevel", level);
+		settings.setLoggerLevel(level);
 	}
 	
 	protected void checkVersionChanged(final boolean checked) {
-		Settings.getInstance().setProperty("checkversiononlaunch", checked);
+		settings.setProperty("checkversiononlaunch", checked);
 	}
 	
 	protected void backupSavesOnLaunchChanged(final boolean checked) {
-		Settings.getInstance().setProperty("backuponlaunch", checked);
+		settings.setProperty("backuponlaunch", checked);
 	}
 	
 	protected void confirmButtonDelayChanged(final String value) {
-		Settings.getInstance().setProperty("confirmdelay", value);
+		settings.setProperty("confirmdelay", value);
 	}
 	
 }

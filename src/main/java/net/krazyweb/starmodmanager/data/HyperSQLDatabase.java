@@ -60,8 +60,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 				
 				connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
 
-				System.out.println(connection);
-
 				this.updateMessage("Creating Default Tables");
 				this.updateProgress(1.0, 2.0);
 
@@ -525,8 +523,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		query.append("SELECT * FROM ");
 		query.append(SETTINGS_TABLE_NAME);
-		
-		System.out.println(connection);
 		
 		PreparedStatement propertyQuery = connection.prepareStatement(query.toString());
 		

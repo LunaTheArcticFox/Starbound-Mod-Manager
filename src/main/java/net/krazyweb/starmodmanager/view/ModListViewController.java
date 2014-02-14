@@ -4,8 +4,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
@@ -14,9 +12,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.ModManager;
-import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.Mod;
 import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +73,7 @@ public class ModListViewController implements Observer {
 	protected void addModButtonClicked() {
 
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle(Localizer.getInstance().getMessage("modlistview.modfilechoosertitle"));
+		fileChooser.setTitle(new LocalizerFactory().getInstance().getMessage("modlistview.modfilechoosertitle"));
 		
 		List<Path> paths = new ArrayList<>();
 		List<File> files = fileChooser.showOpenMultipleDialog(ModManager.getPrimaryStage());

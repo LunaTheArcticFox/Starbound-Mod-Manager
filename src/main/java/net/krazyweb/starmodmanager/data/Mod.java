@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Observable;
 import java.util.Set;
 
 import javax.json.Json;
@@ -24,7 +23,7 @@ import net.krazyweb.helpers.JSONHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Mod extends Observable {
+public class Mod implements Observable {
 	
 	private static final Logger log = LogManager.getLogger(Mod.class);
 	
@@ -53,6 +52,8 @@ public class Mod extends Observable {
 	
 	private LocalizerModelInterface localizer;
 	
+	private Set<Observer> observers;
+	
 	protected static class ModOrderComparator implements Comparator<Mod> {
 
 		@Override
@@ -63,6 +64,7 @@ public class Mod extends Observable {
 	}
 	
 	protected Mod(final LocalizerModelFactory localizerFactory) {
+		observers = new HashSet<>();
 		localizer = localizerFactory.getInstance();
 	}
 	
@@ -345,7 +347,6 @@ public class Mod extends Observable {
 
 	protected void setInstalled(final boolean installed) {
 		this.installed = installed;
-		setChanged();
 		notifyObservers("installstatuschanged");
 	}
 
@@ -371,6 +372,22 @@ public class Mod extends Observable {
 
 	protected void setOrder(final int order) {
 		this.order = order;
+	}
+
+	@Override
+	public void addObserver(final Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final Observer observer) {
+		observers.remove(observer);
+	}
+	
+	private final void notifyObservers(final Object message) {
+		for (final Observer o : observers) {
+			o.update(this, message);
+		}
 	}
 	
 }

@@ -1,7 +1,5 @@
 package net.krazyweb.starmodmanager.view;
 
-import java.util.Observable;
-import java.util.Observer;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,8 +9,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.Mod;
 import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,11 +41,14 @@ public class ModView implements Observer {
 	private ModViewController controller;
 	protected boolean moving;
 	
+	private LocalizerModelInterface localizer;
+	
 	protected ModView(final Mod mod, final ModList modList) {
 		this.mod = mod;
-		controller = new ModViewController(this, modList);
-		Localizer.getInstance().addObserver(this);
 		this.mod.addObserver(this);
+		localizer = new LocalizerFactory().getInstance();
+		localizer.addObserver(this);
+		controller = new ModViewController(this, modList);
 	}
 	
 	protected void build() {
@@ -109,9 +114,9 @@ public class ModView implements Observer {
 	private void updateStrings() {
 
 		displayName.setText(mod.getDisplayName());
-		statusText.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		statusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
 		modVersion.setText(mod.getModVersion());
-		installButton.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		installButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		//TODO Replace with images
 		expandButton.setText("^");

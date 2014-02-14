@@ -1,7 +1,5 @@
 package net.krazyweb.starmodmanager.test;
 
-import net.krazyweb.starmodmanager.data.Mod;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

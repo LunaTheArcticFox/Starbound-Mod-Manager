@@ -1,7 +1,5 @@
 package net.krazyweb.starmodmanager.view;
 
-import java.util.Observable;
-import java.util.Observer;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -18,8 +16,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import net.krazyweb.jfx.controls.NumericTextField;
 import net.krazyweb.starmodmanager.data.Localizer;
-import net.krazyweb.starmodmanager.data.Localizer.Language;
-import net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface.Language;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -56,10 +59,15 @@ public class SettingsView implements Observer {
 	private Text loggerLevelTitle;
 	
 	private SettingsViewController controller;
+
+	private SettingsModelInterface settings;
+	private LocalizerModelInterface localizer;
 	
 	protected SettingsView() {
+		settings = new SettingsFactory().getInstance();
+		localizer = new LocalizerFactory().getInstance();
+		localizer.addObserver(this);
 		controller = new SettingsViewController(this);
-		Localizer.getInstance().addObserver(this);
 	}
 	
 	protected void build() {
@@ -84,9 +92,9 @@ public class SettingsView implements Observer {
 		modInstallPathContainer.add(modsPathField, 1, 2);
 		modInstallPathContainer.add(modsPathButton, 2, 2);
 		
-		ObservableList<Language> languageOptions = FXCollections.observableArrayList(Localizer.getInstance().getLanguages());
+		ObservableList<Language> languageOptions = FXCollections.observableArrayList(localizer.getLanguages());
 		languageSelector = new ComboBox<>(languageOptions);
-		languageSelector.setValue(Localizer.getInstance().getCurrentLanguage());
+		languageSelector.setValue(localizer.getCurrentLanguage());
 		
 		ObservableList<Level> loggerLevelOptions = FXCollections.observableArrayList(
 			Level.OFF,
@@ -99,7 +107,7 @@ public class SettingsView implements Observer {
 		);
 		HBox loggerLevelContainer = new HBox();
 		loggerLevelSelector = new ComboBox<>(loggerLevelOptions);
-		loggerLevelSelector.setValue(Settings.getInstance().getPropertyLevel("loggerlevel"));
+		loggerLevelSelector.setValue(settings.getPropertyLevel("loggerlevel"));
 		loggerLevelTitle = new Text();
 		loggerLevelContainer.getChildren().addAll(loggerLevelTitle, loggerLevelSelector);
 		
@@ -135,7 +143,7 @@ public class SettingsView implements Observer {
 	
 	private void createListeners() {
 
-		gamePathField.setText(Settings.getInstance().getPropertyPath("starboundpath").toAbsolutePath().toString());
+		gamePathField.setText(settings.getPropertyPath("starboundpath").toAbsolutePath().toString());
 		gamePathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -145,7 +153,7 @@ public class SettingsView implements Observer {
 			}
 		});
 
-		modsPathField.setText(Settings.getInstance().getPropertyPath("modsdir").toAbsolutePath().toString());
+		modsPathField.setText(settings.getPropertyPath("modsdir").toAbsolutePath().toString());
 		modsPathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov, Boolean oldValue, Boolean newValue) {
@@ -169,7 +177,7 @@ public class SettingsView implements Observer {
 			}
 		});
 
-		checkVersionBox.selectedProperty().setValue(Settings.getInstance().getPropertyBoolean("checkversiononlaunch"));
+		checkVersionBox.selectedProperty().setValue(settings.getPropertyBoolean("checkversiononlaunch"));
 		checkVersionBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
@@ -177,7 +185,7 @@ public class SettingsView implements Observer {
 			}
 		});
 
-		backupSavesOnLaunchBox.selectedProperty().setValue(Settings.getInstance().getPropertyBoolean("backuponlaunch"));
+		backupSavesOnLaunchBox.selectedProperty().setValue(settings.getPropertyBoolean("backuponlaunch"));
 		backupSavesOnLaunchBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
@@ -188,7 +196,7 @@ public class SettingsView implements Observer {
 		confirmButtonDelayField.setMinValue(0);
 		confirmButtonDelayField.setMaxValue(10);
 		confirmButtonDelayField.setDefaultValue(0);
-		confirmButtonDelayField.setText(Settings.getInstance().getPropertyString("confirmdelay"));
+		confirmButtonDelayField.setText(settings.getPropertyString("confirmdelay"));
 		confirmButtonDelayField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> ov,	Boolean oldValue, Boolean newValue) {
@@ -206,17 +214,17 @@ public class SettingsView implements Observer {
 
 	private void updateStrings() {
 		
-		gamePathTitle.setText(Localizer.getInstance().getMessage("settings.starboundpath"));
+		gamePathTitle.setText(localizer.getMessage("settings.starboundpath"));
 		gamePathButton.setText(">>"); //TODO Replace with image
 
-		modsPathTitle.setText(Localizer.getInstance().getMessage("settings.modspath"));
+		modsPathTitle.setText(localizer.getMessage("settings.modspath"));
 		modsPathButton.setText(">>"); //TODO Replace with image
 		
-		loggerLevelTitle.setText(Localizer.getInstance().getMessage("settings.loggerlevel"));
+		loggerLevelTitle.setText(localizer.getMessage("settings.loggerlevel"));
 		
-		checkVersionTitle.setText(Localizer.getInstance().getMessage("settings.checkversion"));
-		backupSavesOnLaunchTitle.setText(Localizer.getInstance().getMessage("settings.backuponlaunch"));
-		confirmButtonDelayTitle.setText(Localizer.getInstance().getMessage("settings.confirmdelay"));
+		checkVersionTitle.setText(localizer.getMessage("settings.checkversion"));
+		backupSavesOnLaunchTitle.setText(localizer.getMessage("settings.backuponlaunch"));
+		confirmButtonDelayTitle.setText(localizer.getMessage("settings.confirmdelay"));
 		
 	}
 	
