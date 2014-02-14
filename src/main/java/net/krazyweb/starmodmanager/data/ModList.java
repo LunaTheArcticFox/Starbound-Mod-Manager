@@ -9,11 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Observable;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -24,40 +21,37 @@ import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ModList extends Observable implements Progressable {
+public class ModList implements ModListModelInterface {
 	
 	private static final Logger log = LogManager.getLogger(ModList.class);
 	
 	private SettingsModelInterface settings;
+	private DatabaseModelInterface database;
+	private LocalizerModelInterface localizer;
 	
 	private boolean locked;
 	
 	private List<Mod> mods;
-
-	private Task<?> task;
 	
-	private ReadOnlyDoubleProperty progress;
-	private ReadOnlyStringProperty message;
+	private Set<Observer> observers;
 	
-	public ModList(final SettingsModelFactory settingsFactory) {
+	public ModList(final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
+		observers = new HashSet<>();
 		settings = settingsFactory.getInstance();
+		database = databaseFactory.getInstance();
+		localizer = localizerFactory.getInstance();
 	}
 	
-	public void load() {
-		
-		GetModListTask t = new GetModListTask(this);
-		
-		this.setProgress(t.progressProperty());
-		this.setMessage(t.messageProperty());
-		
-		this.task = t;
-		
+	@Override
+	public Task<Void> getLoadTask() {
+		return new GetModListTask(this);
 	}
 	
+	@Override
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(Localizer.getInstance().getMessage("modlist.addingmods"));
+		progress.start(localizer.getMessage("modlist.addingmods"));
 		
 		final Set<String> currentMods = new HashSet<>();
 		for (Mod mod : mods) {
@@ -77,9 +71,9 @@ public class ModList extends Observable implements Progressable {
 					
 					Path file = files.get(i);
 					
-					this.updateMessage(Localizer.getInstance().getMessage("modlist.loadingmod") + file.getFileName());
+					this.updateMessage(localizer.getMessage("modlist.loadingmod") + file.getFileName());
 					
-					Set<Mod> modsToAdd = Mod.load(file, mods.size());
+					Set<Mod> modsToAdd = Mod.load(file, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 					
 					if (modsToAdd != null && !modsToAdd.isEmpty()) {
 						for (Mod mod : modsToAdd) {
@@ -117,7 +111,6 @@ public class ModList extends Observable implements Progressable {
 			public void handle(WorkerStateEvent t) {
 				progress.close();
 				for (Mod mod : newMods) {
-					setChanged();
 					notifyObservers(new Object[] { "modadded", mod });
 				}
 			}
@@ -132,7 +125,8 @@ public class ModList extends Observable implements Progressable {
 		t.start();
 		
 	}
-	
+
+	@Override
 	public void deleteMod(final Mod mod) {
 		
 		if (mod.isInstalled()) {
@@ -140,7 +134,7 @@ public class ModList extends Observable implements Progressable {
 		}
 		
 		try {
-			HyperSQLDatabase.deleteMod(mod);
+			database.deleteMod(mod);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -156,6 +150,7 @@ public class ModList extends Observable implements Progressable {
 		
 	}
 	
+	@Override
 	public void installMod(final Mod mod) {
 		
 		//TODO Update to use the modlist wide task for progress bars
@@ -194,7 +189,7 @@ public class ModList extends Observable implements Progressable {
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(true);
 				try {
-					HyperSQLDatabase.updateMod(mod);
+					database.updateMod(mod);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					log.error("", e);
@@ -209,6 +204,7 @@ public class ModList extends Observable implements Progressable {
 		
 	}
 	
+	@Override
 	public void uninstallMod(final Mod mod) {
 		
 		final Task<Integer> installModsTask = new Task<Integer>() {
@@ -247,7 +243,7 @@ public class ModList extends Observable implements Progressable {
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(false);
 				try {
-					HyperSQLDatabase.updateMod(mod);
+					database.updateMod(mod);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					log.error("", e);
@@ -262,11 +258,12 @@ public class ModList extends Observable implements Progressable {
 		
 	}
 	
+	@Override
 	public void hideMod(final Mod mod) {
 		
 		mod.setHidden(true);
 		try {
-			HyperSQLDatabase.updateMod(mod);
+			database.updateMod(mod);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -274,10 +271,7 @@ public class ModList extends Observable implements Progressable {
 		
 	}
 	
-	
-	/*
-	 * See: http://stackoverflow.com/questions/4938626/moving-items-around-in-an-arraylist
-	 */
+	@Override
 	public void moveMod(final Mod mod, final int amount) {
 		
 		if (locked) {
@@ -309,7 +303,7 @@ public class ModList extends Observable implements Progressable {
 			m.setOrder(mods.indexOf(m));
 			log.debug("  [" + m.getOrder() + "] " + m.getInternalName());
 			try {
-				HyperSQLDatabase.updateMod(m);
+				database.updateMod(m);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -317,27 +311,28 @@ public class ModList extends Observable implements Progressable {
 		
 	}
 	
+	@Override
 	public List<Mod> getMods() {
 		List<Mod> modListCopy = new ArrayList<>(mods);
 		return modListCopy;
 	}
-	
+
+	@Override
 	public int indexOf(final Mod mod) {
 		return mods.indexOf(mod);
 	}
-	
-	public void lockList() {
-		locked = true;
+
+	@Override
+	public void setLocked(final boolean locked) {
+		this.locked = locked;
 	}
-	
-	public void unlockList() {
-		locked = false;
-	}
-	
+
+	@Override
 	public boolean isLocked() {
 		return locked;
 	}
-	
+
+	@Override
 	public void refreshMods() {
 		/*try {
 			Database.getModList();
@@ -345,37 +340,27 @@ public class ModList extends Observable implements Progressable {
 			e.printStackTrace();
 		}*/
 	}
-	
-	protected void setModList(final List<Mod> list) {
+
+	@Override
+	public void setModList(final List<Mod> list) {
 		this.mods = list;
-		setChanged();
-		this.notifyObservers("modlistupdated");
+		notifyObservers("modlistupdated");
+	}
+
+	@Override
+	public void addObserver(final Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final Observer observer) {
+		observers.remove(observer);
 	}
 	
-	private void setProgress(final ReadOnlyDoubleProperty progress) {
-		this.progress = progress;
-	}
-	
-	private void setMessage(final ReadOnlyStringProperty message) {
-		this.message = message; 
-	}
-
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
-		return progress;
-	}
-
-	@Override
-	public ReadOnlyStringProperty getMessageProperty() {
-		return message;
-	}
-
-	@Override
-	public void processTask() {
-		Thread thread = new Thread(task);
-		thread.setName("Settings Task Thread");
-		thread.setDaemon(true);
-		thread.start();
+	private final void notifyObservers(final Object message) {
+		for (final Observer o : observers) {
+			o.update(this, message);
+		}
 	}
 	
 }

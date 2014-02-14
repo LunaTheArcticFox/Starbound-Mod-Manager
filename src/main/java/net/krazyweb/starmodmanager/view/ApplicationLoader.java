@@ -5,8 +5,6 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
 import net.krazyweb.starmodmanager.data.DatabaseFactory;
 import net.krazyweb.starmodmanager.data.DatabaseModelInterface;
-import net.krazyweb.starmodmanager.data.HyperSQLDatabase;
-import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
@@ -38,11 +36,7 @@ public class ApplicationLoader implements Observer {
 		view.build();
 		
 		settings = new SettingsFactory().getInstance();
-		database = new DatabaseFactory().getInstance();
-		localizer = new LocalizerFactory().getInstance();
 		settings.addObserver(this);
-		database.addObserver(this);
-		localizer.addObserver(this);
 		
 		configureLogger();
 		
@@ -63,9 +57,12 @@ public class ApplicationLoader implements Observer {
 	
 	private void initDatabase() {
 		
+		database = new DatabaseFactory().getInstance();
+		database.addObserver(this);
+		
 		Task<Void> task = database.getInitializerTask();
 		
-		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 2);
 		
 		Thread thread = new Thread(task);
 		thread.setDaemon(true);
@@ -78,7 +75,7 @@ public class ApplicationLoader implements Observer {
 		
 		Task<Void> task = settings.getLoadSettingsTask();
 		
-		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 3);
 		
 		Thread thread = new Thread(task);
 		thread.setDaemon(true);
@@ -89,9 +86,12 @@ public class ApplicationLoader implements Observer {
 	
 	private void initializeLocalizer() {
 		
+		localizer = new LocalizerFactory().getInstance();
+		localizer.addObserver(this);
+		
 		Task<Void> task = localizer.getInitializerTask();
 		
-		setProgressProperties(task.progressProperty(), task.messageProperty(), 1);
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 4);
 		
 		Thread thread = new Thread(task);
 		thread.setDaemon(true);
@@ -102,14 +102,17 @@ public class ApplicationLoader implements Observer {
 	
 	private void loadModList() {
 		
-		modList = new ModList(new SettingsFactory());
-		modList.load();
-		
+		modList = new ModList(new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 		modList.addObserver(this);
-
-		setProgressProperties(modList.getProgressProperty(), modList.getMessageProperty(), 5);
 		
-		modList.processTask();
+		Task<Void> task = modList.getLoadTask();
+		
+		setProgressProperties(task.progressProperty(), task.messageProperty(), 5);
+		
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("Mod List Loading Thread");
+		thread.start();
 		
 	}
 	
@@ -118,7 +121,7 @@ public class ApplicationLoader implements Observer {
 		settings.removeObserver(this);
 		database.removeObserver(this);
 		localizer.removeObserver(this);
-		modList.deleteObserver(this);
+		modList.removeObserver(this);
 		
 		new MainViewController(modList);
 		

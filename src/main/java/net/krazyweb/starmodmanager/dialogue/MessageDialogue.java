@@ -8,7 +8,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import net.krazyweb.starmodmanager.data.Localizer;
+import net.krazyweb.starmodmanager.data.LocalizerModelFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 
 public class MessageDialogue {
 	
@@ -34,9 +35,12 @@ public class MessageDialogue {
 	
 	private DialogueAction actionPerformed;
 	
-	public MessageDialogue(final String message, final String title, final MessageType messageType) {
+	private LocalizerModelInterface localizer;
+	
+	public MessageDialogue(final String message, final String title, final MessageType messageType, final LocalizerModelFactory localizerFactory) {
 		build(message, title, messageType);
 		show();
+		localizer = localizerFactory.getInstance();
 	}
 	
 	private void build(final String message, final String title, final MessageType messageType) {
@@ -47,7 +51,7 @@ public class MessageDialogue {
 		
 		iconPlaceholder = new Text("[PLACEHOLDER]");
 		messageText = new Text(message);
-		confirmButton = new Button(Localizer.getInstance().getMessage("messagedialogue.okay"));
+		confirmButton = new Button(localizer.getMessage("messagedialogue.okay"));
 		
 		confirmButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override

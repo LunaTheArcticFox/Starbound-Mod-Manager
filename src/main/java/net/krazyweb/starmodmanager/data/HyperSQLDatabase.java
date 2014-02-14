@@ -36,12 +36,13 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 	private Connection connection;
 
 	private SettingsModelInterface settings;
+	private SettingsModelFactory settingsFactory;
 	
 	private Set<Observer> observers;
 	
-	protected HyperSQLDatabase(final SettingsModelInterface settings) {
+	protected HyperSQLDatabase(final SettingsModelFactory settingsFactory) {
 		observers = new HashSet<>();
-		this.settings = settings;
+		this.settingsFactory = settingsFactory;
 	}
 	
 	@Override
@@ -51,11 +52,15 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 
 			@Override
 			protected Void call() throws Exception {
+				
+				settings = settingsFactory.getInstance();
 
 				this.updateMessage("Connecting to Database");
 				this.updateProgress(0.0, 2.0);
 				
 				connection = DriverManager.getConnection("jdbc:hsqldb:file:" + new File("").getAbsolutePath().replaceAll("\\\\", "/") + "/data/db", "SA", "");
+
+				System.out.println(connection);
 
 				this.updateMessage("Creating Default Tables");
 				this.updateProgress(1.0, 2.0);
@@ -403,7 +408,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			
 			results.next();
 				
-			Mod mod = new Mod();
+			Mod mod = new Mod(new LocalizerFactory());
 			
 			mod.setInternalName(results.getString("internalName"));
 			mod.setArchiveName(results.getString("archiveName"));
@@ -458,7 +463,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 				
 				if (mod.getChecksum() != checksum) {
 					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
-					mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder());
+					mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 				} else {
 					mods = new HashSet<>();
 					mods.add(mod);
@@ -520,6 +525,8 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		query.append("SELECT * FROM ");
 		query.append(SETTINGS_TABLE_NAME);
+		
+		System.out.println(connection);
 		
 		PreparedStatement propertyQuery = connection.prepareStatement(query.toString());
 		

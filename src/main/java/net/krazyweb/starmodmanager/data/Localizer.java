@@ -28,17 +28,20 @@ public class Localizer implements LocalizerModelInterface, Observer {
 	private ResourceBundle bundle;
 	
 	private SettingsModelInterface settings;
+	private SettingsModelFactory settingsFactory;
 	
 	private Set<Observer> observers;
 	
-	protected Localizer(final SettingsModelInterface settings) {
+	protected Localizer(final SettingsModelFactory settingsFactory) {
 		observers = new HashSet<>();
-		this.settings = settings;
-		settings.addObserver(this);
+		this.settingsFactory = settingsFactory;
 	}
 	
 	@Override
 	public Task<Void> getInitializerTask() {
+
+		settings = settingsFactory.getInstance();
+		settings.addObserver(this);
 		
 		Task<Void> task = new Task<Void>() {
 

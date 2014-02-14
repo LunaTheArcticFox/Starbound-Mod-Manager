@@ -21,8 +21,14 @@ public class GetModListTask extends Task<Void> {
 	private static final Logger log = LogManager.getLogger(GetModListTask.class);
 	
 	private List<Mod> mods;
+
+	private SettingsModelInterface settings;
+	private DatabaseModelInterface database;
 	
 	protected GetModListTask(final ModList modList) {
+
+		settings = new SettingsFactory().getInstance();
+		database = new DatabaseFactory().getInstance();
 		
 		setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -48,7 +54,7 @@ public class GetModListTask extends Task<Void> {
 		this.updateMessage("Loading Mod List");
 		this.updateProgress(0.0, 1.0);
 
-		List<String> modsInDatabase = HyperSQLDatabase.getInstance().getModNames();
+		List<String> modsInDatabase = database.getModNames();
 		List<String> modNames = new ArrayList<>();
 		Set<String> currentArchives = new HashSet<>();
 		
@@ -57,12 +63,12 @@ public class GetModListTask extends Task<Void> {
 		
 		for (final String modData : modsInDatabase) {
 			modNames.add(modData.split("\n")[0]);
-			currentArchives.add(Settings.getInstance().getPropertyPath("modsdir").resolve(modData.split("\n")[1]).toAbsolutePath().toString()); //TODO Better Path manipulation
+			currentArchives.add(settings.getPropertyPath("modsdir").resolve(modData.split("\n")[1]).toAbsolutePath().toString()); //TODO Better Path manipulation
 		}
 		
 		log.debug(modNames);
 		
-		FileHelper.listFiles(Settings.getInstance().getPropertyString("modsdir"), archives); //TODO investigate using path
+		FileHelper.listFiles(settings.getPropertyString("modsdir"), archives); //TODO investigate using path
 		
 		for (Path path : archives) {
 			if (currentArchives.contains(path.toString())) {
@@ -79,7 +85,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (final String modName : modsInDatabase) {
 			Mod tempMod = null;
-			if ((tempMod = HyperSQLDatabase.getInstance().getModByName(modName.split("\n")[0])) != null) {
+			if ((tempMod = database.getModByName(modName.split("\n")[0])) != null) {
 				mods.add(tempMod);
 			}
 			this.updateProgress((double) count, (double) total);
@@ -90,7 +96,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (Path path : archives) {
 			
-			Set<Mod> tempMods = Mod.load(path, mods.size());
+			Set<Mod> tempMods = Mod.load(path, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 			
 			if (tempMods == null || tempMods.isEmpty()) {
 				continue;
@@ -107,7 +113,7 @@ public class GetModListTask extends Task<Void> {
 		
 		for (Mod mod : mods) {
 			mod.setOrder(mods.indexOf(mod));
-			HyperSQLDatabase.updateMod(mod);
+			database.updateMod(mod);
 		}
 		
 		this.updateProgress(1.0, 1.0);

@@ -1,8 +1,5 @@
 package net.krazyweb.starmodmanager.view;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -24,7 +21,12 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Localizer;
-import net.krazyweb.starmodmanager.data.Settings;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
+import net.krazyweb.starmodmanager.data.Observable;
+import net.krazyweb.starmodmanager.data.Observer;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,10 +55,15 @@ public class MainView implements Observer {
 	private Button lockButton;
 	private Button refreshButton;
 	private Button expandButton;
+
+	private SettingsModelInterface settings;
+	private LocalizerModelInterface localizer;
 	
 	protected MainView(final MainViewController c) {
 		this.controller = c;
-		Localizer.getInstance().addObserver(this);
+		settings = new SettingsFactory().getInstance();
+		localizer = new LocalizerFactory().getInstance();
+		localizer.addObserver(this);
 	}
 	
 	protected void build() {
@@ -118,7 +125,7 @@ public class MainView implements Observer {
 		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		scene = new Scene(stackPane, Settings.getInstance().getPropertyDouble("windowwidth"), Settings.getInstance().getPropertyDouble("windowheight"));
+		scene = new Scene(stackPane, settings.getPropertyDouble("windowwidth"), settings.getPropertyDouble("windowheight"));
 		
 		Stage stage = ModManager.getPrimaryStage();
 		
@@ -297,15 +304,15 @@ public class MainView implements Observer {
 
 	private void updateStrings() {
 		
-		ModManager.getPrimaryStage().setTitle(Localizer.getInstance().formatMessage("windowtitle", Settings.getInstance().getVersion()));
+		ModManager.getPrimaryStage().setTitle(localizer.formatMessage("windowtitle", settings.getVersion()));
 		
-		appName.setText(Localizer.getInstance().getMessage("appname"));
-		versionName.setText(Settings.getInstance().getVersion());
+		appName.setText(localizer.getMessage("appname"));
+		versionName.setText(settings.getVersion());
 
-		modListButton.setText(Localizer.getInstance().getMessage("navbartabs.mods"));
-		backupListButton.setText(Localizer.getInstance().getMessage("navbartabs.backups"));
-		settingsButton.setText(Localizer.getInstance().getMessage("navbartabs.settings"));
-		aboutButton.setText(Localizer.getInstance().getMessage("navbartabs.about"));
+		modListButton.setText(localizer.getMessage("navbartabs.mods"));
+		backupListButton.setText(localizer.getMessage("navbartabs.backups"));
+		settingsButton.setText(localizer.getMessage("navbartabs.settings"));
+		aboutButton.setText(localizer.getMessage("navbartabs.about"));
 		
 		//TODO Remove, these are for testing and will have no text later
 		quickBackupButton.setText("No Function");

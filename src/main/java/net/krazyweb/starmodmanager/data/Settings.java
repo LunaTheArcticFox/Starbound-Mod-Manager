@@ -15,8 +15,6 @@ import javafx.event.EventHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.FileAppender;
 
 public class Settings implements SettingsModelInterface {
 
@@ -35,12 +33,13 @@ public class Settings implements SettingsModelInterface {
 	private Properties defaultProperties;
 	
 	private Set<Observer> observers;
-	
+
 	private DatabaseModelInterface database;
+	private DatabaseModelFactory databaseFactory;
 	
-	protected Settings(final DatabaseModelInterface database) {
+	protected Settings(final DatabaseModelFactory databaseFactory) {
 		observers = new HashSet<>();
-		this.database = database;
+		this.databaseFactory = databaseFactory;
 	}
 	
 	/*
@@ -60,15 +59,15 @@ public class Settings implements SettingsModelInterface {
 				this.updateProgress(0.0, 4.0);
 				
 				identifyOS();
-				
+				/*
 				ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
-				FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
+				FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");*/
 				
 				this.updateProgress(1.0, 4.0);
 				
 				//Print program information before adjusting loggers.
-				console.setThreshold(Level.TRACE);
-				file.setThreshold(Level.TRACE);
+				/*console.setThreshold(Level.TRACE);
+				file.setThreshold(Level.TRACE);*/
 				
 				this.updateProgress(2.0, 4.0);
 
@@ -78,13 +77,13 @@ public class Settings implements SettingsModelInterface {
 
 				this.updateProgress(3.0, 4.0);
 
-				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
+				/*if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
 					console.setThreshold(Level.OFF);
 					file.setThreshold(Level.WARN);
 				} else {
 					console.setThreshold(Level.DEBUG);
 					file.setThreshold(Level.OFF);
-				}
+				}*/
 
 				this.updateProgress(4.0, 4.0);
 
@@ -108,11 +107,13 @@ public class Settings implements SettingsModelInterface {
 	@Override
 	public Task<Void> getLoadSettingsTask() {
 		
+		database = databaseFactory.getInstance();
+		
 		final Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
-
+				
 				this.updateMessage("Loading Settings From Database");
 				this.updateProgress(0.0, 3.0);
 
@@ -126,10 +127,10 @@ public class Settings implements SettingsModelInterface {
 				this.updateProgress(2.0, 3.0);
 
 				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-					ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
+					/*ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
 					FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
 					console.setThreshold(Level.OFF);
-					file.setThreshold(getPropertyLevel("loggerlevel"));
+					file.setThreshold(getPropertyLevel("loggerlevel"));*/
 				}
 				
 				if (Files.notExists(getPropertyPath("modsdir"))) {
@@ -194,8 +195,8 @@ public class Settings implements SettingsModelInterface {
 	@Override
 	public void setLoggerLevel(final Level level) {
 		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-			FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
-			file.setThreshold(level);
+			/*FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
+			file.setThreshold(level);*/
 		}
 	}
 
@@ -264,9 +265,9 @@ public class Settings implements SettingsModelInterface {
 		observers.remove(observer);
 	}
 	
-	private final void notifyObservers(final String message) {
+	private final void notifyObservers(final Object message) {
 		for (final Observer o : observers) {
-			o.update(this, (Object) message);
+			o.update(this, message);
 		}
 	}
 	

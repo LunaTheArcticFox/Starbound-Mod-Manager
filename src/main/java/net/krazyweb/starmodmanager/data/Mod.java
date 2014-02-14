@@ -51,6 +51,8 @@ public class Mod extends Observable {
 	private Set<String> dependencies;
 	private Set<ModFile> files; //All files that the mod alters
 	
+	private LocalizerModelInterface localizer;
+	
 	protected static class ModOrderComparator implements Comparator<Mod> {
 
 		@Override
@@ -60,10 +62,11 @@ public class Mod extends Observable {
 		
 	}
 	
-	protected Mod() {
+	protected Mod(final LocalizerModelFactory localizerFactory) {
+		localizer = localizerFactory.getInstance();
 	}
 	
-	protected static Set<Mod> load(final Path path, final int order) {
+	protected static Set<Mod> load(final Path path, final int order, final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
 		
 		log.debug("Loading mod: " + path);
 		
@@ -78,11 +81,11 @@ public class Mod extends Observable {
 		
 		//TODO Count all mods and send back progress info
 		
-		Set<Archive> archives = processArchive(modArchive);
+		Set<Archive> archives = processArchive(modArchive, settingsFactory);
 		
 		for (Archive archive : archives) {
 			
-			Mod mod = new Mod();
+			Mod mod = new Mod(localizerFactory);
 			
 			mod.setOrder(order);
 			mod.files = new HashSet<>();
@@ -135,7 +138,7 @@ public class Mod extends Observable {
 			}
 			
 			try {
-				mod.setChecksum(FileHelper.getChecksum(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + mod.archiveName).toPath())); //TODO Better Path manipulation
+				mod.setChecksum(FileHelper.getChecksum(new File(settingsFactory.getInstance().getPropertyString("modsdir") + File.separator + mod.archiveName).toPath())); //TODO Better Path manipulation
 			} catch (IOException e) {
 				log.error("Setting Checksum", e);
 			}
@@ -170,7 +173,7 @@ public class Mod extends Observable {
 			}
 			
 			try {
-				HyperSQLDatabase.updateMod(mod);
+				databaseFactory.getInstance().updateMod(mod);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -183,7 +186,7 @@ public class Mod extends Observable {
 		
 	}
 
-	private static Set<Archive> processArchive(final Archive archive) {
+	private static Set<Archive> processArchive(final Archive archive, final SettingsModelFactory settingsFactory) {
 		
 		Set<Archive> archives = new HashSet<>();
 		
@@ -236,7 +239,7 @@ public class Mod extends Observable {
 				Archive newArchive = new Archive(subDir + ".zip");
 				newArchive.getFiles().addAll(files);
 				
-				newArchive.writeToFile(new File(Settings.getInstance().getPropertyString("modsdir") + File.separator + newArchive.getFileName())); //TODO Better Path manipulation
+				newArchive.writeToFile(new File(settingsFactory.getInstance().getPropertyString("modsdir") + File.separator + newArchive.getFileName())); //TODO Better Path manipulation
 				
 				archives.add(newArchive);
 				
@@ -265,7 +268,7 @@ public class Mod extends Observable {
 
 	public String getModVersion() {
 		if (modVersion.equals(NO_VERSION)) {
-			return Localizer.getInstance().getMessage("mod.unknownversion");
+			return localizer.getMessage("mod.unknownversion");
 		}
 		return modVersion;
 	}
@@ -284,7 +287,7 @@ public class Mod extends Observable {
 
 	public String getAuthor() {
 		if (author.equals(NO_AUTHOR)) {
-			return Localizer.getInstance().getMessage("mod.unknownauthor");
+			return localizer.getMessage("mod.unknownauthor");
 		}
 		return author;
 	}
@@ -295,7 +298,7 @@ public class Mod extends Observable {
 
 	public String getDescription() {
 		if (description.equals(NO_DESCRIPTION)) {
-			return Localizer.getInstance().getMessage("mod.nodescription");
+			return localizer.getMessage("mod.nodescription");
 		}
 		return description;
 	}
