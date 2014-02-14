@@ -23,6 +23,7 @@ import net.krazyweb.helpers.FileCopier.TreeCopier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ParameterizedMessage;
 
 public class FileHelper {
 	
@@ -48,7 +49,7 @@ public class FileHelper {
 			Files.walkFileTree(src, opts, Integer.MAX_VALUE, tc);
 			return true;
 		} catch (IOException e) {
-			log.error("Copying file/folder: " + src + " to " + dest, e);
+			log.error(new ParameterizedMessage("Copying file/folder: {} to {}", src, dest), e);
 		}
         
         return false;
@@ -107,7 +108,7 @@ public class FileHelper {
 			}
 	
 			if (!suppressLogging) {
-				log.debug("File '" + path + "' verified as '" + extension + "'");
+				log.debug("File '{}' verified as '{}'", path, extension);
 			}
 			
 			b.close();
@@ -141,7 +142,7 @@ public class FileHelper {
 		
 		long checksum = checkedStream.getChecksum().getValue();
 		
-		log.debug("Checksum (" + checksum + ") created for file: " + path);
+		log.debug("Checksum ({}) created for file: {}", checksum, path);
 		
 		return checksum;
 		
@@ -158,7 +159,7 @@ public class FileHelper {
             	paths.add(path);
             }
         } catch (IOException e) {
-        	log.error("Listing files in directory:" + directory, e);
+        	log.error(new ParameterizedMessage("Listing files in directory: {}", directory), e);
         }
 		
         return paths;
@@ -210,7 +211,7 @@ public class FileHelper {
 			}
 			
 		} catch (IOException e) {
-			log.error("Reading a file to a string.", e);
+			log.error(new ParameterizedMessage("Reading file '{}' to a string.", file), e);
 			return null;
 		}
 

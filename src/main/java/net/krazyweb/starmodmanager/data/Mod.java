@@ -70,7 +70,7 @@ public class Mod implements Observable {
 	
 	protected static Set<Mod> load(final Path path, final int order, final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
 		
-		log.debug("Loading mod: " + path);
+		log.debug("Loading mod: {}", path);
 		
 		Set<Mod> mods = new HashSet<>();
 		

@@ -140,7 +140,7 @@ public class MainViewController extends Observable {
 			List<Path> toAdd = new ArrayList<>();
 			for (File file : db.getFiles()) {
 				toAdd.add(file.toPath());
-				log.debug("File '" + file.toPath() + "' dropped on Mod Manager.");
+				log.debug("File '{}' dropped on Mod Manager.", file.toPath());
 			}
 			modList.addMods(toAdd);
 		}

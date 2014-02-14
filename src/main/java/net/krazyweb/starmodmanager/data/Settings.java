@@ -73,8 +73,8 @@ public class Settings implements SettingsModelInterface {
 				this.updateProgress(2.0, 4.0);
 
 				log.info("[Application Launched]");
-				log.info("Starbound Mod Manager - Version " + VERSION_STRING);
-				log.info("Running on " + operatingSystemName);
+				log.info("Starbound Mod Manager - Version {}", VERSION_STRING);
+				log.info("Running on {}", operatingSystemName);
 
 				this.updateProgress(3.0, 4.0);
 
@@ -230,10 +230,10 @@ public class Settings implements SettingsModelInterface {
 		}
 		
 		if (defaultProperties.containsKey(key)) {
-			log.debug("Property '" + key + "' not found in database. Using default value: '" + defaultProperties.getProperty(key) + "'");
+			log.debug("Property '{}' not found in database. Using default value: '{}'", key, defaultProperties.getProperty(key));
 			return defaultProperties.getProperty(key);
 		} else {
-			log.warn("Could not find property: " + key);
+			log.warn("Could not find property: {}", key);
 			return null;
 		}
 		
@@ -269,7 +269,7 @@ public class Settings implements SettingsModelInterface {
 		settings.put(key, property.toString());
 		notifyObservers("propertychanged:" + key);
 		database.setProperty(key, property);
-		log.debug("Property Changed: " + key + " -- " + property);
+		log.debug("Property Changed: {} -- {}", key, property);
 	}
 
 	@Override

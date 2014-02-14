@@ -16,6 +16,7 @@ import javafx.event.EventHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ParameterizedMessage;
 
 import com.ibm.icu.text.MessageFormat;
 
@@ -94,12 +95,12 @@ public class Localizer implements LocalizerModelInterface, Observer {
 			return "Localization key is null.";
 		} catch (final MissingResourceException e) {
 			if (!suppressLogging) {
-				log.warn("Key '" + key + "' not found.");
+				log.warn("Key '{}' not found.", key);
 			}
 			return "Key '" + key + "' not found.";
 		} catch (final ClassCastException e) {
 			if (!suppressLogging) {
-				log.warn("Value found for key '" + key + "' is not a String.");
+				log.warn("Value found for key '{}' is not a String.", key);
 			}
 			return "Value found for key '" + key + "' is not a String.";
 		}
@@ -110,12 +111,12 @@ public class Localizer implements LocalizerModelInterface, Observer {
 			formatted = new String(output.getBytes("ISO-8859-1"), "UTF-8");
 		} catch (final UnsupportedEncodingException e) {
 			if (!suppressLogging) {
-				log.error("Could not encode '" + output + "' to UTF-8.", e);
+				log.error(new ParameterizedMessage("Could not encode '{}' to UTF-8.", output), e);
 			}
 		}
 
 		if (!suppressLogging) {
-			log.debug("String '" + output + "' converted to '" + formatted + "'.");
+			log.debug("String '{}' converted to '{}'.", output, formatted);
 		}
 		
 		return formatted;
@@ -136,7 +137,7 @@ public class Localizer implements LocalizerModelInterface, Observer {
 			formatter = new MessageFormat(bundle.getString(key.toLowerCase()), locale);
 		} catch (final IllegalArgumentException e) {
 			if (!suppressLogging) {
-				log.warn("Could not parse pattern for '" + key.toLowerCase() + "':", e);
+				log.error(new ParameterizedMessage("Could not parse pattern for '{}'", key.toLowerCase()), e);
 			}
 		}
 		
@@ -152,12 +153,12 @@ public class Localizer implements LocalizerModelInterface, Observer {
 			formatted = new String(formatter.format(messageArguments).getBytes("ISO-8859-1"), "UTF-8");
 		} catch (final UnsupportedEncodingException e) {
 			if (!suppressLogging) {
-				log.error("Could not encode '" + formatter.format(messageArguments) + "' to UTF-8.", e);
+				log.error(new ParameterizedMessage("Could not encode '{}' to UTF-8.", formatter.format(messageArguments)), e);
 			}
 		}
 		
 		if (!suppressLogging) {
-			log.debug("String '" + formatter.format(messageArguments) + "' encoded to '" + formatted + "'.");
+			log.debug("String '{}' encoded to '{}'.", formatter.format(messageArguments), formatted);
 		}
 		
 		return formatted;
@@ -200,7 +201,7 @@ public class Localizer implements LocalizerModelInterface, Observer {
 		//Don't reload the language if nothing changed
 		if (oldLocale == null || !oldLocale.equals(locale)) {
 			bundle = ResourceBundle.getBundle("strings", locale);
-			log.debug("Locale set to: " + locale);
+			log.debug("Locale set to: {}", locale);
 			notifyObservers("localechanged");
 		}
 		

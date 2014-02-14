@@ -84,6 +84,8 @@ public class SettingsViewController {
 	
 	protected void openLog() {
 		
+		log.info("Opening log file.");
+		
 		try {
 			Desktop.getDesktop().open(settings.getPropertyPath("logpath").toFile());
 		} catch (IOException e) {

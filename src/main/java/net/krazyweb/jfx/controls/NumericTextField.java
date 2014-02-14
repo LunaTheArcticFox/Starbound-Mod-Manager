@@ -39,7 +39,7 @@ public class NumericTextField extends TextField {
 					if (maxLength != null && newValue.length() > maxLength.get()) {
 						ignoreNextUpdate = true;
 						textProperty().set(oldValue);
-						log.debug("'" + newValue + "' exceeds maximum length (" + maxLength.get() + "). Ignoring Input.");
+						log.debug("'{}' exceeds maximum length ({}). Ignoring Input.", newValue, maxLength.get());
 						return;
 					}
 					
@@ -50,19 +50,19 @@ public class NumericTextField extends TextField {
 						if (maxValue != null && value > maxValue.get()) {
 							ignoreNextUpdate = true;
 							textProperty().set("" + maxValue.get());
-							log.debug("Value '" + value + "' is over max value (" + maxValue.get() + ") -- Setting to max value.");
+							log.debug("Value '{}' is over max value ({}) -- Setting to max value.", value, maxValue.get());
 							return;
 						} else if (minValue != null && value < minValue.get()) {
 							ignoreNextUpdate = true;
 							textProperty().set("" + minValue.get());
-							log.debug("Value '" + value + "' is under min value (" + minValue.get() + ") -- Setting to min value.");
+							log.debug("Value '{}' is under min value ({}) -- Setting to min value.", value, maxValue.get());
 							return;
 						}
 						
 					} catch (final NumberFormatException e) {
 						ignoreNextUpdate = true;
 						textProperty().set(oldValue);
-						log.debug("Invalid Input Detected: " + newValue);
+						log.debug("Invalid Input Detected: {}", newValue);
 					}
 					
 				}

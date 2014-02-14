@@ -20,6 +20,7 @@ import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ParameterizedMessage;
 
 public class ModList implements ModListModelInterface {
 	
@@ -82,7 +83,7 @@ public class ModList implements ModListModelInterface {
 								newMods.add(mod);
 							} else {
 								//TODO Notify user of mod existence
-								log.debug("Mod already exists, skipping: " + file);
+								log.debug("Mod already exists, skipping: {}", file);
 							}
 						}
 					}
@@ -212,15 +213,15 @@ public class ModList implements ModListModelInterface {
 			@Override
 			protected Integer call() throws Exception {
 				
-				log.info("Uninstalling mod: " + mod.getInternalName());
+				log.info("Uninstalling mod: {}", mod.getInternalName());
 
 				try {
-					log.debug("Deleting from: " + settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
+					log.debug("Deleting from: {}", settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
 					FileHelper.deleteFile(
 						settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName())
 					);
 				} catch (IOException e) {
-					log.error("Uninstalling Mod: " + mod.getInternalName(), e);
+					log.error(new ParameterizedMessage("Uninstalling Mod: {}", mod.getInternalName()), e);
 				}
 				
 				return 1;
@@ -275,7 +276,7 @@ public class ModList implements ModListModelInterface {
 	public void moveMod(final Mod mod, final int amount) {
 		
 		if (locked) {
-			log.debug("Mod list locked; cannot move mod: " + mod.getInternalName());
+			log.debug("Mod list locked; cannot move mod: {}", mod.getInternalName());
 			return;
 		}
 		
@@ -301,7 +302,7 @@ public class ModList implements ModListModelInterface {
 		
 		for (Mod m : mods) {
 			m.setOrder(mods.indexOf(m));
-			log.debug("  [" + m.getOrder() + "] " + m.getInternalName());
+			log.debug("  [{}] {}", m.getOrder(), m.getInternalName());
 			try {
 				database.updateMod(m);
 			} catch (SQLException e) {

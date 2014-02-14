@@ -146,7 +146,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		Statement tableCreator = connection.createStatement();
 		tableCreator.execute(sb.toString());
 
-		log.debug("'" + sb.toString() + "' executed.");
+		log.debug("'{}' executed.", sb);
 		
 		sb = new StringBuilder();
 		sb.append("CREATE TABLE IF NOT EXISTS ");
@@ -160,8 +160,8 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		tableCreator.execute(sb.toString());
 		
 		tableCreator.closeOnCompletion();
-		
-		log.debug("'" + sb.toString() + "' executed.");
+
+		log.debug("'{}' executed.", sb);
 		
 	}
 	
@@ -231,7 +231,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			statement.setString(15, mod.getInternalName());
 			
 			statement.executeUpdate();
-			log.trace("Statement Executed: " + statement.toString());
+			log.trace("Statement Executed: {}", statement);
 			statement.closeOnCompletion();
 			
 		} else {
@@ -278,7 +278,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			statement.setString(14, fileList.toString());
 			
 			statement.execute();
-			log.trace("Statement Executed: " + statement.toString());
+			log.trace("Statement Executed: {}", statement);
 			statement.closeOnCompletion();
 			
 		}
@@ -294,7 +294,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		Statement delete = connection.createStatement();
 		delete.execute(query.toString());
-		log.trace("Statement Executed: " + query.toString());
+		log.trace("Statement Executed: {}", query);
 		delete.closeOnCompletion();
 		
 	}
@@ -313,7 +313,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		ResultSet results = modQuery.executeQuery();
 
-		log.trace("Statement Executed: " + query.toString());
+		log.trace("Statement Executed: {}", query);
 		
 		if (!hasRows(results)) {
 			results.close();
@@ -342,7 +342,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		ResultSet results = modQuery.executeQuery();
 
-		log.trace("Statement Executed: " + query.toString());
+		log.trace("Statement Executed: {}", query);
 		
 		if (!hasRows(results)) {
 			results.close();
@@ -398,11 +398,11 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		ResultSet results = modQuery.executeQuery();
 
-		log.trace("Statement Executed: " + query.toString());
+		log.trace("Statement Executed: {}", query);
 		
 		if (hasRows(results)) {
 			
-			log.debug("Mod found in database: " + modName);
+			log.debug("Mod found in database: {}", modName);
 			
 			results.next();
 				
@@ -460,7 +460,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 				long checksum = FileHelper.getChecksum(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()));
 				
 				if (mod.getChecksum() != checksum) {
-					log.debug("Mod file checksum mismatch: " + mod.getArchiveName() + " (" + mod.getChecksum() + ")");
+					log.debug("Mod file checksum mismatch: {} ({})", mod.getArchiveName(), mod.getChecksum());
 					mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 				} else {
 					mods = new HashSet<>();
@@ -494,7 +494,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		PreparedStatement propertyQuery = connection.prepareStatement(query.toString());
 		propertyQuery.setString(1, property);
 		
-		log.trace("Statement Executed: " + propertyQuery.toString());
+		log.trace("Statement Executed: {}", propertyQuery);
 		
 		ResultSet results = propertyQuery.executeQuery();
 		
@@ -503,7 +503,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		if (hasRows(results)) {
 			while (results.next()) {
 				output = results.getString(1);
-				log.debug("'" + output + "' retrieved from database for property '" + property + "'.");
+				log.debug("'{}' retrieved from database for property '{}'.", output, property);
 			}
 		}
 		
@@ -533,7 +533,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		if (hasRows(results)) {
 			while (results.next()) {
 				properties.put(results.getString(1), results.getString(2));
-				log.debug("'" + results.getString(2) + "' retrieved from database for property '" + results.getString(1) + "'.");
+				log.debug("'{}' retrieved from database for property '{}'.", results.getString(2), results.getString(1));
 			}
 		}
 		
@@ -590,7 +590,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 				statement.setString(2, property);
 				
 				statement.executeUpdate();
-				log.trace("Statement Executed: " + statement.toString());
+				log.trace("Statement Executed: {}", statement);
 				statement.closeOnCompletion();
 				
 			} else {
@@ -607,7 +607,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 				statement.setString(2, value.toString());
 				
 				statement.executeUpdate();
-				log.trace("Statement Executed: " + statement.toString());
+				log.trace("Statement Executed: {}", statement);
 				statement.closeOnCompletion();
 			
 			}
@@ -617,7 +617,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			log.error("", e);
 		}
 		
-		log.debug("'" + property + "' -> '" + value + "' added to database.");
+		log.debug("'{}' -> '{}' added to database.", property, value);
 		
 	}
 	
