@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="DEBUG">
+
+	<Properties>
+		<Property name="conlevel">$${sys:consolelevel}</Property>
+		<Property name="fillevel">$${sys:filelevel}</Property>
+	</Properties>
+
+	<appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="[%d{dd MMM yyyy HH:mm:ss, SSS}{America/New_York}ms] [%t] %20.20c{1} : %-4.4L | %-5p | >> %m%n" />
+		</Console>
+
+		<File name="File" fileName="modmanager.log">
+			<PatternLayout
+				pattern="[%d{dd MMM yyyy HH:mm:ss, SSS}{America/New_York}ms] [%t] %20.20c{1} : %-4.4L | %-5p | >> %m%n" />
+		</File>
+	</appenders>
+
+	<loggers>
+		<root level="TRACE">
+			<appender-ref ref="Console" level="${conlevel}" />
+			<appender-ref ref="File" level="${fillevel}" />
+		</root>
+	</loggers>
+</configuration>

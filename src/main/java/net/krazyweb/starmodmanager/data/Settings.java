@@ -15,10 +15,15 @@ import javafx.event.EventHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
 public class Settings implements SettingsModelInterface {
 
 	private static final Logger log = LogManager.getLogger(Settings.class);
+	
+	private static enum LoggerType {
+		ALL, CONSOLE, FILE
+	}
 	
 	private static final int VERSION_MAJOR = 2;
 	private static final int VERSION_MINOR = 0;
@@ -59,15 +64,11 @@ public class Settings implements SettingsModelInterface {
 				this.updateProgress(0.0, 4.0);
 				
 				identifyOS();
-				/*
-				ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
-				FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");*/
 				
 				this.updateProgress(1.0, 4.0);
 				
 				//Print program information before adjusting loggers.
-				/*console.setThreshold(Level.TRACE);
-				file.setThreshold(Level.TRACE);*/
+				setLoggerLevel(Level.TRACE, LoggerType.ALL);
 				
 				this.updateProgress(2.0, 4.0);
 
@@ -77,13 +78,13 @@ public class Settings implements SettingsModelInterface {
 
 				this.updateProgress(3.0, 4.0);
 
-				/*if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-					console.setThreshold(Level.OFF);
-					file.setThreshold(Level.WARN);
+				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
+					setLoggerLevel(Level.OFF, LoggerType.CONSOLE);
+					setLoggerLevel(Level.WARN, LoggerType.FILE);
 				} else {
-					console.setThreshold(Level.DEBUG);
-					file.setThreshold(Level.OFF);
-				}*/
+					setLoggerLevel(Level.DEBUG, LoggerType.CONSOLE);
+					setLoggerLevel(Level.OFF, LoggerType.FILE);
+				}
 
 				this.updateProgress(4.0, 4.0);
 
@@ -127,10 +128,8 @@ public class Settings implements SettingsModelInterface {
 				this.updateProgress(2.0, 3.0);
 
 				if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-					/*ConsoleAppender console = (ConsoleAppender) Logger.getRootLogger().getAppender("console");
-					FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
-					console.setThreshold(Level.OFF);
-					file.setThreshold(getPropertyLevel("loggerlevel"));*/
+					setLoggerLevel(Level.OFF, LoggerType.CONSOLE);
+					setLoggerLevel(getPropertyLevel("loggerlevel"), LoggerType.FILE);
 				}
 				
 				if (Files.notExists(getPropertyPath("modsdir"))) {
@@ -195,9 +194,32 @@ public class Settings implements SettingsModelInterface {
 	@Override
 	public void setLoggerLevel(final Level level) {
 		if (Settings.class.getResource("Settings.class").toString().startsWith("jar:")) {
-			/*FileAppender file = (FileAppender) Logger.getRootLogger().getAppender("file");
-			file.setThreshold(level);*/
+			setLoggerLevel(Level.OFF, LoggerType.CONSOLE);
+			setLoggerLevel(level, LoggerType.FILE);
+			setProperty("loggerlevel", level);
 		}
+	}
+	
+	private void setLoggerLevel(final Level level, final LoggerType loggerType) {
+		
+		if (loggerType == LoggerType.ALL) {
+			
+			System.setProperty("consolelevel", level.toString());
+			System.setProperty("filelevel", level.toString());
+			
+		} else {
+		
+			if (loggerType == LoggerType.CONSOLE) {
+				System.setProperty("consolelevel", level.toString());
+			} else if (loggerType == LoggerType.FILE) {
+				System.setProperty("filelevel", level.toString());
+			}
+		
+		}
+		
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		ctx.reconfigure();
+		
 	}
 
 	@Override
