@@ -38,6 +38,10 @@ public class ModFile {
 		return autoMerged;
 	}
 
+	public boolean isModinfo() {
+		return path.toString().endsWith(".modinfo");
+	}
+
 	public void setAutoMerged(boolean autoMerged) {
 		this.autoMerged = autoMerged;
 	}

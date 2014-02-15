@@ -5,8 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -21,6 +23,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.message.ParameterizedMessage;
 
 public class Archive {
 	
@@ -41,6 +44,18 @@ public class Archive {
 		
 		for (ArchiveFile file : files) {
 			if (file.getPath().toString().endsWith(fileName)) {
+				return file;
+			}
+		}
+		
+		return null;
+		
+	}
+	
+	public ArchiveFile getFile(final Path filePath) {
+		
+		for (ArchiveFile file : files) {
+			if (file.getPath().equals(filePath)) {
 				return file;
 			}
 		}
@@ -120,7 +135,7 @@ public class Archive {
 			return true;
 		
 		} catch (IOException | SevenZipException e) {
-			log.error("Extracting archive: " + path, e);
+			log.error(new ParameterizedMessage("Extracting archive: ", path), e);
 			return false;
 		}
 		
@@ -166,7 +181,7 @@ public class Archive {
 		
 	}
 	
-	public boolean extractToFolder(final File folder) {
+	public boolean extractToFolder(final Path folder) {
 		
 		try {
 		
@@ -176,12 +191,11 @@ public class Archive {
 					continue;
 				}
 				
-				File destination = new File(folder.getAbsolutePath() + File.separator + file.getPath()); //TODO Better Path manipulation
-				destination.getParentFile().mkdirs();
+				Files.createDirectories(folder.resolve(file.getPath()).getParent());
 				
-				OutputStream out = new FileOutputStream(destination);
-				out.write(file.getData());
-				out.close();
+				OutputStream output = Files.newOutputStream(folder.resolve(file.getPath()), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+				output.write(file.getData());
+				output.close();
 				
 			}
 			
@@ -191,6 +205,27 @@ public class Archive {
 			log.error("Extracting archive to folder.", e);
 			return false;
 		}
+		
+	}
+	
+	public boolean extractFileToFolder(final Path file, final Path folder) {
+		
+		Path newPath = folder.resolve(file);
+		
+		try {
+			
+			Files.createDirectories(newPath.getParent());
+			
+			OutputStream output = Files.newOutputStream(newPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+			output.write(getFile(file).getData());
+			output.close();
+		
+		} catch (IOException e) {
+			log.error("Extracting file to folder.", e);
+			return false;
+		}
+		
+		return true;
 		
 	}
 	

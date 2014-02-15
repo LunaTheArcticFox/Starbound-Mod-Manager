@@ -1,23 +1,36 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import name.fraser.neil.plaintext.diff_match_patch;
+import name.fraser.neil.plaintext.diff_match_patch.Diff;
+import name.fraser.neil.plaintext.diff_match_patch.Patch;
 import net.krazyweb.helpers.Archive;
 import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.stardb.databases.AssetDatabase;
+import net.krazyweb.starmodmanager.data.Mod.ModOrderComparator;
 import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedMessage;
@@ -152,26 +165,224 @@ public class ModList implements ModListModelInterface {
 	}
 	
 	@Override
-	public void installMod(final Mod mod) {
+	public Task<Void> getInstallModTask(final Mod mod) {
 		
-		//TODO Update to use the modlist wide task for progress bars
-		
-		final Task<Integer> installModsTask = new Task<Integer>() {
+		final Task<Void> installModsTask = new Task<Void>() {
 
 			@Override
-			protected Integer call() throws Exception {
+			protected Void call() throws Exception {
 				
-				//Grab every installed mod, then separate out those with conflicts
+				this.updateProgress(0, 1);
+				
+				//Get every installed mod, including the one to be installed
+				List<Mod> installedMods = new ArrayList<>();
+				
+				for (Mod m : mods) {
+					if (m.isInstalled()) {
+						installedMods.add(m);
+					}
+				}
+				
+				installedMods.add(mod);
+				
+				//Then separate out those with conflicts
+				List<Mod> conflictingMods = new ArrayList<>();
+				
+				for (Mod m1 : installedMods) {
+					for (Mod m2 : installedMods) {
+						if (m1 != m2 && m1.conflictsWith(m2)) {
+							if (!conflictingMods.contains(m1)) {
+								conflictingMods.add(m1);
+							}
+							if (!conflictingMods.contains(m2)) {
+								conflictingMods.add(m2);
+							}
+						}
+					}
+				}
+				
+				//Sort the conflicting mod list back into its load order
+				Collections.sort(conflictingMods, new ModOrderComparator());
+				
+				//No new conflicts were found, so just install the new mod normally
+				if (!conflictingMods.contains(mod)) {
+					Archive archive = new Archive(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()));
+					archive.extract();
+					archive.extractToFolder(settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
+					this.updateProgress(1, 1);
+					return null;
+				}
+				
+				//Delete the folders of the other mods if they exist, new conflicts may exist with the new mod
+				for (Mod m : conflictingMods) {
+					FileHelper.deleteFile(settings.getPropertyPath("starboundpath").resolve("mods").resolve(m.getInternalName()));
+				}
+				
+				Map<Path, Integer> fileCounts = new HashMap<>();
+
 				//Find all the conflicting files in each of those mods
+				//First, count all instances of modified files.
+				for (Mod m : conflictingMods) {
+					for (ModFile modFile : m.getFiles()) {
+						
+						if (modFile.isAutoMerged() || modFile.isIgnored() || modFile.isModinfo()) {
+							continue;
+						}
+						
+						Path relativizedPath = m.relativeAssetsPath.relativize(modFile.getPath());
+						
+						if (fileCounts.containsKey(relativizedPath)) {
+							fileCounts.put(relativizedPath, fileCounts.get(relativizedPath) + 1);
+						} else {
+							fileCounts.put(relativizedPath, 1);
+						}
+						
+					}
+				}
+				
+				Set<Path> modifiedFiles = new HashSet<>();
+				
+				//All files with an instance count > 1 have conflicts
+				for (Path p : fileCounts.keySet()) {
+					if (fileCounts.get(p) > 1) {
+						modifiedFiles.add(p);
+					}
+				}
+				
+				log.debug(modifiedFiles);
+				
+				Map<Mod, Archive> modArchives = new HashMap<>();
+				
+				for (Mod m : installedMods) {
+					Archive archive = new Archive(settings.getPropertyPath("modsdir").resolve(m.getArchiveName()));
+					archive.extract();
+					modArchives.put(m, archive);
+				}
+				
 				//Find all the non-conflicting files in each of those mods
-				//Copy the non-conflicting files to a new patch folder
-				//
+				//Copy the non-conflicting files to a new patch folder (deleting the old one)
+				FileHelper.deleteFile(settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")));
 				
-				Archive archive = new Archive(settings.getPropertyString("modsdir") + File.separator + mod.getArchiveName()); //TODO Better Path manipulation
-				archive.extract();
-				archive.extractToFolder(new File(settings.getPropertyString("starboundpath") + File.separator + "mods" + File.separator + mod.getInternalName())); //TODO Better Path manipulation
+				for (Mod m : conflictingMods) {
+					for (ModFile file : m.getFiles()) {
+						Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
+						if (!modifiedFiles.contains(relativizedPath) && !file.isModinfo()) {
+							modArchives.get(m).extractFileToFolder(relativizedPath, settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+						}
+					}
+				}
 				
-				return 1;
+				//Copy all non-JSON conflicting files into the patch folder
+				//Make sure to respect the load order here
+				
+				Collections.reverse(conflictingMods);
+				
+				log.debug("Load order for conflicting mods (reversed):");
+				for (Mod m : conflictingMods) {
+					log.debug("  [{}] - {}", m.getOrder(), m.getDisplayName());
+				}
+				
+				for (Mod m : conflictingMods) {
+					for (ModFile file : m.getFiles()) {
+						Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
+						if (modifiedFiles.contains(relativizedPath) && !file.isJson()) {
+							modArchives.get(m).extractFileToFolder(relativizedPath, settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+						}
+					}
+				}
+				
+				AssetDatabase db = AssetDatabase.open(settings.getPropertyPath("starboundpath").resolve("assets").resolve("packed.pak"));
+								
+				//Get all JSON files and merge them, then save them
+				for (Path path : modifiedFiles) {
+
+					String originalFile = null;
+					String outputFile = "";
+					
+					if (db.getFileList().contains("/" + path.toString())) {
+						
+						log.debug("Retrieving asset {} from database.", "/" + path.toString());
+						
+						originalFile = new String(db.getAsset("/" + path.toString()));
+						
+					} else {
+						
+						boolean found = false;
+						
+						for (Mod m : conflictingMods) {
+							
+							if (found) {
+								break;
+							}
+							
+							for (ModFile file : m.getFiles()) {
+								if (file.getPath().equals(path)) {
+									originalFile = new String(modArchives.get(m).getFile(path).getData());
+									found = true;
+									break;
+								}
+							}
+							
+						}
+						
+					}
+					
+					diff_match_patch dpm = new diff_match_patch();
+					LinkedList<Patch> patchesToApply = new LinkedList<Patch>();
+					
+					for (Mod m : conflictingMods) {
+						for (ModFile file : m.getFiles()) {
+							
+							Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
+							
+							if (relativizedPath.equals(path)) {
+								
+								String changedFile = new String(modArchives.get(m).getFile(file.getPath()).getData());
+								
+								if (conflictingMods.indexOf(m) != conflictingMods.size() - 1) {
+									
+									log.debug("Merging file for {} : {}", m.getDisplayName(), path);
+									
+									LinkedList<Diff> diff = dpm.diff_main(originalFile, changedFile);
+									LinkedList<Patch> patches = dpm.patch_make(diff);
+									patchesToApply.addAll(patches);
+								
+								} else {
+									
+									log.debug("Merging file for 2 {}", m.getDisplayName());
+									
+									outputFile = (String) dpm.patch_apply(patchesToApply, changedFile)[0];
+									
+								}
+								
+							}
+						}
+					}
+					
+					Path outputPath = settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")).resolve("assets").resolve(path);
+					
+					Files.createDirectories(outputPath.getParent());
+					
+					OutputStream output = Files.newOutputStream(outputPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					output.write(outputFile.getBytes());
+					output.close();
+					
+				}
+				
+				//Finally, save the mod manager .modinfo file to the mod patch folder
+				Path outputPath = settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")).resolve("ModManagerPatch.modinfo");
+				
+				Files.createDirectories(outputPath.getParent());
+				
+				byte[] modinfoData = IOUtils.toByteArray(ModList.class.getClassLoader().getResourceAsStream("ModManagerPatch.modinfo"));
+				
+				OutputStream output = Files.newOutputStream(outputPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+				output.write(modinfoData);
+				output.close();
+				
+				this.updateProgress(1, 1);
+				
+				return null;
 				
 			}
 			
@@ -198,10 +409,12 @@ public class ModList implements ModListModelInterface {
 			}
 		});
 		
-		Thread t = new Thread(installModsTask);
+		/*Thread t = new Thread(installModsTask);
 		t.setName("Install Mods Thread");
 		t.setDaemon(true);
-		t.start();
+		t.start();*/
+		
+		return installModsTask;
 		
 	}
 	

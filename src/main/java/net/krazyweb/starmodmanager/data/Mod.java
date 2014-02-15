@@ -40,6 +40,8 @@ public class Mod implements Observable {
 	private String url;
 	private String archiveName;
 	
+	protected Path relativeAssetsPath;
+	
 	private long checksum;
 	
 	private int order = -1;
@@ -99,6 +101,15 @@ public class Mod implements Observable {
 			
 			mod.setInternalName(obj.getString("name"));
 			mod.setGameVersion(obj.getString("version"));
+			
+			mod.relativeAssetsPath = Paths.get(obj.getString("path"));
+			if (mod.relativeAssetsPath == null) {
+				mod.relativeAssetsPath = Paths.get("");
+			}
+			if (mod.relativeAssetsPath.startsWith(".")) {
+				mod.relativeAssetsPath = mod.relativeAssetsPath.subpath(1, mod.relativeAssetsPath.getNameCount());
+			}
+			log.debug("Relative Assets Path: {}", mod.relativeAssetsPath);
 			
 			Set<String> dependencies = new HashSet<>();
 			Set<String> ignoredFileNames = new HashSet<>();
@@ -170,7 +181,9 @@ public class Mod implements Observable {
 					
 				}
 				
-				mod.files.add(modFile);
+				if (!archiveFile.isFolder()) {
+					mod.files.add(modFile);
+				}
 				
 			}
 			
@@ -249,6 +262,32 @@ public class Mod implements Observable {
 		}
 		
 		return archives;
+		
+	}
+	
+	public boolean conflictsWith(final Mod mod) {
+		
+		for (ModFile file : files) {
+			
+			if (file.isAutoMerged() || file.isIgnored()) {
+				continue;
+			}
+			
+			for (ModFile otherFile : mod.files) {
+				
+				if (otherFile.isAutoMerged() || otherFile.isIgnored()) {
+					continue;
+				}
+				
+				if (file.getPath().equals(otherFile.getPath())) {
+					return true;
+				}
+				
+			}
+			
+		}
+		
+		return false;
 		
 	}
 	

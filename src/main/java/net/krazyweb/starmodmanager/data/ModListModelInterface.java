@@ -12,7 +12,7 @@ public interface ModListModelInterface extends Observable {
 	public void addMods(final List<Path> files);
 	
 	public void deleteMod(final Mod mod);
-	public void installMod(final Mod mod);
+	public Task<Void> getInstallModTask(final Mod mod);
 	public void uninstallMod(final Mod mod);
 	public void hideMod(final Mod mod);
 	public void moveMod(final Mod mod, final int amount);

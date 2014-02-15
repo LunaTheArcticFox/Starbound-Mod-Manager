@@ -1,0 +1,12 @@
+{
+	"name": "ModManagerPatch",
+	"version": "Beta v. Furious Koala",
+	"path" : "assets",
+	"metadata" : {
+		"displayName" : "Mod Manager Patch",
+		"author": "KrazyTheFox' Mod Manager",
+		"description" : "This is a patch of all conflicting mods. Do not modify by hand unless you know what you're doing.",
+		"support_url" : "http://community.playstarbound.com/index.php?threads/starbound-mod-manager.51639/",
+		"version": "2.0"
+	}
+}
