@@ -38,9 +38,9 @@ public class MessageDialogue {
 	private LocalizerModelInterface localizer;
 	
 	public MessageDialogue(final String message, final String title, final MessageType messageType, final LocalizerModelFactory localizerFactory) {
+		localizer = localizerFactory.getInstance();
 		build(message, title, messageType);
 		show();
-		localizer = localizerFactory.getInstance();
 	}
 	
 	private void build(final String message, final String title, final MessageType messageType) {

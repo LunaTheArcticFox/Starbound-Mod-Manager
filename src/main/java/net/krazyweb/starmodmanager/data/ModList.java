@@ -1,6 +1,5 @@
 package net.krazyweb.starmodmanager.data;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -80,6 +79,8 @@ public class ModList implements ModListModelInterface {
 			protected Integer call() throws Exception {
 				
 				this.updateProgress(0, files.size());
+				
+				Files.createDirectories(settings.getPropertyPath("modsdir"));
 				
 				for (int i = 0; i < files.size(); i++) {
 					

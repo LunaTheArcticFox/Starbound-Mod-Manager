@@ -2,6 +2,8 @@ package net.krazyweb.starmodmanager.view;
 
 import java.awt.Desktop;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
@@ -52,13 +54,16 @@ public class SettingsViewController {
 	}
 	
 	protected void gamePathChanged(final String path) {
+		settings.setProperty("starboundpath", path);
 		//TODO Validate the path
 		log.debug(path);
 	}
 	
 	protected void modsPathChanged(final String path) {
+		Path newPath = Paths.get("").toAbsolutePath().relativize(Paths.get(path));
+		settings.setProperty("modsdir", newPath);
 		//TODO Validate the path
-		log.debug(path);
+		log.debug(newPath);
 	}
 	
 	protected void languageChanged(final Language language) {
