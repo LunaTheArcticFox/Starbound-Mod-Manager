@@ -67,35 +67,6 @@ public class Configuration {
 		modsInstallFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods");
 		modsPatchesFolder = new File(starboundFolder.getAbsolutePath() + File.separator + "mods" + File.separator + "patches");
 		
-		/*File starboundLog = new File(starboundFolder.getAbsolutePath() + File.separator + "starbound.log");
-		
-		if (starboundLog.exists()) {
-			
-			try {
-				
-				BufferedReader reader = new BufferedReader(new FileReader(starboundLog));
-				
-				String line = "";
-				
-				while ((line = reader.readLine()) != null) {
-					if (line.contains("Client version")) {
-						line = line.substring(line.indexOf("'") + 1);
-						line = line.substring(0, line.indexOf("'"));
-						gameVersionString = line;
-						break;
-					}
-				}
-				
-				reader.close();
-				
-			} catch (IOException e) {
-				Configuration.printException(e, "Getting game version from starbound log.");
-			}
-			
-		} else {
-			new FXDialogueConfirm("Please run Starbound once to enable version checking for mods.").show();
-		}*/
-		
 		if (!backupFolder.exists()) {
 			backupFolder.mkdir();
 		}
@@ -126,18 +97,27 @@ public class Configuration {
 				}
 			}
 		} catch (SqlJetException e) {
+			new FXDialogueConfirm("An error occurred while deleting a mod from the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			printException(e);
 		}
 		
 		for (File f : modFiles) {
 			try {
 				if (!Database.hasMod(f.getName())) {
-					if (f.getAbsolutePath().endsWith(".zip")) {
+					if (f.getAbsolutePath().endsWith(".zip") || f.getAbsolutePath().endsWith(".pak") || f.getAbsolutePath().endsWith(".rar") || f.getAbsolutePath().endsWith(".7z")) {
+						
 						Mod m = Mod.loadMod(f.getName(), false);
+						
+						if (m == null) {
+							continue;
+						}
+						
 						Database.addMod(m);
+						
 					}
 				}
 			} catch (SqlJetException e) {
+				new FXDialogueConfirm("An error occurred while loading mods.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 				Configuration.printException(e);
 			}
 		}
@@ -179,6 +159,7 @@ public class Configuration {
 			writer.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while writing the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Writing config file.");
 		}
 		
@@ -213,6 +194,7 @@ public class Configuration {
 			config.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while reading the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Reading previous config data.");
 		}
 		
@@ -257,6 +239,7 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while updating the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Updating config data.");
 		}
 		
@@ -278,6 +261,7 @@ public class Configuration {
 			config.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while reading the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Reading config data.");
 		}
 		
@@ -298,6 +282,7 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while updating the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Updating config data.");
 		}
 		
@@ -321,6 +306,7 @@ public class Configuration {
 			config.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while reading the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Getting property from config: " + key);
 		}
 		
@@ -359,6 +345,7 @@ public class Configuration {
 			config.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while reading the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Getting all properties in header: " + header);
 		}
 		
@@ -382,6 +369,7 @@ public class Configuration {
 			config.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while reading the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Reading config data.");
 		}
 		
@@ -402,6 +390,7 @@ public class Configuration {
 			configOutput.close();
 			
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while updating the config file.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Removing config property.");
 		}
 		

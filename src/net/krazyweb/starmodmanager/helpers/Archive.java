@@ -21,9 +21,9 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
 public class Archive {
 	
-	private File file;
+	public File file;
 	private String modBaseDirectory;
-	private HashSet<ArchiveFile> files = new HashSet<ArchiveFile>();
+	public HashSet<ArchiveFile> files = new HashSet<ArchiveFile>();
 	
 	public Archive(final File file) {
 		this.file = file;

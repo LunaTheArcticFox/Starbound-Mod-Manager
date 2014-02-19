@@ -24,7 +24,6 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import net.krazyweb.starmodmanager.helpers.Archive;
 
 import org.tmatesoft.sqljet.core.SqlJetException;
 
@@ -33,8 +32,8 @@ import application.Configuration.KeyValuePair;
 public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
-	public static final int MINOR_VERSION = 5;
-	public static final int PATCH_VERSION = 10;
+	public static final int MINOR_VERSION = 6;
+	public static final int PATCH_VERSION = 0;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -66,6 +65,7 @@ public class ModManager extends Application {
 		try {
 			Database.connect();
 		} catch (SqlJetException e1) {
+			new FXDialogueConfirm("Could not open the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e1);
 		}
 		
@@ -272,6 +272,7 @@ public class ModManager extends Application {
 				
 			}
 		} catch (SqlJetException e) {
+			new FXDialogueConfirm("An error occurred while loading mods.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e);
 		}
 		
@@ -309,7 +310,7 @@ public class ModManager extends Application {
 				ArrayList<String> toRemove = new ArrayList<String>();
 				
 				for (String s : list2) {
-					if (s.endsWith(".modinfo")) {
+					if (s.endsWith(".modinfo") || s.toLowerCase().equals("readme.txt")) {
 						toRemove.add(s);
 					}
 				}
@@ -355,21 +356,41 @@ public class ModManager extends Application {
 		
 		for (File f : modFiles) {
 			
-			if (f.getName().endsWith(".zip")) {
+			if (f.getName().endsWith(".zip") || f.getName().endsWith(".rar") || f.getName().endsWith(".7z") || f.getName().endsWith(".pak")) {
 				
 				File newFileLocation = new File(Configuration.modsFolder + File.separator + f.getName());
 				
-				Archive archive = new Archive(f);
-				archive.extract();
-				archive.clean();
-				archive.writeToFile(newFileLocation);
+				try {
+					FileHelper.copyFile(f, newFileLocation);
+				} catch (IOException e) {
+					new FXDialogueConfirm("An error occurred while adding mods.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
+					Configuration.printException(e, "Copying file: " + f.getAbsolutePath() + " to " + newFileLocation.getAbsolutePath());
+				}
 				
-				final Mod m = Mod.loadMod(newFileLocation.getName(), false);
+				Mod tempMod = null;
+				
+				tempMod = Mod.loadMod(newFileLocation.getName(), false);
+				
+				final Mod m = tempMod;
+				
+				if (newFileLocation.getAbsolutePath().endsWith(".pak")) {
+					try {
+						FileHelper.deleteFile(newFileLocation);
+					} catch (IOException e) {
+						new FXDialogueConfirm("The mod manager could not delete temporary file: " + newFileLocation.getAbsolutePath());
+						Configuration.printException(e);
+					}
+				}
 				
 				if (m == null) {
 					try {
-						FileHelper.deleteFile(newFileLocation);
+						if (newFileLocation.getAbsolutePath().endsWith(".pak")) {
+							FileHelper.deleteFile(newFileLocation.getAbsolutePath().replace(".pak", ".zip"));
+						} else {
+							FileHelper.deleteFile(newFileLocation);
+						}
 					} catch (IOException e1) {
+						new FXDialogueConfirm("The mod manager could not delete temporary file: " + newFileLocation.getAbsolutePath());
 						Configuration.printException(e1, "Deleting a mod's archive when it's not valid when adding.");
 					}
 					continue;
@@ -412,12 +433,14 @@ public class ModManager extends Application {
 		try {
 			Database.removeMod(selectedMod.file);
 		} catch (SqlJetException e1) {
+			new FXDialogueConfirm("An error occurred while removing a mod from the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e1);
 		}
 		
 		try {
 			FileHelper.deleteFile(Configuration.modsFolder + File.separator + selectedMod.file);
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while deleting a mod.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Deleting a mod.");
 		}
 
@@ -478,6 +501,7 @@ public class ModManager extends Application {
 			try {
 				Database.updateMod(m);
 			} catch (SqlJetException e) {
+				new FXDialogueConfirm("An error occurred while updating a mod in the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 				Configuration.printException(e);
 			}
 		}
@@ -516,6 +540,7 @@ public class ModManager extends Application {
 			try {
 				Database.updateMod(m);
 			} catch (SqlJetException e) {
+				new FXDialogueConfirm("An error occurred while updating a mod in the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 				Configuration.printException(e);
 			}
 		}
@@ -627,6 +652,7 @@ public class ModManager extends Application {
 			try {
 				Database.updateMod(mod);
 			} catch (SqlJetException e) {
+				new FXDialogueConfirm("An error occurred while updating a mod in the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 				Configuration.printException(e);
 			}
 		}
@@ -672,6 +698,7 @@ public class ModManager extends Application {
 			FileHelper.copyFolder(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "player"), new File(Configuration.backupFolder.getAbsolutePath() + File.separator + "player"));
 			FileHelper.copyFolder(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "universe"), new File(Configuration.backupFolder.getAbsolutePath() + File.separator + "universe"));
 		} catch (IOException e) {
+			new FXDialogueConfirm("An error occurred while backing up save data.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Backing up save data.");
 		}
 		
@@ -684,6 +711,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec(new String[] { "\"" + Configuration.starboundFolder.getAbsolutePath() + File.separator + "win32" + File.separator + "launcher" + File.separator + "launcher.exe\"" });
 				} catch (IOException e) {
+					new FXDialogueConfirm("Could not launch the game.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 					Configuration.printException(e, "Launching game on Windows.");
 				}
 				
@@ -694,6 +722,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec(Configuration.starboundFolder.getAbsolutePath() + File.separator + "linux32" + File.separator + "launch_starbound.sh");
 				} catch (IOException e) {
+					new FXDialogueConfirm("Could not launch the game.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 					Configuration.printException(e, "Launching game on Linux (32-Bit).");
 				}
 				
@@ -714,6 +743,7 @@ public class ModManager extends Application {
 				try {
 					rt.exec("open " + Configuration.starboundFolder.getAbsolutePath().replaceAll(" ", "_") + File.separator + "Starbound.app");
 				} catch (IOException e) {
+					new FXDialogueConfirm("Could not launch the game.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 					Configuration.printException(e, "Launching game on Mac OS.");
 				}
 				
