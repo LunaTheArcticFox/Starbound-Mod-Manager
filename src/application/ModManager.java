@@ -412,6 +412,8 @@ public class ModManager extends Application {
 					
 				});
 				
+			} else {
+				new FXDialogueConfirm("The mod does not appear to be in a supported format. The following formats are supported:\n.zip, .rar, .7z, .pak").show();
 			}
 			
 			findConflicts();
