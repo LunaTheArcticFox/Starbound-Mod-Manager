@@ -247,6 +247,7 @@ public class ModList implements ModListModelInterface {
 				for (Path p : fileCounts.keySet()) {
 					if (fileCounts.get(p) > 1) {
 						modifiedFiles.add(p);
+						log.debug("Modified File: {}", p);
 					}
 				}
 				
@@ -268,6 +269,7 @@ public class ModList implements ModListModelInterface {
 					for (ModFile file : m.getFiles()) {
 						Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
 						if (!modifiedFiles.contains(relativizedPath) && !file.isModinfo()) {
+							log.debug("Relative Path: {}", relativizedPath);
 							modArchives.get(m).extractFileToFolder(relativizedPath, settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
 						}
 					}

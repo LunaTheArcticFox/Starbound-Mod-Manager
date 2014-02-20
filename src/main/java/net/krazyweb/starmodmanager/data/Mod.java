@@ -103,12 +103,14 @@ public class Mod implements Observable {
 			mod.setGameVersion(obj.getString("version"));
 			
 			mod.relativeAssetsPath = Paths.get(obj.getString("path"));
-			if (mod.relativeAssetsPath == null) {
+			
+			if (mod.relativeAssetsPath == null || mod.relativeAssetsPath.toString().equals(".")) {
+				log.debug("PATH: {}", mod.relativeAssetsPath);
 				mod.relativeAssetsPath = Paths.get("");
-			}
-			if (mod.relativeAssetsPath.startsWith(".")) {
+			} else if (mod.relativeAssetsPath.startsWith(".")) {
 				mod.relativeAssetsPath = mod.relativeAssetsPath.subpath(1, mod.relativeAssetsPath.getNameCount());
 			}
+			
 			log.debug("Relative Assets Path: {}", mod.relativeAssetsPath);
 			
 			Set<String> dependencies = new HashSet<>();

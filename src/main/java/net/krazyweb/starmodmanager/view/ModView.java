@@ -115,7 +115,7 @@ public class ModView implements Observer {
 
 		displayName.setText(mod.getDisplayName());
 		statusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
-		modVersion.setText(mod.getModVersion());
+		modVersion.setText(mod.getModVersion() + " - " + mod.getGameVersion());
 		installButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		
 		//TODO Replace with images
