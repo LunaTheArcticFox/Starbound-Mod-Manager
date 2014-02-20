@@ -3,6 +3,9 @@ layout: post
 title:  "Version 2.0.1a"
 date:   2014-02-19 22:35:23
 version: 2.0.1a
+windowslink: http://www.google.com/
+osxlink: http://images.google.com/
+linuxlink: http://www.fimfiction.net/
 ---
 
 You'll find this post in your `_posts` directory - edit this post and re-build (or run with the `-w` switch) to see your changes!
