@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -300,15 +301,37 @@ public class Mod {
 		
 		HashSet<String> toRemove = new HashSet<String>();
 		
+		AssetDatabase db = null;
+		
+		try {
+			db = AssetDatabase.open(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + "packed.pak");
+		} catch (StarDBException e) {
+			Configuration.printException(e, "Could not open asset database.");
+			new FXDialogueConfirm("Could not read Starbound's asset database. Make sure your game is up to date and you gave the mod manager the correct Starbound directory.").show();
+			return;
+		}
+		
+		List<String> filesInGameAssets;
+		
+		try {
+			filesInGameAssets = db.getFileList();
+		} catch (StarDBException e) {
+			Configuration.printException(e, "Could not open asset database.");
+			new FXDialogueConfirm("Could not read Starbound's asset database. Make sure your game is up to date and you gave the mod manager the correct Starbound directory.").show();
+			return;
+		}
+		
 		//Purge ignored file extensions.
 		for (String s : Configuration.fileTypesToIgnore) {
 	        for (String file : fileConflicts) {
-	        	
-	        	if (!new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file).exists()) {
+				
+	        	if (!filesInGameAssets.contains("/" + file)) {
+	        		System.out.println("IGNORE1");
 	        		toRemove.add(file);
 	        	}
 	        	
 	        	if (file.endsWith(s)) {
+	        		System.out.println("IGNORE2");
                     toRemove.add(file);
                 }
 	        	
@@ -318,6 +341,7 @@ public class Mod {
 		fileConflicts.removeAll(toRemove);
 		
 		if (fileConflicts.isEmpty()) {
+			System.out.println("EMPTY");
 			if (Configuration.modsPatchesFolder.exists()) {
 				FileHelper.deleteFile(Configuration.modsPatchesFolder.getAbsolutePath());
 			}
@@ -347,7 +371,14 @@ public class Mod {
 				}
 			}
 			
-			String originalFile = FileHelper.fileToString(new File(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + file));
+			String originalFile;
+			try {
+				originalFile = new String(db.getAsset("/" + file));
+			} catch (StarDBException e) {
+				Configuration.printException(e, "Could not open asset database.");
+				new FXDialogueConfirm("Could not read Starbound's asset database. Make sure your game is up to date and you gave the mod manager the correct Starbound directory.").show();
+				return;
+			}
 			
 			diff_match_patch dpm = new diff_match_patch();
 			LinkedList<Patch> patchesToApply = new LinkedList<Patch>();
@@ -462,13 +493,15 @@ public class Mod {
 		
 		FileWriter writer = new FileWriter(new File(Configuration.modsPatchesFolder.getAbsolutePath() + File.separator + Configuration.modsPatchesFolder.getName() + ".modinfo"));
 		
+		System.out.println(Configuration.gameVersionString);
+		
 		writer.append(
 				"{\r\n" +
 				"  \"name\" : \"" + Configuration.modsPatchesFolder.getName() + "\",\r\n" +
 				"  \"version\" : \"" + Configuration.gameVersionString + "\",\r\n" +
-				"  \"path\" : \"./assets\",\r\n" +
+				"  \"path\" : \"assets\",\r\n" +
 				"  \"metadata\" : {\r\n" +
-				"    \"name\" : \"A Test Mod\",\r\n" +
+				"    \"name\" : \"Starbound Mod Manager Patch\",\r\n" +
 				"    \"author\" : \"KrazyTheFox' Mod Manager\",\r\n" +
 				"    \"description\" : \"This is a patch of all conflicting mods. Do not modify by hand unless you know what you're doing.\",\r\n" +
 				"    \"support_url\" : \"http://community.playstarbound.com/index.php?threads/starbound-mod-manager.51639/\",\r\n" +
@@ -482,9 +515,7 @@ public class Mod {
 		
 	}
 	
-	public static Mod loadMod(String fileName, boolean installed) {
-		
-		boolean overwrite = false;
+	public static Mod loadMod(String fileName, boolean installed, boolean firstLoad) {
 		
 		Mod mod = new Mod();
 		
@@ -492,8 +523,6 @@ public class Mod {
 		mod.installed = installed;
 		
 		if (mod.file.endsWith(".pak")) {
-			
-			overwrite = true;
 			
 			try {
 				
@@ -522,6 +551,8 @@ public class Mod {
 				for (String file : db.getFileList()) {
 					
 					if (file.endsWith(".modinfo")) {
+						temp.modBaseDirectory = file.substring(0, file.lastIndexOf("/"));
+						System.out.println("Mod base dir: " + temp.modBaseDirectory);
 						continue;
 					}
 					
@@ -536,9 +567,8 @@ public class Mod {
 					
 				}
 				
+				temp.clean();
 				temp.writeToFile(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file.substring(0, mod.file.indexOf(".pak")) + ".zip"));
-
-				
 				
 			} catch (IOException | StarDBException e) {
 				new FXDialogueConfirm("An error occurred while reading the mod: " + fileName);
@@ -616,7 +646,7 @@ public class Mod {
 				
 			}
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			new FXDialogueConfirm("An error occurred while reading the .modinfo file for the following mod: \"" + mod.file + "\"").show();
 			Configuration.printException(e, "Reading mod info file to JSON: " + mod.file);
 			return null;
@@ -637,8 +667,6 @@ public class Mod {
 		System.out.println(mod.assetsPath);
 		
 		if (mod.assetsPath.endsWith(".pak")) {
-			
-			overwrite = true;
 			
 			String[] modInfoData = new String(modArchive.getFile(".modinfo").getData()).split("\n");
 			String newModInfo = "";
@@ -771,15 +799,31 @@ public class Mod {
 			Configuration.printException(e, "Locating assets folder in archive.");
 		}
 		
+		if (!modArchive.file.getAbsolutePath().endsWith(".zip")) {
+			
+			String outputPath = modArchive.file.getAbsolutePath();
+			outputPath = outputPath.substring(0, outputPath.lastIndexOf(".")) + ".zip";
+			modArchive.writeToFile(new File(outputPath));
+			mod.setFile(outputPath.substring(outputPath.replaceAll("\\\\", "/").lastIndexOf("/") + 1, outputPath.length()));
+			System.out.println(mod.file);
+			
+			try {
+				FileHelper.deleteFile(modArchive.file);
+			} catch (IOException e) {
+				Configuration.printException(e, "Deleting non-zip mod file.");
+			}
+			
+		}
+		
+		if (firstLoad) {
+			modArchive.writeToFile(new File(Configuration.modsFolder.getAbsolutePath() + File.separator + mod.file));
+		}
+		
 		try {
 			Database.addMod(mod);
 		} catch (SqlJetException e) {
 			new FXDialogueConfirm("An error occurred while adding a mod to the database.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.");
 			Configuration.printException(e, "Adding mod to database.");
-		}
-		
-		if (overwrite) {
-			modArchive.writeToFile(modArchive.file);
 		}
 
 		mod.container = new VBox();

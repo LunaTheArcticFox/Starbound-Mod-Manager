@@ -22,7 +22,7 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 public class Archive {
 	
 	public File file;
-	private String modBaseDirectory;
+	public String modBaseDirectory;
 	public HashSet<ArchiveFile> files = new HashSet<ArchiveFile>();
 	
 	public Archive(final File file) {
@@ -79,7 +79,7 @@ public class Archive {
 				Path tempDir = Paths.get(file.getPath());
 				
 				if (file.getPath().endsWith(".modinfo") && tempDir.getParent() != null) {
-					modBaseDirectory = Paths.get(file.getPath()).getParent().toString() + "/";
+					modBaseDirectory = Paths.get(file.getPath()).getParent().toString().replaceAll("\\\\", "/") + "/";
 					System.out.println("\n\n:::::" + modBaseDirectory + " ---- " + file.getPath());
 				}
 				

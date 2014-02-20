@@ -33,7 +33,7 @@ public class ModManager extends Application {
 	
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 6;
-	public static final int PATCH_VERSION = 0;
+	public static final int PATCH_VERSION = 1;
 	
 	public static final String VERSION_STRING = MAJOR_VERSION + "." + MINOR_VERSION + "." + PATCH_VERSION;;
 	
@@ -55,7 +55,7 @@ public class ModManager extends Application {
 			launch(args);
 		} catch (Exception e) {
 			Configuration.printException(e, "Uncaught Exception");
-			System.exit(-1);
+			new FXDialogueConfirm("An unknown, unrecoverable error occurred.\nPlease report this bug alongside the errors.log file inside your mod manager's folder.").show();
 		}
 	}
 
@@ -239,7 +239,7 @@ public class ModManager extends Application {
 					installed = true;
 				}
 				
-				final Mod m = Mod.loadMod(kvp.key, installed);
+				final Mod m = Mod.loadMod(kvp.key, installed, false);
 			
 				if (m == null) {
 					continue;
@@ -322,6 +322,10 @@ public class ModManager extends Application {
 					mod.conflicts += " - " + mods.get(ii).displayName + "\n";
 				}
 				
+				for (String f : list2) {
+					System.out.println(f + " -- conflicts");
+				}
+				
 			}
 			
 		}
@@ -369,7 +373,7 @@ public class ModManager extends Application {
 				
 				Mod tempMod = null;
 				
-				tempMod = Mod.loadMod(newFileLocation.getName(), false);
+				tempMod = Mod.loadMod(newFileLocation.getName(), false, true);
 				
 				final Mod m = tempMod;
 				

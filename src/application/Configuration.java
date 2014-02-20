@@ -14,10 +14,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import net.krazyweb.stardb.databases.AssetDatabase;
+
+import org.tmatesoft.sqljet.core.SqlJetException;
 
 public class Configuration {
 	
@@ -86,6 +87,25 @@ public class Configuration {
 			modsFolder.mkdir();
 		}
 		
+		try {
+			
+			AssetDatabase db = AssetDatabase.open(Configuration.starboundFolder.getAbsolutePath() + File.separator + "assets" + File.separator + "packed.pak");
+			String[] assetsFile = new String(db.getAsset("/assets.config")).split("\n");
+			
+			for (String line : assetsFile) {
+				if (line.contains("\"versionString\"")) {
+					gameVersionString = line.split(":")[1].trim().replaceAll("\"", "").replaceAll(",", "");
+					System.out.println("Game version detected: " + gameVersionString);
+					break;
+				}
+			}
+			
+		} catch (Exception e) {
+			Configuration.printException(e, "Could not open asset database.");
+			new FXDialogueConfirm("Could not read Starbound's asset database. Make sure your game is up to date and you gave the mod manager the correct Starbound directory.").show();
+			return;
+		}
+		
 		ArrayList<File> modFiles = new ArrayList<File>();
 		FileHelper.listFiles(getProperty("modsfolder", "null"), modFiles);
 		
@@ -106,7 +126,7 @@ public class Configuration {
 				if (!Database.hasMod(f.getName())) {
 					if (f.getAbsolutePath().endsWith(".zip") || f.getAbsolutePath().endsWith(".pak") || f.getAbsolutePath().endsWith(".rar") || f.getAbsolutePath().endsWith(".7z")) {
 						
-						Mod m = Mod.loadMod(f.getName(), false);
+						Mod m = Mod.loadMod(f.getName(), false, true);
 						
 						if (m == null) {
 							continue;
