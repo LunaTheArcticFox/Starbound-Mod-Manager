@@ -6,9 +6,14 @@ title: Your New Jekyll Site
 <div id="home">
 
     <div class="jumbotron">
-      <div class="row">
+    
       {% for post in site.posts limit:1 %}
-        <h3>{{ post.title }}</h3>
+      
+      <h3>{{ post.title }}</h3>
+      
+      <div class="container">{{ post.content }}</div>
+      
+      <div class="row">
         <div class="col-lg-4">
           <a href="{{ post.windowslink }}">Windows</a>
         </div>
@@ -18,9 +23,9 @@ title: Your New Jekyll Site
         <div class="col-lg-4">
           <a href="{{ post.linuxlink }}">Linux</a>
         </div>
-        {% endfor %}
       </div>
-      <h1>Blog Posts</h1>
+      
+      {% endfor %}
       
     </div>
 
