@@ -7,7 +7,9 @@ windowslink: http://www.google.com/
 osxlink: http://images.google.com/
 linuxlink: http://www.fimfiction.net/
 ---
-Test Changelog
-Item 2
-Item 3
-Item 4
+<ul>
+<li>Test Changelog</li>
+<li>Item 2</li>
+<li>Item 3</li>
+<li>Item 4</li>
+</ul>
