@@ -125,6 +125,11 @@ ul.hyphen-list li {
   }
 }
 
+.pre-release-warning {
+  color: #e6633b;
+  font-family: 'Tahoma', sans-serif;
+}
+
 .version-info ul {
   font-family: 'Tahoma', sans-serif;
   font-variant: normal;

@@ -64,6 +64,16 @@
       <div class="container">{{ post.content }}</div>
     </div>
 
+    {% if post.prerelease == true %}
+      <div class="version-info">
+        <div class="pre-release-warning">
+          This is a pre-release version of the mod manager. It is not considered stable and will most likely contain bugs.
+          It is entirely possible that this will break save files, crash frequently, and generally make a mess of your game.
+          <strong>This version is for testing only! Do not use it if you care about your Starbound characters/worlds.</strong>
+        </div>
+      </div>
+    {% endif %}
+
   </div>
   
 </div>
