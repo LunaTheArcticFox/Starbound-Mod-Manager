@@ -1,36 +1,60 @@
 ---
 layout: default
-title: Your New Jekyll Site
+title: Starbound Mod Manager
 ---
 
-<div id="home">
+<div class="jumbotron" style="margin-bottom: 0px;">
 
-    <div class="jumbotron">
+  <div class="container">
+
+    {% for post in site.posts limit:1 %}
     
-      {% for post in site.posts limit:1 %}
-      
-      <h3>{{ post.title }}</h3>
-      
-      <div class="container">{{ post.content }}</div>
-      
-      <div class="row">
-        <div class="col-md-4">
-          <a href="{{ post.windowslink }}">Windows</a>
-        </div>
-        <div class="col-md-4">
-          <a href="{{ post.osxlink }}">OSX</a>
-        </div>
-        <div class="col-md-4">
-          <a href="{{ post.linuxlink }}">Linux</a>
-        </div>
+    <div class="row">
+      <div class="col-sm-4">
+        <a href="{{ post.windowslink }}" class="download-link">
+          <div class="download-button">
+            <h2>Windows</h2>
+            <p>{{ post.windowssize }}</p>
+          </div>
+        </a>
       </div>
-      
-      {% endfor %}
-      
+      <div class="col-sm-4">
+        <a href="{{ post.osxlink }}" class="download-link">
+          <div class="download-button">
+            <h2>OSX</h2>
+            <p>{{ post.osxsize }}</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-4">
+        <a href="{{ post.linuxlink }}" class="download-link">
+          <div class="download-button">
+            <h2>Linux</h2>
+            <p>{{ post.linuxsize }}</p>
+          </div>
+        </a>
+      </div>
     </div>
-
-    {% for post in site.posts offset:1 %}
-      <span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a>
+    
+    <div class="version-info">
+      <h3>{{ post.title }}</h3>
+      <div class="container">{{ post.content }}</div>
+    </div>
+    
     {% endfor %}
 
+  </div>
+  
+</div>
+
+<div class="jumbotron more-banner">
+  <div class="container">
+    Want an older version? Just scroll down!
+  </div>
+</div>
+
+<div class="container">
+  {% for post in site.posts offset:1 %}
+    <span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a>
+  {% endfor %}
 </div>

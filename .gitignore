@@ -1,5 +1,12 @@
+/backups
+/data
+/mods
 /_site
 /target
 .classpath
 .project
 .settings
+config.ini
+database
+errors.log
+modmanager.log
