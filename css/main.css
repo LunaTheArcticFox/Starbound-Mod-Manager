@@ -1,5 +1,6 @@
 body {
   background-color: #070b1d;
+  padding-bottom: 50px;
 }
 
 ul.hyphen-list {
@@ -24,6 +25,11 @@ ul.hyphen-list li {
   font-variant: small-caps;
 }
 
+.header h3 a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
 .header .container {
   padding-bottom: 8px;
 }
@@ -43,7 +49,6 @@ ul.hyphen-list li {
   border-radius: 5px;
   color: #ffffff;
   font-family: 'Alegreya Sans', sans-serif;
-  font-variant: small-caps;
   background-color: #324070;
 }
 
@@ -63,13 +68,14 @@ ul.hyphen-list li {
   .version-info .lighter {
     font-size: 32px;
     padding-bottom: 11px;
+    padding-left: 5px;
+    padding-right: 15px;
     margin-bottom: 15px;
     white-space: nowrap;
   }
 
   .version-info .darker {
     text-transform: uppercase;
-    padding-left: 25px;
     padding-top: 10px;
     text-indent: 15px;
     font-weight: bold;
@@ -94,6 +100,7 @@ ul.hyphen-list li {
     font-size: 22px;
     padding-bottom: 11px;
     margin-bottom: 15px;
+    padding-right: 15px;
     white-space: nowrap;
   }
 

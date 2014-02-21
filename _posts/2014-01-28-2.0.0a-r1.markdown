@@ -1,8 +1,7 @@
 ---
 layout: post
-title:  "Version 2.0.0a Release 1"
+title:  "2.0.0a-r1"
 date:   2014-01-28 15:27:26
-version: 2.0.0a-r1
 prerelease: yes
 gameversion: Beta v. Furious Koala
 windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-alpha/StarboundModManager-2.0.0a.zip

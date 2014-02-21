@@ -1,8 +1,7 @@
 ---
 layout: post
-title:  "Version 1.5.10"
+title:  "1.5.10"
 date:   2014-01-31 16:45:50
-version: 1.5.10
 prerelease: no
 gameversion: Beta v. Furious Koala
 windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.10/StarboundModManager-KrazyTheFox.zip

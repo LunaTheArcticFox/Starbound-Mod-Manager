@@ -1,8 +1,7 @@
 ---
 layout: post
-title:  "Version 1.6.0"
+title:  "1.6.0"
 date:   2014-02-19 17:09:01
-version: 1.6.0
 prerelease: no
 gameversion: Beta v. Enraged Koala
 windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.0/StarboundModManager-KrazyTheFox.zip
