@@ -1,0 +1,18 @@
+---
+layout: post
+title:  "Version 2.0.0a Release 2 (x64)"
+date:   2014-02-15 16:01:08
+version: 2.0.0a-r2-x64
+prerelease: yes
+gameversion: Beta v. Furious Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-alpha.2/Starbound-Mod-Manager-2.0.0a.zip
+windowssize: 62.7
+osxlink: none
+osxsize: 0.0
+linuxlink: none
+linuxsize: 0.0
+---
+<ul class="hyphen-list">
+	<li>Early release of 2.0.0 for testing purposes.</li>
+	<li>64-Bit Only</li>
+</ul>

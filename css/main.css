@@ -30,7 +30,7 @@ ul.hyphen-list li {
 
 .jumbotron {
   padding-top: 35px;
-  padding-bottom: 35px;
+  padding-bottom: 50px;
   background-color: #25315b;
 }
 
@@ -55,6 +55,10 @@ ul.hyphen-list li {
   color: #678ad7;
 }
 
+.version-info .prerelease-tag {
+  color: #e6633b;
+}
+
 @media (min-width: 441px) {
   .version-info .lighter {
     font-size: 32px;
@@ -76,6 +80,11 @@ ul.hyphen-list li {
     padding-top: 15px;
     padding-right: 15px;
     margin-bottom: -15px;
+    white-space: nowrap;
+  }
+
+  .version-info .prerelease-tag {
+    padding-left: 15px;
     white-space: nowrap;
   }
 }
@@ -102,6 +111,10 @@ ul.hyphen-list li {
     white-space: nowrap;
     float: left;
     text-align: left;
+  }
+
+  .version-info .prerelease-tag {
+    white-space: nowrap;
   }
 }
 
@@ -153,11 +166,12 @@ ul.hyphen-list li {
 }
 
 .more-banner {
-  background-color: #415096;
-  color: #ffffff;
+  background-color: #324070;
+  color: #c6cef5;
   font-size: 14px;
   padding-top: 20px;
   padding-bottom: 17px;
+  margin-bottom: 40px;
 }
 
 .windows-button {
@@ -214,6 +228,12 @@ ul.hyphen-list li {
 
 .old-version .darker {
   color: #6b81e6;
+  padding-left: 15px;
+  white-space: nowrap;
+}
+
+.old-version .prerelease-tag {
+  color: #e6633b;
   padding-left: 15px;
   white-space: nowrap;
 }

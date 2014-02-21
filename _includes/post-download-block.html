@@ -9,7 +9,7 @@
           <a href="{{ post.windowslink }}" class="download-link">
             <div class="download-button windows-button">
               <h2>Windows</h2>
-              <p>{{ post.windowssize }}</p>
+              <p>{{ post.windowssize }} MB</p>
             </div>
           </a>
         {% else %}
@@ -25,7 +25,7 @@
           <a href="{{ post.osxlink }}" class="download-link">
             <div class="download-button osx-button">
               <h2>OSX</h2>
-              <p>{{ post.osxsize }}</p>
+              <p>{{ post.osxsize }} MB</p>
             </div>
           </a>
         {% else %}
@@ -41,7 +41,7 @@
           <a href="{{ post.linuxlink }}" class="download-link">
             <div class="download-button linux-button">
               <h2>Linux</h2>
-              <p>{{ post.linuxsize }}</p>
+              <p>{{ post.linuxsize }} MB</p>
             </div>
           </a>
         {% else %}
@@ -58,6 +58,9 @@
       <span class="darkest pull-right">{{ post.date | date_to_string }}</span>
 	  <span class="lighter">{{ post.title }}</span>
 	  <span class="darker">for {{ post.gameversion }}</span>
+	  {% if post.prerelease == true %}
+	  	<span class="prerelease-tag">Pre-release</span>
+	  {% endif %}
       <div class="container">{{ post.content }}</div>
     </div>
 

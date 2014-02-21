@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "Version 1.5.7"
+date:   2014-01-28 15:27:26
+version: 1.5.7
+prerelease: no
+gameversion: Beta v. Furious Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.7/StarboundModManager-KrazyTheFox.zip
+windowssize: 7.1
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.7/StarboundModManager-KrazyTheFox.zip
+osxsize: 7.1
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.7/StarboundModManager-KrazyTheFox.zip
+linuxsize: 7.1
+---
+<ul class="hyphen-list">
+	<li>Fixes a bug in which mods with only files containing "__merge" would not get added to the mod manager.</li>
+</ul>

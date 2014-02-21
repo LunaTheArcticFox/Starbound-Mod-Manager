@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "Version 2.0.0a Release 1"
+date:   2014-01-28 15:27:26
+version: 2.0.0a-r1
+prerelease: yes
+gameversion: Beta v. Furious Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-alpha/StarboundModManager-2.0.0a.zip
+windowssize: 16.5
+osxlink: none
+osxsize: 0.0
+linuxlink: none
+linuxsize: 0.0
+---
+<ul class="hyphen-list">
+	<li>Very, very early build of the program.</li>
+	<li>Uploaded for early translation purposes and some testing.</li>
+	<li>Likely chock full of bugs.</li>
+	<li>Folders are hard coded, so don't expect any installation of mods to work.</li>
+	<li>Adding, deleting, hiding, and re-ordering should work, however.</li>
+</ul>

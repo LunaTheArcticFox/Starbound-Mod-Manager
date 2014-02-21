@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "Version 1.5.8"
+date:   2014-01-28 18:27:19
+version: 1.5.8
+prerelease: no
+gameversion: Beta v. Furious Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.8/StarboundModManager-KrazyTheFox.zip
+windowssize: 7.1
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.8/StarboundModManager-KrazyTheFox.zip
+osxsize: 7.1
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.5.8/StarboundModManager-KrazyTheFox.zip
+linuxsize: 7.1
+---
+<ul class="hyphen-list">
+	<li>Fixed a major bug with replace() working as intended... breaking something that wanted it to work differently.</li>
+</ul>

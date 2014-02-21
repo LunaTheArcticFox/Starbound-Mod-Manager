@@ -4,7 +4,7 @@ title: Starbound Mod Manager
 ---
 
 {% for post in site.posts limit:1 %}
-    {% include post-download-block.html post="post" %}
+  {% include post-download-block.html post="post" %}
 {% endfor %}
 
 <div class="jumbotron more-banner">
@@ -15,16 +15,19 @@ title: Starbound Mod Manager
 
 <div class="container">
   {% for post in site.posts offset:1 %}
-    <div class="row">
-      <a href="{{ site.baseurl }}{{ post.url }}">
-        <div class="col-xs-1"></div>
-        <div class="col-xs-10 old-version">
-          <span class="lighter">{{ post.title }}</span>
-          <span class="darker">{{ post.gameversion }}</span>
-          <span class="darker pull-right">{{ post.date | date_to_string }}</span>
-        </div>
-        <div class="col-xs-1"></div>
-      </a>
-    </div>
+      <div class="row">
+        <a href="{{ site.baseurl }}{{ post.url }}">
+          <div class="col-xs-1"></div>
+          <div class="col-xs-10 old-version">
+            <span class="lighter">{{ post.title }}</span>
+            <span class="darker">{{ post.gameversion }}</span>
+            {% if post.prerelease == true %}
+              <span class="prerelease-tag">Pre-Release</span>
+            {% endif %}
+            <span class="darker pull-right">{{ post.date | date_to_string }}</span>
+          </div>
+          <div class="col-xs-1"></div>
+        </a>
+      </div>
   {% endfor %}
 </div>

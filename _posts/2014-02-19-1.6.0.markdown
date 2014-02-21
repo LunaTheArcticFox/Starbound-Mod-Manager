@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "Version 1.6.0"
+date:   2014-02-19 17:09:01
+version: 1.6.0
+prerelease: no
+gameversion: Beta v. Enraged Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.0/StarboundModManager-KrazyTheFox.zip
+windowssize: 7.2
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.0/StarboundModManager-KrazyTheFox.zip
+osxsize: 7.2
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.0/StarboundModManager-KrazyTheFox.zip
+linuxsize: 7.2
+---
+<ul class="hyphen-list">
+	<li>Enraged Koala Support</li>
+	<li>Now compatible with .pak, .rar, and .7z archives</li>
+	<li>Bug Fixes</li>
+</ul>
