@@ -3,49 +3,9 @@ layout: default
 title: Starbound Mod Manager
 ---
 
-<div class="jumbotron" style="margin-bottom: 0px;">
-
-  <div class="container">
-
-    {% for post in site.posts limit:1 %}
-    
-    <div class="row">
-      <div class="col-sm-4">
-        <a href="{{ post.windowslink }}" class="download-link">
-          <div class="download-button">
-            <h2>Windows</h2>
-            <p>{{ post.windowssize }}</p>
-          </div>
-        </a>
-      </div>
-      <div class="col-sm-4">
-        <a href="{{ post.osxlink }}" class="download-link">
-          <div class="download-button">
-            <h2>OSX</h2>
-            <p>{{ post.osxsize }}</p>
-          </div>
-        </a>
-      </div>
-      <div class="col-sm-4">
-        <a href="{{ post.linuxlink }}" class="download-link">
-          <div class="download-button">
-            <h2>Linux</h2>
-            <p>{{ post.linuxsize }}</p>
-          </div>
-        </a>
-      </div>
-    </div>
-    
-    <div class="version-info">
-      <h3>{{ post.title }}</h3>
-      <div class="container">{{ post.content }}</div>
-    </div>
-    
-    {% endfor %}
-
-  </div>
-  
-</div>
+{% for post in site.posts limit:1 %}
+    {% include post-download-block.html post="post" %}
+{% endfor %}
 
 <div class="jumbotron more-banner">
   <div class="container">
@@ -55,6 +15,14 @@ title: Starbound Mod Manager
 
 <div class="container">
   {% for post in site.posts offset:1 %}
-    <span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a>
+    <div class="row">
+      <a href="{{ site.baseurl }}{{ post.url }}">
+        <div class="col-xs-1"></div>
+        <div class="col-xs-10 old-version">
+          {{ post.title }} - {{ post.date | date_to_string }} - {{ post.gameversion }}
+        </div>
+        <div class="col-xs-1"></div>
+      </a>
+    </div>
   {% endfor %}
 </div>

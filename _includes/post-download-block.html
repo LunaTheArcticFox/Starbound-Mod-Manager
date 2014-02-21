@@ -1,0 +1,65 @@
+<div class="jumbotron" style="margin-bottom: 0px;">
+
+  <div class="container">
+    
+    <div class="row">
+
+      <div class="col-sm-4">
+        {% if post.windowslink != 'none' %}
+          <a href="{{ post.windowslink }}" class="download-link">
+            <div class="download-button windows-button">
+              <h2>Windows</h2>
+              <p>{{ post.windowssize }}</p>
+            </div>
+          </a>
+        {% else %}
+          <div class="download-button unavailable">
+            <h2>Windows</h2>
+            <p>No Download Available</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="col-sm-4">
+        {% if post.osxlink != 'none' %}
+          <a href="{{ post.osxlink }}" class="download-link">
+            <div class="download-button osx-button">
+              <h2>OSX</h2>
+              <p>{{ post.osxsize }}</p>
+            </div>
+          </a>
+        {% else %}
+          <div class="download-button unavailable">
+            <h2>OSX</h2>
+            <p>No Download Available</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="col-sm-4">
+        {% if post.linuxlink != 'none' %}
+          <a href="{{ post.linuxlink }}" class="download-link">
+            <div class="download-button linux-button">
+              <h2>Linux</h2>
+              <p>{{ post.linuxsize }}</p>
+            </div>
+          </a>
+        {% else %}
+          <div class="download-button unavailable">
+            <h2>Linux</h2>
+            <p>No Download Available</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+    
+    <div class="version-info">
+      <h2>{{ post.title }}</h2>
+      <h6><span class="smaller">for</span> {{ post.gameversion }}</h6>
+      <div class="container">{{ post.content }}</div>
+    </div>
+
+  </div>
+  
+</div>

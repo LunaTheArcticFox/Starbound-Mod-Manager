@@ -4,6 +4,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="http://fonts.googleapis.com/css?family=Alegreya+Sans:400,800" rel="stylesheet" type="text/css">
         <link href="{{ site.baseurl }}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <link href="{{ site.baseurl }}/css/main.css" rel="stylesheet">
         <title>{{ page.title }}</title>
@@ -11,14 +12,20 @@
 
     <body>
 
-      <div class="container">
+      <div class="header">
 
-        <div class="header">
-          <ul class="nav nav-pills pull-right">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Nav 2</a></li>
-          </ul>
-          <h3 class="text-muted">{{ site.name }}</h3>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-6 col-xs-12">
+              <h3>{{ site.name }}</h3>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+              <ul class="nav nav-pills pull-right">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Nav 2</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
 
       </div>

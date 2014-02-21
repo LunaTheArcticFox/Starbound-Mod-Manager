@@ -1,6 +1,14 @@
+body {
+  background-color: #070b1d;
+}
+
+ul.hyphen-list {
+  padding: 0;
+}
+
 ul.hyphen-list li:before {
   content: "-";
-  position:relative;
+  position: relative;
   left: -5px;
 }
 
@@ -9,20 +17,69 @@ ul.hyphen-list li {
   list-style-type: none;
 }
 
+.header {
+  background-color: #415096;
+  color: #ffffff;
+  font-family: 'Alegreya Sans', sans-serif;
+  font-variant: small-caps;
+}
+
+.header .container {
+  padding-bottom: 8px;
+}
+
 .jumbotron {
   padding-top: 20px;
   padding-bottom: 20px;
+  background-color: #25315b;
 }
 
 .version-info {
   margin-left: 35px;
+  color: #ffffff;
+  font-family: 'Alegreya Sans', sans-serif;
+  font-variant: small-caps;
+}
+
+.version-info h2 {
+  margin-bottom: -10px;
+}
+
+.version-info h6 {
+  text-transform: uppercase;
+  padding-bottom: 15px;
+  text-indent: 15px;
+  font-weight: bold;
+}
+
+.version-info ul {
+  font-family: 'Tahoma', sans-serif;
+  font-variant: normal;
 }
 
 .download-button {
-  background-color: #bbbbbb;
-  margin: 20px 10px 10px 10px;
-  padding: 25px;
-  border-radius: 5px;
+    background-color: #bbbbbb;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 25px;
+    transition: background-color .25s ease-in-out;
+    -moz-transition: background-color .25s ease-in-out;
+    -webkit-transition: background-color .25s ease-in-out;
+}
+
+@media (max-width: 800px) {
+  .download-button {
+    margin: 15px 0px 5px 0px;
+  }
+  .version-info {
+    margin-left: 15px;
+  }
+}
+
+@media (min-width: 801px) {
+  .download-button {
+    margin: 20px 10px 10px 10px;
+  }
 }
 
 .download-button:hover {
@@ -35,8 +92,53 @@ ul.hyphen-list li {
 
 .download-button p {
   font-size: 12px;
+  font-weight: bold;
 }
 
 .more-banner {
-  background-color: #bada55;
+  background-color: #415096;
+  color: #ffffff;
+  font-size: 14px;
+  padding-bottom: 17px;
+}
+
+.windows-button {
+  background-color: #acd640;
+}
+
+.windows-button:hover {
+  background-color: #cae673;
+}
+
+.osx-button {
+  background-color: #55a5e7;
+}
+
+.osx-button:hover {
+  background-color: #87c5f1;
+}
+
+.linux-button {
+  background-color: #e6983b;
+}
+
+.linux-button:hover {
+  background-color: #f0bc6e;
+}
+
+.unavailable, .unavailable:hover {
+  background-color: #676767;
+  color: #adadad;
+}
+
+.old-version {
+  border-radius: 5px;
+  background-color: #292f4a;
+  color: #6979c2;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.smaller {
+  font-size: 12px;
 }

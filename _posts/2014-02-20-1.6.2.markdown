@@ -1,0 +1,16 @@
+---
+layout: post
+title:  "Version 1.6.2"
+date:   2014-02-20 22:35:23
+version: 1.6.2
+gameversion: Beta v. Enraged Koala
+windowslink: none
+windowssize: 7.2 MB
+osxlink: none
+osxsize: 7.2 MB
+linuxlink: none
+linuxsize: 7.2 MB
+---
+<ul class="hyphen-list">
+	<li>Bug Fixes</li>
+</ul>
