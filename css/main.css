@@ -29,32 +29,92 @@ ul.hyphen-list li {
 }
 
 .jumbotron {
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top: 35px;
+  padding-bottom: 35px;
   background-color: #25315b;
 }
 
 .version-info {
-  margin-left: 35px;
+  margin-top: 25px;
+  padding-top: 15px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 15px;
+  border-radius: 5px;
   color: #ffffff;
   font-family: 'Alegreya Sans', sans-serif;
   font-variant: small-caps;
+  background-color: #324070;
 }
 
-.version-info h2 {
-  margin-bottom: -10px;
+.version-info .darker {
+  color: #8eaef4;
 }
 
-.version-info h6 {
-  text-transform: uppercase;
-  padding-bottom: 15px;
-  text-indent: 15px;
-  font-weight: bold;
+.version-info .darkest {
+  color: #678ad7;
+}
+
+@media (min-width: 441px) {
+  .version-info .lighter {
+    font-size: 32px;
+    padding-bottom: 11px;
+    margin-bottom: 15px;
+    white-space: nowrap;
+  }
+
+  .version-info .darker {
+    text-transform: uppercase;
+    padding-left: 25px;
+    padding-top: 10px;
+    text-indent: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .version-info .darkest {
+    padding-top: 15px;
+    padding-right: 15px;
+    margin-bottom: -15px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 440px) {
+  .version-info .lighter {
+    font-size: 22px;
+    padding-bottom: 11px;
+    margin-bottom: 15px;
+    white-space: nowrap;
+  }
+
+  .version-info .darker {
+    font-size: 13px;
+    text-transform: uppercase;
+    padding-top: 10px;
+    white-space: nowrap;
+  }
+
+  .version-info .darkest .pull-right {
+    padding-top: 15px;
+    padding-right: 15px;
+    margin-bottom: -15px;
+    white-space: nowrap;
+    float: left;
+    text-align: left;
+  }
 }
 
 .version-info ul {
   font-family: 'Tahoma', sans-serif;
   font-variant: normal;
+}
+
+.version-info .container {
+  border-top-style: solid;
+  border-top-color: #3b4a7e;
+  margin-top: 15px;
+  padding-top: 21px;
 }
 
 .download-button {
@@ -70,9 +130,6 @@ ul.hyphen-list li {
 @media (max-width: 800px) {
   .download-button {
     margin: 15px 0px 5px 0px;
-  }
-  .version-info {
-    margin-left: 15px;
   }
 }
 
@@ -99,6 +156,7 @@ ul.hyphen-list li {
   background-color: #415096;
   color: #ffffff;
   font-size: 14px;
+  padding-top: 20px;
   padding-bottom: 17px;
 }
 
@@ -134,9 +192,30 @@ ul.hyphen-list li {
 .old-version {
   border-radius: 5px;
   background-color: #292f4a;
-  color: #6979c2;
-  padding: 15px;
+  color: #6b81e6;
+  padding: 15px 20px 13px 20px;
   margin-bottom: 15px;
+  transition: background-color .25s ease-in-out;
+  -moz-transition: background-color .25s ease-in-out;
+  -webkit-transition: background-color .25s ease-in-out;
+  font-family: 'Alegreya Sans', sans-serif;
+  font-size: 16px;
+}
+
+.old-version:hover {
+  background-color: #434c75;
+}
+
+.old-version .lighter {
+  font-weight: bold;
+  color: #9faef4;
+  white-space: nowrap;
+}
+
+.old-version .darker {
+  color: #6b81e6;
+  padding-left: 15px;
+  white-space: nowrap;
 }
 
 .smaller {

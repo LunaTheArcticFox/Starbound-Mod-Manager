@@ -19,7 +19,9 @@ title: Starbound Mod Manager
       <a href="{{ site.baseurl }}{{ post.url }}">
         <div class="col-xs-1"></div>
         <div class="col-xs-10 old-version">
-          {{ post.title }} - {{ post.date | date_to_string }} - {{ post.gameversion }}
+          <span class="lighter">{{ post.title }}</span>
+          <span class="darker">{{ post.gameversion }}</span>
+          <span class="darker pull-right">{{ post.date | date_to_string }}</span>
         </div>
         <div class="col-xs-1"></div>
       </a>

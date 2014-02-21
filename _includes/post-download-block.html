@@ -55,8 +55,9 @@
     </div>
     
     <div class="version-info">
-      <h2>{{ post.title }}</h2>
-      <h6><span class="smaller">for</span> {{ post.gameversion }}</h6>
+      <span class="darkest pull-right">{{ post.date | date_to_string }}</span>
+	  <span class="lighter">{{ post.title }}</span>
+	  <span class="darker">for {{ post.gameversion }}</span>
       <div class="container">{{ post.content }}</div>
     </div>
 
