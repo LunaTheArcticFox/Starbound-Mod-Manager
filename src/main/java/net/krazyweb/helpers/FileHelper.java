@@ -14,7 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
@@ -35,8 +37,11 @@ public class FileHelper {
 	private static final char[] SIG_SEVENZIP = new char[] { 0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C };
 	private static final char[] SIG_RAR = new char[] { 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00 };
 	private static final char[] SIG_ZIP = new char[] { 0x50, 0x4B, 0x03, 0x04 };
+	private static final char[] SIG_PAK = new char[] { 0x53, 0x42, 0x42, 0x46, 0x30, 0x32 };
 	
-	private static final char[][] SIGNATURES = new char[][] { SIG_SEVENZIP, SIG_RAR, SIG_ZIP };
+	private static final char[][] SIGNATURES = new char[][] { SIG_SEVENZIP, SIG_RAR, SIG_ZIP, SIG_PAK };
+	
+	private static final Set<String> SUPPORTED_TYPES = new HashSet<>(Arrays.asList("zip", "7z", "rar", "pak"));
 
 	public static boolean copyFile(Path src, Path dest) {
 		
@@ -56,10 +61,60 @@ public class FileHelper {
 		
 	}
 	
-	public static final boolean verify(final Path path, final boolean suppressLogging) {
+	public static final String identifyType(final byte[] data) {
+		
+		ByteBuffer buffer = ByteBuffer.wrap(data);
+		String extension = "";
+		
+		if (buffer.remaining() < 7) {
+			return "";
+		}
+		
+		for (char[] array : SIGNATURES) {
+			
+			char[] signatureBytes = array;
+			
+			boolean typeFound = false;
+			
+			for (int i = 0; i < signatureBytes.length; i++) {
+				
+				if (buffer.get() != (char) signatureBytes[i]) {
+					buffer.rewind();
+					break;
+				}
+				
+				if (i == signatureBytes.length - 1) {
+					typeFound = true;
+				}
+				
+			}
+			
+			if (typeFound) {
+				
+				if (signatureBytes == SIG_SEVENZIP) {
+					extension = "7z";
+				} else if (signatureBytes == SIG_RAR) {
+					extension = "rar";
+				} else if (signatureBytes == SIG_ZIP) {
+					extension = "zip";
+				} else if (signatureBytes == SIG_PAK) {
+					extension = "pak";
+				}
+				
+				break;
+				
+			}
+			
+		}
+		
+		return extension;
+		
+	}
+	
+	public static final String identifyType(final Path path, final boolean suppressLogging) {
 		
 		if (path == null) {
-			return false;
+			return null;
 		}
 		
 		String extension = "";
@@ -94,11 +149,13 @@ public class FileHelper {
 				if (typeFound) {
 					
 					if (signatureBytes == SIG_SEVENZIP) {
-						extension = ".7z";
+						extension = "7z";
 					} else if (signatureBytes == SIG_RAR) {
-						extension = ".rar";
+						extension = "rar";
 					} else if (signatureBytes == SIG_ZIP) {
-						extension = ".zip";
+						extension = "zip";
+					} else if (signatureBytes == SIG_PAK) {
+						extension = "pak";
 					}
 					
 					break;
@@ -108,7 +165,7 @@ public class FileHelper {
 			}
 	
 			if (!suppressLogging) {
-				log.debug("File '{}' verified as '{}'", path, extension);
+				log.debug("File '{}' identified as '{}'", path, extension);
 			}
 			
 			b.close();
@@ -118,12 +175,22 @@ public class FileHelper {
 			log.error("", e);
 		}
 		
-		return true;
+		return extension;
 		
 	}
 	
-	public static final boolean verify(final Path path) {
-		return verify(path, false);
+	public static final boolean isSupported(final Path path, final boolean suppressLogging) {
+		
+		if (path == null) {
+			return false;
+		}
+		
+		return SUPPORTED_TYPES.contains(identifyType(path, suppressLogging));
+		
+	}
+	
+	public static final boolean isSupported(final Path path) {
+		return isSupported(path, false);
 	}
 	
 	public static long getChecksum(final Path path) throws IOException {

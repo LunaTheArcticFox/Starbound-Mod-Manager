@@ -76,7 +76,7 @@ public class Archive {
 			
 			long time = System.currentTimeMillis();
 			
-			if (!FileHelper.verify(path)) {
+			if (!FileHelper.isSupported(path, false)) {
 				/* 
 				 * TODO Inform user of invalid filetype.
 				 * Change boolean return to error codes to be passed along to the UI.
@@ -94,6 +94,7 @@ public class Archive {
 				file.setPath(Paths.get(item.getPath()));
 				
 				if (item.isFolder()) {
+					log.debug("{}", item.getPath());
 					file.setFolder(true);
 					files.add(file);
 					continue;
@@ -129,7 +130,7 @@ public class Archive {
 			
 			inArchive.close();
 			randomAccessFile.close();
-
+			
 			log.debug("Time to extract '{}' to memory: {}ms", path, (System.currentTimeMillis() - time));
 			
 			return true;
@@ -158,6 +159,8 @@ public class Archive {
 					continue;
 				}
 				
+				log.trace("Writing file to {}: {}", file.getName(), archiveFile.getPath());
+				
 				ZipEntry entry = new ZipEntry(archiveFile.getPath().toString());
 				zipOutput.putNextEntry(entry);
 				
@@ -175,10 +178,14 @@ public class Archive {
 			return true;
 		
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(); //TODO Better Log
 			return false;
 		}
 		
+	}
+	
+	public boolean writeToFile() {
+		return writeToFile(path.toFile()); //TODO use path
 	}
 	
 	public boolean extractToFolder(final Path folder) {
@@ -231,6 +238,10 @@ public class Archive {
 	
 	public String getFileName() {
 		return path.getFileName().toString().replace(".rar", ".zip").replace(".7z", ".zip");
+	}
+	
+	public void addFile(final ArchiveFile file) {
+		files.add(file);
 	}
 	
 }

@@ -129,7 +129,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		sb.append("internalName VARCHAR(255) NOT NULL, ");
 		sb.append("archiveName VARCHAR(255) NOT NULL, ");
 		sb.append("displayName VARCHAR(255) NOT NULL, ");
-		sb.append("relativeAssetsPath VARCHAR(255) NOT NULL, ");
 		sb.append("modVersion VARCHAR(255) DEFAULT NULL, ");
 		sb.append("gameVersion VARCHAR(255) NOT NULL, ");
 		sb.append("author VARCHAR(255) DEFAULT NULL, ");
@@ -200,7 +199,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			query.append("internalName = ?,");
 			query.append("archiveName = ?,");
 			query.append("displayName = ?,");
-			query.append("relativeAssetsPath = ?,");
 			query.append("modVersion = ?,");
 			query.append("gameVersion = ?,");
 			query.append("author = ?,");
@@ -219,19 +217,18 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			statement.setString(1, mod.getInternalName());
 			statement.setString(2, mod.getArchiveName());
 			statement.setString(3, mod.getDisplayName());
-			statement.setString(4, mod.relativeAssetsPath.toString());
-			statement.setString(5, mod.getModVersion());
-			statement.setString(6, mod.getGameVersion());
-			statement.setString(7, mod.getAuthor());
-			statement.setString(8, mod.getDescription());
-			statement.setString(9, mod.getURL());
-			statement.setLong(10, mod.getChecksum());
-			statement.setInt(11, mod.getOrder());
-			statement.setInt(12, mod.isHidden() ? 1 : 0);
-			statement.setInt(13, mod.isInstalled() ? 1 : 0);
-			statement.setString(14, dependencyList.toString());
-			statement.setString(15, fileList.toString());
-			statement.setString(16, mod.getInternalName());
+			statement.setString(4, mod.getModVersion());
+			statement.setString(5, mod.getGameVersion());
+			statement.setString(6, mod.getAuthor());
+			statement.setString(7, mod.getDescription());
+			statement.setString(8, mod.getURL());
+			statement.setLong(9, mod.getChecksum());
+			statement.setInt(10, mod.getOrder());
+			statement.setInt(11, mod.isHidden() ? 1 : 0);
+			statement.setInt(12, mod.isInstalled() ? 1 : 0);
+			statement.setString(13, dependencyList.toString());
+			statement.setString(14, fileList.toString());
+			statement.setString(15, mod.getInternalName());
 			
 			statement.executeUpdate();
 			log.trace("Statement Executed: {}", statement);
@@ -244,7 +241,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			query.append("internalName,");
 			query.append("archiveName,");
 			query.append("displayName,");
-			query.append("relativeAssetsPath,");
 			query.append("modVersion,");
 			query.append("gameVersion,");
 			query.append("author,");
@@ -256,31 +252,30 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			query.append("installed,");
 			query.append("dependencies,");
 			query.append("files");
-			query.append(") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			query.append(") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 			
 			PreparedStatement statement = connection.prepareStatement(query.toString());
 			
 			statement.setString(1, mod.getInternalName());
 			statement.setString(2, mod.getArchiveName());
 			statement.setString(3, mod.getDisplayName());
-			statement.setString(4, mod.relativeAssetsPath.toString());
-			statement.setString(5, mod.getModVersion());
-			statement.setString(6, mod.getGameVersion());
-			statement.setString(7, mod.getAuthor());
-			statement.setString(8, mod.getDescription());
-			statement.setString(9, mod.getURL());
-			statement.setLong(10, mod.getChecksum());
-			statement.setInt(11, mod.getOrder());
-			statement.setInt(12, mod.isHidden() ? 1 : 0);
-			statement.setInt(13, mod.isInstalled() ? 1 : 0);
+			statement.setString(4, mod.getModVersion());
+			statement.setString(5, mod.getGameVersion());
+			statement.setString(6, mod.getAuthor());
+			statement.setString(7, mod.getDescription());
+			statement.setString(8, mod.getURL());
+			statement.setLong(9, mod.getChecksum());
+			statement.setInt(10, mod.getOrder());
+			statement.setInt(11, mod.isHidden() ? 1 : 0);
+			statement.setInt(12, mod.isInstalled() ? 1 : 0);
 			
 			if (dependencyList.toString().isEmpty()) {
-				statement.setString(14, "NULL");
+				statement.setString(13, "NULL");
 			} else {
-				statement.setString(14, dependencyList.toString());
+				statement.setString(13, dependencyList.toString());
 			}
 
-			statement.setString(15, fileList.toString());
+			statement.setString(14, fileList.toString());
 			
 			statement.execute();
 			log.trace("Statement Executed: {}", statement);
@@ -416,7 +411,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			mod.setInternalName(results.getString("internalName"));
 			mod.setArchiveName(results.getString("archiveName"));
 			mod.setDisplayName(results.getString("displayName"));
-			mod.relativeAssetsPath = Paths.get(results.getString("relativeAssetsPath"));
 			mod.setModVersion(results.getString("modVersion"));
 			mod.setGameVersion(results.getString("gameVersion"));
 			mod.setAuthor(results.getString("author"));

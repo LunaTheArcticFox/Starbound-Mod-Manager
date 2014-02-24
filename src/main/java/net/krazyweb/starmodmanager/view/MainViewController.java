@@ -106,7 +106,7 @@ public class MainViewController extends Observable {
          	String fileName = "\n";
          	
 				for (File file : db.getFiles()) {
-					if (FileHelper.verify(Paths.get(file.getPath()), dragOver)) {
+					if (FileHelper.isSupported(Paths.get(file.getPath()), dragOver)) {
 						filesAccepted = true;
 						fileName += localizer.formatMessage(dragOver, "inquotes", file.getName()) + "\n";
 					}

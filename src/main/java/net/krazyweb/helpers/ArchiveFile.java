@@ -12,6 +12,12 @@ public class ArchiveFile {
 		
 	}
 	
+	public ArchiveFile(final byte[] data, final Path path, final boolean folder) {
+		this.data = data;
+		this.path = path;
+		this.folder = folder;
+	}
+	
 	public ArchiveFile(final ArchiveFile f) {
 		this.data = f.data;
 		this.path = f.path;

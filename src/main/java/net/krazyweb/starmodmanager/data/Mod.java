@@ -1,27 +1,31 @@
 package net.krazyweb.starmodmanager.data;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
 import net.krazyweb.helpers.Archive;
 import net.krazyweb.helpers.ArchiveFile;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.helpers.JSONHelper;
+import net.krazyweb.stardb.databases.AssetDatabase;
+import net.krazyweb.stardb.exceptions.StarDBException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 
 public class Mod implements Observable {
 	
@@ -39,8 +43,6 @@ public class Mod implements Observable {
 	private String description;
 	private String url;
 	private String archiveName;
-	
-	protected Path relativeAssetsPath;
 	
 	private long checksum;
 	
@@ -76,16 +78,15 @@ public class Mod implements Observable {
 		
 		Set<Mod> mods = new HashSet<>();
 		
-		Archive modArchive = new Archive(path);
-			
-		if (!modArchive.extract()) {
-			//TODO Error messages
-			return null;
-		}
-		
 		//TODO Count all mods and send back progress info
 		
-		Set<Archive> archives = processArchive(modArchive, settingsFactory);
+		Set<Archive> archives = null;
+		
+		try {
+			archives = processModFile(path, settingsFactory);
+		} catch (IOException | StarDBException | ParseException e) {
+			log.error("", e); //TODO
+		}
 		
 		for (Archive archive : archives) {
 			
@@ -96,38 +97,26 @@ public class Mod implements Observable {
 			mod.setArchiveName(archive.getFileName());
 			
 			//Get the modinfo file and parse it
-			JsonReader reader = Json.createReader(new ByteArrayInputStream(archive.getFile(".modinfo").getData()));
-			JsonObject obj = reader.readObject();
+			JsonObject obj = JsonObject.readFrom(new String(archive.getFile(".modinfo").getData()));
 			
-			mod.setInternalName(obj.getString("name"));
-			mod.setGameVersion(obj.getString("version"));
-			
-			mod.relativeAssetsPath = Paths.get(obj.getString("path"));
-			
-			if (mod.relativeAssetsPath == null || mod.relativeAssetsPath.toString().equals(".")) {
-				log.debug("PATH: {}", mod.relativeAssetsPath);
-				mod.relativeAssetsPath = Paths.get("");
-			} else if (mod.relativeAssetsPath.startsWith(".")) {
-				mod.relativeAssetsPath = mod.relativeAssetsPath.subpath(1, mod.relativeAssetsPath.getNameCount());
-			}
-			
-			log.debug("Relative Assets Path: {}", mod.relativeAssetsPath);
+			mod.setInternalName(obj.get("name").asString());
+			mod.setGameVersion(obj.get("version").asString());
 			
 			Set<String> dependencies = new HashSet<>();
 			Set<String> ignoredFileNames = new HashSet<>();
 			
-			if (obj.containsKey("dependencies")) {
-				JsonArray arr = obj.getJsonArray("dependencies");
+			if (obj.get("dependencies") != null) {
+				JsonArray arr = obj.get("dependencies").asArray();
 				for (int i = 0; i < arr.size(); i++) {
-					dependencies.add(arr.getString(i));
+					dependencies.add(arr.get(i).asString());
 				}
 			}
 			
 			mod.setDependencies(dependencies);
 			
-			if (obj.containsKey("metadata")) {
+			if (obj.get("metadata") != null) {
 				
-				JsonObject metadata = obj.getJsonObject("metadata");
+				JsonObject metadata = obj.get("metadata").asObject();
 				
 				mod.setDisplayName(JSONHelper.getString(metadata, "displayname", mod.getInternalName()));
 				mod.setAuthor(JSONHelper.getString(metadata, "author", NO_AUTHOR));
@@ -135,10 +124,10 @@ public class Mod implements Observable {
 				mod.setURL(JSONHelper.getString(metadata, "support_url", ""));
 				mod.setModVersion(JSONHelper.getString(metadata, "version", NO_VERSION));
 				
-				if (obj.containsKey("ignoredfiles")) {
-					JsonArray arr = obj.getJsonArray("ignoredfiles");
+				if (obj.get("ignoredfiles") != null) {
+					JsonArray arr = obj.get("ignoredfiles").asArray();
 					for (int i = 0; i < arr.size(); i++) {
-						ignoredFileNames.add(arr.getString(i));
+						ignoredFileNames.add(arr.get(i).asString());
 					}
 				}
 				
@@ -203,67 +192,217 @@ public class Mod implements Observable {
 		
 	}
 
-	private static Set<Archive> processArchive(final Archive archive, final SettingsModelFactory settingsFactory) {
+	private static Set<Archive> processModFile(final Path path, final SettingsModelFactory settingsFactory) throws IOException, StarDBException, ParseException {
 		
 		Set<Archive> archives = new HashSet<>();
 		
-		for (ArchiveFile file : archive.getFiles()) {
-			
-			if (FileHelper.getExtension(file.getPath()).equals("modinfo")) {
-				
-				Set<ArchiveFile> files = new HashSet<>();
-				
-				Path subDir = file.getPath().getParent();
-				
-				for (ArchiveFile f2 : archive.getFiles()) {
-
-					Path filePath = f2.getPath();
-					String fileName = filePath.getFileName().toString().toLowerCase();
-					
-					if (fileName.equals("desktop.ini") || fileName.equals("thumbs.db")) {
-						continue;
-					}
-					
-					if (subDir == null) {
-
-						files.add(f2);
-						
-					} else if (filePath.startsWith(subDir)) {
-						
-						Path newPath;
-						
-						//Unfortunately, having identical ending indices for the subpath() method doesn't work.
-						//Thus, the following is needed for all 3 possibilities.
-						if (filePath.getNameCount() > 2) {
-							newPath = filePath.subpath(subDir.getNameCount(), filePath.getNameCount());
-						} else if (filePath.getNameCount() > 1) {
-							newPath = filePath.getName(1);
-						} else {
-							newPath = filePath;
-						}
-						
-						f2.setPath(newPath);
-						
-						files.add(f2);
-						
-					}
-				}
-				
-				if (subDir == null) {
-					subDir = Paths.get(archive.getFileName().substring(0, archive.getFileName().lastIndexOf(".")));
-				}
-				
-				Archive newArchive = new Archive(subDir + ".zip");
-				newArchive.getFiles().addAll(files);
-				
-				newArchive.writeToFile(new File(settingsFactory.getInstance().getPropertyString("modsdir") + File.separator + newArchive.getFileName())); //TODO Better Path manipulation
-				
-				archives.add(newArchive);
-				
-			}
+		if (FileHelper.identifyType(path, false).equals("pak")) {
+			processPakFile(path, archives, settingsFactory);
+		} else {
+			processArchive(path, archives, settingsFactory);
 		}
 		
 		return archives;
+		
+	}
+	
+	private static void processPakFile(final Path path, final Set<Archive> output, final SettingsModelFactory settingsFactory) throws IOException, StarDBException {
+		
+		SettingsModelInterface settings = settingsFactory.getInstance();
+		
+		AssetDatabase database = AssetDatabase.open(path);
+		
+		byte[] modinfoFile = database.getAsset("/pak.modinfo");
+		String[] modinfoContents = new String(modinfoFile).split("\n");
+		
+		String modName = "";
+		
+		//TODO Use actual JSON parser
+		for (String line : modinfoContents) {
+			if (line.contains("\"name\"")) {
+				modName = line.trim().split(":")[1];
+				modName = modName.substring(modName.indexOf("\"") + 1, modName.lastIndexOf("\""));
+			}
+		}
+		
+		Archive modArchive = new Archive(settings.getPropertyPath("modsdir").resolve(modName + ".zip"));
+		
+		modArchive.addFile(new ArchiveFile(modinfoFile, Paths.get(modName + ".modinfo"), false));
+		
+		for (String file : database.getFileList()) {
+			
+			if (file.endsWith(".modinfo") || file.endsWith("desktop.ini") || file.endsWith("thumbs.db")) {
+				continue;
+			}
+			
+			modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get(file.substring(1)), false));
+			
+		}
+		
+		Files.deleteIfExists(settings.getPropertyPath("modsdir").resolve(path.subpath(path.getNameCount() - 1, path.getNameCount())));
+		
+		modArchive.writeToFile();
+		
+		output.add(modArchive);
+		
+	}
+	
+	private static void processArchive(final Path path, final Set<Archive> output, final SettingsModelFactory settingsFactory) throws IOException, StarDBException {
+		
+		Archive originalArchive = new Archive(path);
+		
+		if (!originalArchive.extract()) {
+			//TODO Error messages
+			return;
+		}
+		
+		Set<ArchiveFile> usedPaks = new HashSet<>();
+		
+		for (ArchiveFile file : originalArchive.getFiles()) {
+			
+			if (FileHelper.getExtension(file.getPath()).equals("modinfo")) {
+				
+				JsonObject o = JsonObject.readFrom(new String(file.getData()));
+				
+				String preformattedPath = o.get("path").asString().replaceAll("\"", "");
+
+				if (preformattedPath.startsWith("./")) {
+					preformattedPath = preformattedPath.replace("./", "");
+				}
+				
+				if (preformattedPath.startsWith(".")) {
+					preformattedPath = preformattedPath.replace(".", "");
+				}
+				
+				Path modinfoPath = file.getPath();
+				
+				if (modinfoPath.getNameCount() > 2) {
+					modinfoPath = modinfoPath.subpath(0, modinfoPath.getNameCount() - 1);
+				} else if (modinfoPath.getNameCount() > 1){
+					modinfoPath = modinfoPath.getName(0);
+				} else {
+					modinfoPath = Paths.get("");
+				}
+
+				Archive outputArchive = new Archive(settingsFactory.getInstance().getPropertyPath("modsdir").resolve(Paths.get(o.get("name").asString() + ".zip")));
+				
+				if (file.getPath().getNameCount() == 1) {
+					outputArchive.addFile(new ArchiveFile(file.getData(), file.getPath(), false));
+					log.debug("'{}' -> '{}' relativized to '{}'", modinfoPath, file.getPath(), file.getPath());
+				} else {
+					outputArchive.addFile(new ArchiveFile(file.getData(), modinfoPath.relativize(file.getPath()).normalize(), false));
+					log.debug("'{}' -> '{}' relativized to '{}'", modinfoPath, file.getPath(), modinfoPath.relativize(file.getPath()).normalize());
+				}
+				
+				Path assetsPath = modinfoPath.resolve(Paths.get(preformattedPath));
+				
+				log.debug("Assets path for modinfo '{}': {}", file.getPath(), assetsPath);
+				
+				if (originalArchive.getFile(assetsPath) != null && !assetsPath.toString().isEmpty() && !originalArchive.getFile(assetsPath).isFolder()) {
+					
+					if (FileHelper.identifyType(originalArchive.getFile(assetsPath).getData()).equals("pak")) {
+						
+						log.debug("Assets for mod '{}' identified as .pak file: {}", modinfoPath, assetsPath);
+						
+						usedPaks.add(originalArchive.getFile(assetsPath));
+						
+						ArchiveFile modinfo = outputArchive.getFile(".modinfo");
+						JsonObject o2 = JsonObject.readFrom(new String(modinfo.getData()));
+						o2.set("path", "assets");
+						
+						modinfo.setData(o2.toString().getBytes());
+						
+						//TODO Update StarDB to let me pass in a byte array instead of needing to open a file
+						
+						Path tempPath = Paths.get("tempPak" + System.nanoTime());
+						
+						SeekableByteChannel tempPakFile = Files.newByteChannel(tempPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+						tempPakFile.write(ByteBuffer.wrap(originalArchive.getFile(assetsPath).getData()));
+						tempPakFile.close();
+						
+						AssetDatabase database = AssetDatabase.open(tempPath);
+						
+						for (String assetFile : database.getFileList()) {
+							outputArchive.addFile(new ArchiveFile(database.getAsset(assetFile), Paths.get("assets/" + assetFile), false));
+							log.trace("Asset extracted: {} | {}", assetFile, Paths.get("assets/" + assetFile));
+						}
+						
+						Files.deleteIfExists(tempPath);
+						
+					}
+					
+				} else {
+
+					ArchiveFile modinfo = outputArchive.getFile(".modinfo");
+					JsonObject o2 = JsonObject.readFrom(new String(modinfo.getData()));
+					o2.set("path", "assets");
+					
+					modinfo.setData(o2.toString().getBytes());
+					
+					log.debug("Assets for mod '{}' is a standard assets folder: {}", modinfoPath, assetsPath);
+					
+					for (ArchiveFile f2 : originalArchive.getFiles()) {
+						if (f2.getPath().startsWith(assetsPath) && !f2.isFolder() && !f2.getPath().toString().endsWith(".modinfo")) {
+							if (f2.getPath().getNameCount() == 1) {
+								
+								if (!f2.getPath().startsWith(Paths.get("assets/"))) {
+									outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(f2.getPath()), false));
+									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(f2.getPath()));
+								} else {
+									outputArchive.addFile(new ArchiveFile(f2.getData(), f2.getPath(), false));
+									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), f2.getPath());
+								}
+								
+							} else {
+								
+								if (!modinfoPath.relativize(f2.getPath()).normalize().startsWith(Paths.get("assets/"))) {
+									outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()), false));
+									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()));
+								} else {
+									outputArchive.addFile(new ArchiveFile(f2.getData(), modinfoPath.relativize(f2.getPath()).normalize(), false));
+									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), modinfoPath.relativize(f2.getPath()).normalize());
+								}
+									
+							}
+						}
+					}
+					
+				}
+				
+				outputArchive.writeToFile(settingsFactory.getInstance().getPropertyPath("modsdir").resolve(Paths.get(o.get("name").asString() + ".zip")).toFile()); //TODO
+				
+				output.add(outputArchive);
+				
+			}
+			
+		}
+		
+		for (ArchiveFile file : originalArchive.getFiles()) {
+			
+			if (!usedPaks.contains(file) && !file.isFolder() && FileHelper.identifyType(file.getData()).equals("pak")) {
+				
+				log.debug("Additional .pak identified: {}", file.getPath());
+				
+				Path tempPath = Paths.get("tempPak" + System.nanoTime());
+				
+				SeekableByteChannel tempPakFile = Files.newByteChannel(tempPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+				tempPakFile.write(ByteBuffer.wrap(file.getData()));
+				tempPakFile.close();
+				
+				AssetDatabase database = AssetDatabase.open(tempPath);
+				
+				if (database.getAsset("/pak.modinfo") != null) {
+					log.debug("{} has a .modinfo file, parsing into mod.", file.getPath());
+					processPakFile(tempPath, output, settingsFactory);
+				} else {
+					log.debug("{} does not contain a .modinfo file, skipping.", file.getPath());
+				}
+				
+				Files.deleteIfExists(tempPath);
+				
+			}
+			
+		}
 		
 	}
 	

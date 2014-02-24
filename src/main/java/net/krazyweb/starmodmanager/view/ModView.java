@@ -54,7 +54,7 @@ public class ModView implements Observer {
 	protected void build() {
 		
 		root = new GridPane();
-		root.setGridLinesVisible(true);
+		//root.setGridLinesVisible(true);
 		root.setHgap(25.0);
 		
 		displayName = new Text();

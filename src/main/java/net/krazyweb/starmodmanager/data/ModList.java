@@ -176,34 +176,11 @@ public class ModList implements ModListModelInterface {
 				this.updateProgress(0, 1);
 				
 				//Get every installed mod, including the one to be installed
-				List<Mod> installedMods = new ArrayList<>();
-				
-				for (Mod m : mods) {
-					if (m.isInstalled()) {
-						installedMods.add(m);
-					}
-				}
-				
+				List<Mod> installedMods = installedMods();
 				installedMods.add(mod);
 				
 				//Then separate out those with conflicts
-				List<Mod> conflictingMods = new ArrayList<>();
-				
-				for (Mod m1 : installedMods) {
-					for (Mod m2 : installedMods) {
-						if (m1 != m2 && m1.conflictsWith(m2)) {
-							if (!conflictingMods.contains(m1)) {
-								conflictingMods.add(m1);
-							}
-							if (!conflictingMods.contains(m2)) {
-								conflictingMods.add(m2);
-							}
-						}
-					}
-				}
-				
-				//Sort the conflicting mod list back into its load order
-				Collections.sort(conflictingMods, new ModOrderComparator());
+				List<Mod> conflictingMods = conflictingMods(installedMods);
 				
 				//No new conflicts were found, so just install the new mod normally
 				if (!conflictingMods.contains(mod)) {
@@ -214,44 +191,12 @@ public class ModList implements ModListModelInterface {
 					return null;
 				}
 				
-				//Delete the folders of the other mods if they exist, new conflicts may exist with the new mod
+				//Delete the folders of the other mods if they exist; new conflicts may exist with the new mod
 				for (Mod m : conflictingMods) {
 					FileHelper.deleteFile(settings.getPropertyPath("starboundpath").resolve("mods").resolve(m.getInternalName()));
 				}
 				
-				Map<Path, Integer> fileCounts = new HashMap<>();
-
-				//Find all the conflicting files in each of those mods
-				//First, count all instances of modified files.
-				for (Mod m : conflictingMods) {
-					for (ModFile modFile : m.getFiles()) {
-						
-						if (modFile.isAutoMerged() || modFile.isIgnored() || modFile.isModinfo()) {
-							continue;
-						}
-						
-						Path relativizedPath = m.relativeAssetsPath.relativize(modFile.getPath());
-						
-						if (fileCounts.containsKey(relativizedPath)) {
-							fileCounts.put(relativizedPath, fileCounts.get(relativizedPath) + 1);
-						} else {
-							fileCounts.put(relativizedPath, 1);
-						}
-						
-					}
-				}
-				
-				Set<Path> modifiedFiles = new HashSet<>();
-				
-				//All files with an instance count > 1 have conflicts
-				for (Path p : fileCounts.keySet()) {
-					if (fileCounts.get(p) > 1) {
-						modifiedFiles.add(p);
-						log.debug("Modified File: {}", p);
-					}
-				}
-				
-				log.debug(modifiedFiles);
+				Set<Path> modifiedFiles = conflictingFiles(conflictingMods);
 				
 				Map<Mod, Archive> modArchives = new HashMap<>();
 				
@@ -267,10 +212,9 @@ public class ModList implements ModListModelInterface {
 				
 				for (Mod m : conflictingMods) {
 					for (ModFile file : m.getFiles()) {
-						Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
-						if (!modifiedFiles.contains(relativizedPath) && !file.isModinfo()) {
-							log.debug("Relative Path: {}", relativizedPath);
-							modArchives.get(m).extractFileToFolder(relativizedPath, settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+						if (!modifiedFiles.contains(file.getPath()) && !file.isModinfo()) {
+							log.debug("Path: {}", file.getPath());
+							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
 						}
 					}
 				}
@@ -287,9 +231,8 @@ public class ModList implements ModListModelInterface {
 				
 				for (Mod m : conflictingMods) {
 					for (ModFile file : m.getFiles()) {
-						Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
-						if (modifiedFiles.contains(relativizedPath) && !file.isJson()) {
-							modArchives.get(m).extractFileToFolder(relativizedPath, settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+						if (modifiedFiles.contains(file.getPath()) && !file.isJson()) {
+							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
 						}
 					}
 				}
@@ -298,6 +241,10 @@ public class ModList implements ModListModelInterface {
 								
 				//Get all JSON files and merge them, then save them
 				for (Path path : modifiedFiles) {
+					
+					if (!FileHelper.isJSON(path)) {
+						continue;
+					}
 
 					String originalFile = null;
 					String outputFile = "";
@@ -336,33 +283,32 @@ public class ModList implements ModListModelInterface {
 					for (Mod m : conflictingMods) {
 						for (ModFile file : m.getFiles()) {
 							
-							Path relativizedPath = m.relativeAssetsPath.relativize(file.getPath());
+							if (!file.getPath().toString().equals(path.toString())) {
+								continue;
+							}
 							
-							if (relativizedPath.equals(path)) {
+							String changedFile = new String(modArchives.get(m).getFile(file.getPath()).getData());
+							
+							if (conflictingMods.indexOf(m) != conflictingMods.size() - 1) {
 								
-								String changedFile = new String(modArchives.get(m).getFile(file.getPath()).getData());
+								log.debug("Merging file for {} : {}", m.getDisplayName(), file.getPath());
 								
-								if (conflictingMods.indexOf(m) != conflictingMods.size() - 1) {
-									
-									log.debug("Merging file for {} : {}", m.getDisplayName(), path);
-									
-									LinkedList<Diff> diff = dpm.diff_main(originalFile, changedFile);
-									LinkedList<Patch> patches = dpm.patch_make(diff);
-									patchesToApply.addAll(patches);
+								LinkedList<Diff> diff = dpm.diff_main(originalFile, changedFile);
+								LinkedList<Patch> patches = dpm.patch_make(diff);
+								patchesToApply.addAll(patches);
+							
+							} else {
 								
-								} else {
-									
-									log.debug("Merging file for 2 {}", m.getDisplayName());
-									
-									outputFile = (String) dpm.patch_apply(patchesToApply, changedFile)[0];
-									
-								}
+								log.debug("Merging file for 2 {}", m.getDisplayName());
+								
+								outputFile = (String) dpm.patch_apply(patchesToApply, changedFile)[0];
 								
 							}
+								
 						}
 					}
 					
-					Path outputPath = settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")).resolve("assets").resolve(path);
+					Path outputPath = settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")).resolve(path);
 					
 					Files.createDirectories(outputPath.getParent());
 					
@@ -562,6 +508,78 @@ public class ModList implements ModListModelInterface {
 	public void setModList(final List<Mod> list) {
 		this.mods = list;
 		notifyObservers("modlistupdated");
+	}
+	
+	private List<Mod> installedMods() {
+
+		List<Mod> installedMods = new ArrayList<>();
+		
+		for (Mod m : mods) {
+			if (m.isInstalled()) {
+				installedMods.add(m);
+			}
+		}
+		
+		return installedMods;
+		
+	}
+	
+	private List<Mod> conflictingMods(final List<Mod> modList) {
+		
+		List<Mod> conflictingMods = new ArrayList<>();
+		
+		for (Mod m1 : modList) {
+			for (Mod m2 : modList) {
+				if (m1 != m2 && m1.conflictsWith(m2)) {
+					if (!conflictingMods.contains(m1)) {
+						conflictingMods.add(m1);
+					}
+					if (!conflictingMods.contains(m2)) {
+						conflictingMods.add(m2);
+					}
+				}
+			}
+		}
+		
+		Collections.sort(conflictingMods, new ModOrderComparator());
+		
+		return conflictingMods;
+		
+	}
+	
+	private Set<Path> conflictingFiles(final List<Mod> conflictingMods) {
+		
+		Map<Path, Integer> fileCounts = new HashMap<>();
+
+		//First, count all instances of modified files.
+		for (Mod m : conflictingMods) {
+			for (ModFile modFile : m.getFiles()) {
+				
+				if (modFile.isAutoMerged() || modFile.isIgnored() || modFile.isModinfo()) {
+					continue;
+				}
+				
+				if (fileCounts.containsKey(modFile.getPath())) {
+					fileCounts.put(modFile.getPath(), fileCounts.get(modFile.getPath()) + 1);
+				} else {
+					fileCounts.put(modFile.getPath(), 1);
+				}
+				
+			}
+		}
+		
+		Set<Path> modifiedFiles = new HashSet<>();
+		
+		//All files with an instance count > 1 have conflicts
+		for (Path p : fileCounts.keySet()) {
+			if (fileCounts.get(p) > 1) {
+				modifiedFiles.add(p);
+				log.debug("Modified File: {}", p);
+			}
+		}
+		
+		return modifiedFiles;
+		
 	}
 
 	@Override
