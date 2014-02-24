@@ -86,7 +86,9 @@ public class GetModListTask extends Task<Void> {
 		for (final String modName : modsInDatabase) {
 			Mod tempMod = null;
 			if ((tempMod = database.getModByName(modName.split("\n")[0])) != null) {
-				mods.add(tempMod);
+				if (!tempMod.isHidden()) {
+					mods.add(tempMod);
+				}
 			}
 			this.updateProgress((double) count, (double) total);
 			count++;

@@ -40,6 +40,7 @@ public class ModView implements Observer {
 	private Mod mod;
 	private ModViewController controller;
 	protected boolean moving;
+	protected boolean expanded;
 	
 	private LocalizerModelInterface localizer;
 	
@@ -48,13 +49,13 @@ public class ModView implements Observer {
 		this.mod.addObserver(this);
 		localizer = new LocalizerFactory().getInstance();
 		localizer.addObserver(this);
-		controller = new ModViewController(this, modList);
+		controller = new ModViewController(this, modList, localizer);
 	}
 	
 	protected void build() {
 		
 		root = new GridPane();
-		//root.setGridLinesVisible(true);
+		root.setGridLinesVisible(true);
 		root.setHgap(25.0);
 		
 		displayName = new Text();
@@ -105,6 +106,34 @@ public class ModView implements Observer {
 			}
 		});
 		
+		expandButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.expandButtonClicked();
+			}
+		});
+
+		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.deleteButtonClicked();
+			}
+		});
+		
+		hideButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.hideButtonClicked();
+			}
+		});
+		
+		linkButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.linkButtonClicked();
+			}
+		});
+		
 	}
 	
 	protected Mod getMod() {
@@ -128,6 +157,32 @@ public class ModView implements Observer {
 	
 	protected GridPane getContent() {
 		return root;
+	}
+	
+	protected void toggleExpand() {
+		
+		if (!expanded) {
+			
+			root.getChildren().remove(installButton);
+			root.getChildren().remove(modVersion);
+			root.getChildren().remove(statusText);
+			
+			root.add(buttons, 2, 1);
+			
+			expanded = true;
+			
+		} else {
+			
+			root.getChildren().remove(buttons);
+
+			root.add(statusText, 2, 1);
+			root.add(modVersion, 2, 2);
+			root.add(installButton, 3, 1);
+			
+			expanded = false;
+			
+		}
+		
 	}
 	
 	@Override

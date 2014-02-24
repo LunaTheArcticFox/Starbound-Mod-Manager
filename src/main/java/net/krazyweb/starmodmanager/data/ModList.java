@@ -151,6 +151,7 @@ public class ModList implements ModListModelInterface {
 		try {
 			database.deleteMod(mod);
 		} catch (SQLException e) {
+			//TODO
 			e.printStackTrace();
 		}
 		
@@ -161,7 +162,9 @@ public class ModList implements ModListModelInterface {
 			e.printStackTrace();
 		}
 		
-		mods.remove(mod);
+		removeMod(mod);
+		
+		notifyObservers(new Object[] { "moddeleted", mod });
 		
 	}
 	
@@ -425,11 +428,28 @@ public class ModList implements ModListModelInterface {
 	public void hideMod(final Mod mod) {
 		
 		mod.setHidden(true);
+		
 		try {
 			database.updateMod(mod);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		removeMod(mod);
+
+		notifyObservers(new Object[] { "modhidden", mod });
+		
+	}
+	
+	private void removeMod(final Mod mod) {
+		
+		mods.remove(mod);
+		
+		Collections.sort(mods, new ModOrderComparator());
+		
+		for (Mod m : mods) {
+			m.setOrder(mods.indexOf(m));
 		}
 		
 	}
@@ -506,8 +526,26 @@ public class ModList implements ModListModelInterface {
 
 	@Override
 	public void setModList(final List<Mod> list) {
+		
+		Set<Mod> toRemove = new HashSet<>();
+		
+		for (Mod m : list) {
+			if (m.isHidden()) {
+				toRemove.add(m);
+			}
+		}
+		
+		list.removeAll(toRemove);
+		
+		Collections.sort(list, new ModOrderComparator());
+
+		for (Mod m : list) {
+			m.setOrder(list.indexOf(m));
+		}
+		
 		this.mods = list;
 		notifyObservers("modlistupdated");
+		
 	}
 	
 	private List<Mod> installedMods() {

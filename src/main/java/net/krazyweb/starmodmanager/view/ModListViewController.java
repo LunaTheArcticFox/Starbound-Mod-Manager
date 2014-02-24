@@ -169,12 +169,29 @@ public class ModListViewController implements Observer {
 	public void update(final Observable observable, final Object message) {
 		
 		if (observable instanceof ModList && message instanceof Object[]) {
+			
 			Object[] args = (Object[]) message;
+			
 			if (args[0].equals("modadded")) {
+				
 				ModView newModView = new ModView((Mod) args[1], modList);
 				modViews.add(newModView);
-				view.addMod(newModView);
+				view.clearMods();
+				for (ModView mv : modViews) {
+					view.addMod(mv);
+				}
+				
+			} else if (args[0].equals("moddeleted") || args[0].equals("modhidden")) {
+				
+				modViews.remove(getModViewByMod((Mod) args[1]));
+				view.clearMods();
+				for (ModView mv : modViews) {
+					view.addMod(mv);
+					mv.getContent().setTranslateY(modList.getMods().indexOf(mv.getMod()) * 57 - mv.getContent().getLayoutY());
+				}
+				
 			}
+			
 		}
 		
 	}
