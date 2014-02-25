@@ -15,7 +15,7 @@ linuxsize: 0.0
 	<li>Early release of 2.0.0 for testing purposes.</li>
 	<li>-x86 identifier removed from version tag from here on out—a 64-bit VM is unnecessary. This cuts down on releases as well.</li>
 	<li>Added in mod list refreshing (will add automatic refreshing soon).</li>
-	<li>Mod manager now deleted old archives when mods have been parsed (from the base mods directory only).</li>
+	<li>Mod manager now deletes old archives when mods have been parsed (from the base mods directory only).</li>
 	<li>Minimum window size now enforced more strictly.</li>
 	<li>Mod list can now be locked and unlocked.</li>
 	<li>Mod list can now be expanded and collapsed.</li>
