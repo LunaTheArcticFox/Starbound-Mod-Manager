@@ -56,7 +56,7 @@
     
     <div class="version-info">
       <span class="darkest pull-right">{{ post.date | date_to_string }}</span>
-	  <span class="lighter" id="versionTitleLarge"><a href="{{ post.url }}">{{ post.title }}</a></span>
+	  <span class="lighter" id="versionTitleLarge"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></span>
 	  <span class="darker">for {{ post.gameversion }}</span>
 	  {% if post.prerelease == true %}
 	  	<span class="prerelease-tag">Pre-release</span>
