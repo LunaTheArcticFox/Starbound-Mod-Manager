@@ -268,3 +268,12 @@ ul.hyphen-list li {
 .header li.active a:hover {
   background-color: #55a5e7;
 }
+
+#versionTitleLarge a, #versionTitleLarge a:link, #versionTitleLarge a:hover, #versionTitleLarge a:active {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+#versionTitleLarge a:hover {
+  text-decoration: underline;
+}
