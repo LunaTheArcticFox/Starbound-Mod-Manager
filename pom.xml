@@ -28,8 +28,8 @@
 					<mainClass>net.krazyweb.starmodmanager.ModManager</mainClass>
 					<identifier>starboundmodmanager</identifier>
 					<jvmArgs>
-						<arg>-Xms32m</arg>
-						<arg>-Xmx128m</arg>
+						<arg>-Xms100m</arg>
+						<arg>-Xmx256m</arg>
 					</jvmArgs>
 				</configuration>
 			</plugin>

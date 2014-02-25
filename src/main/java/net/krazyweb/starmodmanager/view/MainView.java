@@ -125,7 +125,9 @@ public class MainView implements Observer {
 		stackPane = new StackPane();
 		stackPane.getChildren().add(root);
 		
-		scene = new Scene(stackPane, settings.getPropertyDouble("windowwidth"), settings.getPropertyDouble("windowheight"));
+		scene = new Scene(stackPane,
+				Math.max(settings.getPropertyDouble("windowwidth"), settings.getPropertyDouble("enforcedminwidth")),
+				Math.max(settings.getPropertyDouble("windowheight"), settings.getPropertyDouble("enforcedminheight")));
 		
 		Stage stage = ModManager.getPrimaryStage();
 		
@@ -140,7 +142,7 @@ public class MainView implements Observer {
 		 * then add in the real scene.
 		 */
 		stage.setOpacity(0.0);
-		stage.setScene(new Scene(new VBox(), 683, 700));
+		stage.setScene(new Scene(new VBox(), settings.getPropertyDouble("enforcedminwidth"), settings.getPropertyDouble("enforcedminheight")));
 		stage.show();
 		
 		stage.setMinWidth(stage.getWidth());
@@ -201,30 +203,34 @@ public class MainView implements Observer {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.backupButtonClicked();
+				e.consume();
 			}
 		});
 		
-		lockButton = new Button("Lock");
+		lockButton = new Button();
 		lockButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.lockButtonClicked();
+				e.consume();
 			}
 		});
 		
-		refreshButton = new Button("Refresh");
+		refreshButton = new Button();
 		refreshButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.refreshButtonClicked();
+				e.consume();
 			}
 		});
 		
-		expandButton = new Button("Expand");
+		expandButton = new Button();
 		expandButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.expandButtonClicked();
+				e.consume();
 			}
 		});
 		
@@ -316,9 +322,9 @@ public class MainView implements Observer {
 		
 		//TODO Remove, these are for testing and will have no text later
 		quickBackupButton.setText("No Function");
-		lockButton.setText("No Function");
-		refreshButton.setText("No Function");
-		expandButton.setText("No Function");
+		lockButton.setText("LCK");
+		refreshButton.setText("REF");
+		expandButton.setText("EXP");
 		
 	}
 	

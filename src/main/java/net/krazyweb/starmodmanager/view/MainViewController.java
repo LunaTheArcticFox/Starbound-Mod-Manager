@@ -65,19 +65,23 @@ public class MainViewController extends Observable {
 	
 	protected void modTabClicked() {
 		view.setContent(modListView.getContent());
+		//TODO Update highlight
 	}
 	
 	protected void backupsTabClicked() {
 		MessageDialogue m = new MessageDialogue("Test Message", "Test Title", MessageType.INFO, new LocalizerFactory());
 		log.debug(m.getResult());
+		//TODO Update highlight
 	}
 	
 	protected void settingsTabClicked() {
 		view.setContent(settingsView.getContent());
+		//TODO Update highlight
 	}
 	
 	protected void aboutTabClicked() {
 		view.setContent(aboutView.getContent());
+		//TODO Update highlight
 	}
 	
 	protected void backupButtonClicked() {
@@ -85,15 +89,17 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void lockButtonClicked() {
-		
+		modListView.toggleLock();
+		//TODO Update lock image
 	}
 	
 	protected void refreshButtonClicked() {
-		
+		modListView.getNewMods();
 	}
 	
 	protected void expandButtonClicked() {
-		
+		modListView.toggleExpansion();
+		//TODO Update expand image
 	}
 	
 	protected void filesDraggedOver(final DragEvent event) {

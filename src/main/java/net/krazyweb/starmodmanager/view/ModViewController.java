@@ -9,6 +9,7 @@ import java.net.URL;
 import javafx.concurrent.Task;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
 import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
 import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 import net.krazyweb.starmodmanager.dialogue.MessageDialogueConfirm;
@@ -26,7 +27,7 @@ public class ModViewController {
 		this.view = view;
 		this.modList = modList;
 		this.localizer = localizer;
-		this.view.build();
+		this.view.build(new SettingsFactory().getInstance().getPropertyBoolean("modviewexpanded"));
 	}
 	
 	protected void installButtonClicked() {
@@ -46,8 +47,8 @@ public class ModViewController {
 		modList.uninstallMod(view.getMod());
 	}
 	
-	protected void expandButtonClicked() {
-		view.toggleExpand();
+	protected void moreInfoButtonClicked() {
+		view.toggleMoreInfo();
 	}
 	
 	protected void deleteButtonClicked() {

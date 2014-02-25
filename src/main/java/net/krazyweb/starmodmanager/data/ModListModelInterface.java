@@ -8,6 +8,7 @@ import javafx.concurrent.Task;
 public interface ModListModelInterface extends Observable {
 	
 	public Task<Void> getLoadTask();
+	public Task<Void> getNewModsTask();
 	
 	public void addMods(final List<Path> files);
 	

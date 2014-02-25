@@ -4,9 +4,11 @@ package net.krazyweb.starmodmanager.view;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
@@ -24,22 +26,40 @@ public class ModView implements Observer {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger(ModView.class);
 	
-	private GridPane root;
+	private GridPane collapsedRoot;
 	
-	private Button installButton;
-	private Button expandButton;
-	private Text statusText;
-	private Text displayName;
-	private Text modVersion;
+	private Button collapsedInstallButton;
+	private Button collapsedExpandButton;
+	private Text collapsedStatusText;
+	private Text collapsedDisplayName;
+	private Text collapsedModVersion;
 	
-	private HBox buttons;
-	private Button deleteButton;
-	private Button hideButton;
-	private Button linkButton;
+	private HBox collapsedButtons;
+	private Button collapsedDeleteButton;
+	private Button collapsedHideButton;
+	private Button collapsedLinkButton;
+	
+	private GridPane expandedRoot;
+	private BorderPane expandedHeader;
+	
+	private Button expandedInstallButton;
+	private Button expandedExpandButton;
+	private Text expandedStatusText;
+	private Text expandedDisplayName;
+	private Text expandedModVersion;
+	private Text expandedAuthor;
+	private Text expandedDescription;
+	//private ImageView expandedImage;
+
+	private VBox expandedButtons;
+	private Button expandedDeleteButton;
+	private Button expandedHideButton;
+	private Button expandedLinkButton;
 
 	private Mod mod;
 	private ModViewController controller;
 	protected boolean moving;
+	protected boolean showingMoreInfo;
 	protected boolean expanded;
 	
 	private LocalizerModelInterface localizer;
@@ -52,50 +72,102 @@ public class ModView implements Observer {
 		controller = new ModViewController(this, modList, localizer);
 	}
 	
-	protected void build() {
-		
-		root = new GridPane();
-		root.setGridLinesVisible(true);
-		root.setHgap(25.0);
-		
-		displayName = new Text();
-		statusText = new Text();
-		modVersion = new Text();
-		installButton = new Button();
-		expandButton = new Button();
-		
-		buttons = new HBox();
-		deleteButton = new Button();
-		hideButton = new Button();
-		linkButton = new Button();
-		
-		buttons.getChildren().addAll(
-			deleteButton,
-			hideButton,
-			linkButton
-		);
-		
-		root.add(displayName, 1, 1);
-		root.add(statusText, 2, 1);
-		root.add(modVersion, 2, 2);
-		root.add(installButton, 3, 1);
-		root.add(expandButton, 4, 1);
+	protected void build(final boolean expanded) {
 
-		GridPane.setRowSpan(displayName, 2);
-		GridPane.setRowSpan(installButton, 2);
-		GridPane.setRowSpan(buttons, 2);
-		GridPane.setColumnSpan(buttons, 2);
-		GridPane.setRowSpan(expandButton, 2);
-		GridPane.setHgrow(displayName, Priority.ALWAYS);
+		this.expanded = expanded;
+		
+		buildExpanded();
+		buildUnexpanded();
 		
 		createListeners();
 		updateStrings();
 		
 	}
 	
+	private void buildExpanded() {
+		
+		expandedRoot = new GridPane();
+		expandedHeader = new BorderPane();
+
+		expandedInstallButton = new Button();
+		expandedExpandButton = new Button();
+		expandedStatusText = new Text();
+		expandedDisplayName = new Text();
+		expandedModVersion = new Text();
+		expandedAuthor = new Text();
+		expandedDescription = new Text();
+		//expandedImage = new ImageView();
+		
+		expandedButtons = new VBox();
+		expandedDeleteButton = new Button();
+		expandedHideButton = new Button();
+		expandedLinkButton = new Button();
+		
+		expandedRoot.setGridLinesVisible(true);
+		//expandedRoot.setHgap(25.0);
+		
+		expandedHeader.setLeft(expandedStatusText);
+		expandedHeader.setRight(expandedModVersion);
+		
+		expandedButtons.getChildren().addAll(
+			expandedDeleteButton,
+			expandedHideButton,
+			expandedLinkButton
+		);
+		
+		expandedRoot.add(expandedHeader, 1, 1);
+		expandedRoot.add(expandedDisplayName, 1, 2);
+		expandedRoot.add(expandedAuthor, 1, 3);
+		expandedRoot.add(expandedInstallButton, 2, 2);
+		expandedRoot.add(expandedExpandButton, 3, 2);
+		
+		GridPane.setColumnSpan(expandedHeader, 3);
+		
+		GridPane.setHgrow(expandedDisplayName, Priority.ALWAYS);
+		
+	}
+	
+	private void buildUnexpanded() {
+		
+		collapsedRoot = new GridPane();
+		collapsedRoot.setGridLinesVisible(true);
+		//collapsedRoot.setHgap(25.0);
+		
+		collapsedDisplayName = new Text();
+		collapsedStatusText = new Text();
+		collapsedModVersion = new Text();
+		collapsedInstallButton = new Button();
+		collapsedExpandButton = new Button();
+		
+		collapsedButtons = new HBox();
+		collapsedDeleteButton = new Button();
+		collapsedHideButton = new Button();
+		collapsedLinkButton = new Button();
+		
+		collapsedButtons.getChildren().addAll(
+			collapsedDeleteButton,
+			collapsedHideButton,
+			collapsedLinkButton
+		);
+		
+		collapsedRoot.add(collapsedDisplayName, 1, 1);
+		collapsedRoot.add(collapsedStatusText, 2, 1);
+		collapsedRoot.add(collapsedModVersion, 2, 2);
+		collapsedRoot.add(collapsedInstallButton, 3, 1);
+		collapsedRoot.add(collapsedExpandButton, 4, 1);
+
+		GridPane.setRowSpan(collapsedDisplayName, 2);
+		GridPane.setRowSpan(collapsedInstallButton, 2);
+		GridPane.setRowSpan(collapsedButtons, 2);
+		GridPane.setColumnSpan(collapsedButtons, 2);
+		GridPane.setRowSpan(collapsedExpandButton, 2);
+		GridPane.setHgrow(collapsedDisplayName, Priority.ALWAYS);
+		
+	}
+	
 	protected void createListeners() {
 		
-		installButton.setOnAction(new EventHandler<ActionEvent>() {
+		collapsedInstallButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				if (mod.isInstalled()) {
@@ -106,28 +178,67 @@ public class ModView implements Observer {
 			}
 		});
 		
-		expandButton.setOnAction(new EventHandler<ActionEvent>() {
+		collapsedExpandButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
-				controller.expandButtonClicked();
+				controller.moreInfoButtonClicked();
 			}
 		});
 
-		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+		collapsedDeleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.deleteButtonClicked();
 			}
 		});
 		
-		hideButton.setOnAction(new EventHandler<ActionEvent>() {
+		collapsedHideButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.hideButtonClicked();
 			}
 		});
 		
-		linkButton.setOnAction(new EventHandler<ActionEvent>() {
+		collapsedLinkButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.linkButtonClicked();
+			}
+		});
+		
+		expandedInstallButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				if (mod.isInstalled()) {
+					controller.uninstallButtonClicked();
+				} else {
+					controller.installButtonClicked();
+				}
+			}
+		});
+		
+		expandedExpandButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.moreInfoButtonClicked();
+			}
+		});
+
+		expandedDeleteButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.deleteButtonClicked();
+			}
+		});
+		
+		expandedHideButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.hideButtonClicked();
+			}
+		});
+		
+		expandedLinkButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
 				controller.linkButtonClicked();
@@ -142,47 +253,74 @@ public class ModView implements Observer {
 
 	private void updateStrings() {
 
-		displayName.setText(mod.getDisplayName());
-		statusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
-		modVersion.setText(mod.getModVersion() + " - " + mod.getGameVersion());
-		installButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		expandedInstallButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		expandedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		expandedDisplayName.setText(mod.getDisplayName());
+		expandedModVersion.setText(mod.getModVersion());
+		expandedAuthor.setText(mod.getAuthor());
+		expandedDescription.setText(mod.getDescription());
 		
 		//TODO Replace with images
-		expandButton.setText("^");
-		deleteButton.setText("DEL");
-		hideButton.setText("HID");
-		linkButton.setText("LNK");
+		expandedExpandButton.setText("^");
+		expandedDeleteButton.setText("DEL");
+		expandedHideButton.setText("HID");
+		expandedLinkButton.setText("LNK");
+		
+		collapsedInstallButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
+		collapsedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		collapsedDisplayName.setText(mod.getDisplayName());
+		collapsedModVersion.setText(mod.getModVersion());
+		
+		//TODO Replace with images
+		collapsedExpandButton.setText("^");
+		collapsedDeleteButton.setText("DEL");
+		collapsedHideButton.setText("HID");
+		collapsedLinkButton.setText("LNK");
 		
 	}
 	
 	protected GridPane getContent() {
-		return root;
+		return expanded ? expandedRoot : collapsedRoot;
 	}
 	
-	protected void toggleExpand() {
+	protected void toggleMoreInfo() {
 		
-		if (!expanded) {
+		if (!showingMoreInfo) {
 			
-			root.getChildren().remove(installButton);
-			root.getChildren().remove(modVersion);
-			root.getChildren().remove(statusText);
+			collapsedRoot.getChildren().remove(collapsedInstallButton);
+			collapsedRoot.getChildren().remove(collapsedModVersion);
+			collapsedRoot.getChildren().remove(collapsedStatusText);
 			
-			root.add(buttons, 2, 1);
+			collapsedRoot.add(collapsedButtons, 2, 1);
+
+			expandedRoot.getChildren().remove(expandedExpandButton);
+			expandedRoot.add(expandedButtons, 3, 4);
+			expandedRoot.add(expandedExpandButton, 3, 5);
+			expandedRoot.add(expandedDescription, 1, 4);
 			
-			expanded = true;
+			showingMoreInfo = true;
 			
 		} else {
-			
-			root.getChildren().remove(buttons);
 
-			root.add(statusText, 2, 1);
-			root.add(modVersion, 2, 2);
-			root.add(installButton, 3, 1);
+			collapsedRoot.getChildren().remove(collapsedButtons);
+
+			collapsedRoot.add(collapsedStatusText, 2, 1);
+			collapsedRoot.add(collapsedModVersion, 2, 2);
+			collapsedRoot.add(collapsedInstallButton, 3, 1);
+
+			expandedRoot.getChildren().remove(expandedExpandButton);
+			expandedRoot.getChildren().remove(expandedButtons);
+			expandedRoot.getChildren().remove(expandedDescription);
+			expandedRoot.add(expandedExpandButton, 3, 2);
 			
-			expanded = false;
+			showingMoreInfo = false;
 			
 		}
 		
+	}
+	
+	public void expand(final boolean expand) {
+		expanded = expand;
 	}
 	
 	@Override
@@ -197,7 +335,6 @@ public class ModView implements Observer {
 			switch (msg) {
 				case "installstatuschanged":
 					updateStrings();
-					//installButton.setText(Localizer.getInstance().getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 					break;
 			}
 			

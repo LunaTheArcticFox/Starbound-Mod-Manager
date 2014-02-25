@@ -141,6 +141,18 @@ public class ModListView implements Observer {
 		return modsBox;
 	}
 	
+	protected void toggleExpansion() {
+		controller.toggleExpansion();
+	}
+	
+	protected void toggleLock() {
+		controller.toggleLock();
+	}
+	
+	protected void getNewMods() {
+		controller.getNewMods();
+	}
+	
 	@Override
 	public void update(final Observable observable, final Object message) {
 		

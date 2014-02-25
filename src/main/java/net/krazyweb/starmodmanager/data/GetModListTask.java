@@ -1,5 +1,6 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +97,8 @@ public class GetModListTask extends Task<Void> {
 		
 		Collections.sort(mods, new ModOrderComparator());
 		
+		toRemove = new HashSet<>();
+		
 		for (Path path : archives) {
 			
 			Set<Mod> tempMods = Mod.load(path, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
@@ -105,12 +108,29 @@ public class GetModListTask extends Task<Void> {
 			}
 			
 			for (Mod mod : tempMods) {
+				
 				mods.add(mod);
+				
+				for (Path path2 : archives) {
+					if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path2)) {
+						toRemove.add(path2);
+					} else {
+						log.debug("File is used by mod manager, will not delete: '{}' = '{}'", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path2);
+					}
+				}
+				
 			}
 
 			this.updateProgress((double) count, (double) total);
 			count++;
 			
+		}
+		
+		archives.removeAll(toRemove);
+		
+		for (Path path : archives) {
+			log.debug("File is not used by mod manager, deleting: '{}'", path);
+			FileHelper.deleteFile(path);
 		}
 		
 		for (Mod mod : mods) {

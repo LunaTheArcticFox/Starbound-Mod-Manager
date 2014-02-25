@@ -61,6 +61,11 @@ public class ModList implements ModListModelInterface {
 	}
 	
 	@Override
+	public Task<Void> getNewModsTask() {
+		return new GetNewModsTask(this);
+	}
+	
+	@Override
 	public void addMods(final List<Path> files) {
 		
 		final ProgressDialogue progress = new ProgressDialogue();
@@ -82,6 +87,8 @@ public class ModList implements ModListModelInterface {
 				
 				Files.createDirectories(settings.getPropertyPath("modsdir"));
 				
+				Set<Path> toRemove = new HashSet<>();
+				
 				for (int i = 0; i < files.size(); i++) {
 					
 					Path file = files.get(i);
@@ -90,11 +97,21 @@ public class ModList implements ModListModelInterface {
 					
 					Set<Mod> modsToAdd = Mod.load(file, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 					
-					if (modsToAdd != null && !modsToAdd.isEmpty()) {
+					if (modsToAdd != null) {
 						for (Mod mod : modsToAdd) {
 							if (!currentMods.contains(mod.getInternalName())) {
+								
 								mods.add(mod);
 								newMods.add(mod);
+								
+								for (Path path : files) {
+									if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path)) {
+										toRemove.add(path);
+									} else {
+										log.debug("File is used by mod manager, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+									}
+								}
+								
 							} else {
 								//TODO Notify user of mod existence
 								log.debug("Mod already exists, skipping: {}", file);
@@ -104,6 +121,13 @@ public class ModList implements ModListModelInterface {
 					
 					this.updateProgress(i, files.size());
 					
+				}
+				
+				files.removeAll(toRemove);
+				
+				for (Path path : files) {
+					log.debug("Deleting file '{}' -- file is unused.", path);
+					FileHelper.deleteFile(path);
 				}
 				
 				return 1;
@@ -458,11 +482,11 @@ public class ModList implements ModListModelInterface {
 	public void moveMod(final Mod mod, final int amount) {
 		
 		if (locked) {
-			log.debug("Mod list locked; cannot move mod: {}", mod.getInternalName());
+			log.trace("Mod list locked; cannot move mod: {}", mod.getInternalName());
 			return;
 		}
 		
-		log.debug("Performing rotation, results:");
+		log.trace("Performing rotation, results:");
 		
 		if (amount > 0) {
 			
@@ -484,7 +508,7 @@ public class ModList implements ModListModelInterface {
 		
 		for (Mod m : mods) {
 			m.setOrder(mods.indexOf(m));
-			log.debug("  [{}] {}", m.getOrder(), m.getInternalName());
+			log.trace("  [{}] {}", m.getOrder(), m.getInternalName());
 			try {
 				database.updateMod(m);
 			} catch (SQLException e) {
