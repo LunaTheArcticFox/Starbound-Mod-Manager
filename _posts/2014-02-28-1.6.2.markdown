@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "1.6.2"
+date:   2014-02-28 16:38:42
+prerelease: no
+gameversion: Beta v. Enraged Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.2/StarboundModManager-KrazyTheFox.zip
+windowssize: 7.2
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.2/StarboundModManager-KrazyTheFox.zip
+osxsize: 7.2
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v1.6.2/StarboundModManager-KrazyTheFox.zip
+linuxsize: 7.2
+---
+<ul class="hyphen-list">
+	<li>Supports the new unstable branch of Starbound.</li>
+	<li>Now recognizes .modpak files (.pak files with a different extension).</li>
+</ul>
