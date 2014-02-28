@@ -6,7 +6,7 @@
 
       <div class="col-sm-4">
         {% if post.windowslink != 'none' %}
-          <a href="{{ post.windowslink }}" class="download-link">
+          <a href="{{ post.windowslink }}" class="download-link" id="windows_link">
             <div class="download-button windows-button">
               <h2>Windows</h2>
               <p>{{ post.windowssize }} MB</p>
@@ -22,7 +22,7 @@
 
       <div class="col-sm-4">
         {% if post.osxlink != 'none' %}
-          <a href="{{ post.osxlink }}" class="download-link">
+          <a href="{{ post.osxlink }}" class="download-link" id="osx_link">
             <div class="download-button osx-button">
               <h2>OSX</h2>
               <p>{{ post.osxsize }} MB</p>
@@ -38,7 +38,7 @@
 
       <div class="col-sm-4">
         {% if post.linuxlink != 'none' %}
-          <a href="{{ post.linuxlink }}" class="download-link">
+          <a href="{{ post.linuxlink }}" class="download-link" id="linux_link">
             <div class="download-button linux-button">
               <h2>Linux</h2>
               <p>{{ post.linuxsize }} MB</p>
@@ -77,3 +77,15 @@
   </div>
   
 </div>
+
+<script>
+  addListener(document.getElementById('windows_link'), 'click', function() {
+    ga('send', 'event', 'button', 'click');
+  });
+  addListener(document.getElementById('linux_link'), 'click', function() {
+    ga('send', 'event', 'button', 'click');
+  });
+  addListener(document.getElementById('osx_link'), 'click', function() {
+    ga('send', 'event', 'button', 'click');
+  });
+</script>
