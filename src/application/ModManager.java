@@ -360,9 +360,9 @@ public class ModManager extends Application {
 		
 		for (File f : modFiles) {
 			
-			if (f.getName().endsWith(".zip") || f.getName().endsWith(".rar") || f.getName().endsWith(".7z") || f.getName().endsWith(".pak")) {
+			if (f.getName().endsWith(".zip") || f.getName().endsWith(".rar") || f.getName().endsWith(".7z") || f.getName().endsWith(".pak") || f.getName().toLowerCase().endsWith(".modpak")) {
 				
-				File newFileLocation = new File(Configuration.modsFolder + File.separator + f.getName());
+				File newFileLocation = new File(Configuration.modsFolder + File.separator + f.getName().replace(".modpak", ".pak"));
 				
 				try {
 					FileHelper.copyFile(f, newFileLocation);
@@ -417,7 +417,7 @@ public class ModManager extends Application {
 				});
 				
 			} else {
-				new FXDialogueConfirm("The mod does not appear to be in a supported format. The following formats are supported:\n.zip, .rar, .7z, .pak").show();
+				new FXDialogueConfirm("The mod does not appear to be in a supported format. The following formats are supported:\n.zip, .rar, .7z, .pak, .modpak").show();
 			}
 			
 			findConflicts();

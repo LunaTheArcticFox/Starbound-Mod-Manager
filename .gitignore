@@ -3,6 +3,7 @@
 /mods
 /build
 /data
+/_site
 .classpath
 .settings
 .project
