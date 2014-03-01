@@ -93,7 +93,7 @@ public class ModViewController {
 			}
 			
 		}
-		//TODO Link
+		
 	}
 	
 	private void openWebpage(final String url) throws URISyntaxException, IOException {
