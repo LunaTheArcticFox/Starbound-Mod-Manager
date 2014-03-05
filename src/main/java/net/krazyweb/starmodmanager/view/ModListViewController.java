@@ -120,6 +120,9 @@ public class ModListViewController implements Observer {
 		if (locked) {
 			return;
 		}
+		
+		int nodeHeight = expanded ? 32 : 54;
+		int halfNodeHeight = nodeHeight / 2;
 
 		modView.getContent().setTranslateY((int) (y + event.getSceneY() - mouseY));
 		
@@ -139,10 +142,10 @@ public class ModListViewController implements Observer {
 			
 			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
 			
-			if (!otherModView.moving && otherModViewPos > position - 16) { //16  = half the node height
+			if (!otherModView.moving && otherModViewPos > position - halfNodeHeight) {
 				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), 1);
-				view.animate(otherModView, 57);
+				view.animate(otherModView, nodeHeight);
 			}
 			
 		}
@@ -153,10 +156,10 @@ public class ModListViewController implements Observer {
 			
 			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
 			
-			if (!otherModView.moving && otherModViewPos < position + modView.getContent().getHeight() - 16) { //16  = half the node height
+			if (!otherModView.moving && otherModViewPos < position + modView.getContent().getHeight() - halfNodeHeight) {
 				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), -1);
-				view.animate(otherModView, -57);
+				view.animate(otherModView, -nodeHeight);
 			}
 			
 		}

@@ -80,7 +80,7 @@
 }
 
 #modview-container {
-	-fx-background-radius: 5px;
+	-fx-background-radius: 4px;
 }
 
 #modview-title {
@@ -100,4 +100,13 @@
 #modview-expand-button {
 	-fx-background-color: transparent;
 	-fx-background-insets: 0;
+}
+
+#modview-action-button {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
 }

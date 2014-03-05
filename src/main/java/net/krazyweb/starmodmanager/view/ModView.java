@@ -7,6 +7,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -54,7 +55,6 @@ public class ModView implements Observer {
 	private Text expandedModVersion;
 	private Text expandedAuthor;
 	private Text expandedDescription;
-	//private ImageView expandedImage;
 
 	private VBox expandedButtons;
 	private Button expandedDeleteButton;
@@ -86,8 +86,8 @@ public class ModView implements Observer {
 		
 		createListeners();
 		updateStrings();
-		updateColors();
 		updateImages();
+		updateColors();
 		
 	}
 	
@@ -103,18 +103,24 @@ public class ModView implements Observer {
 		expandedModVersion = new Text();
 		expandedAuthor = new Text();
 		expandedDescription = new Text();
-		//expandedImage = new ImageView();
 		
 		expandedButtons = new VBox();
 		expandedDeleteButton = new Button();
+		expandedDeleteButton.setId("modview-action-button");
 		expandedHideButton = new Button();
+		expandedHideButton.setId("modview-action-button");
 		expandedLinkButton = new Button();
+		expandedLinkButton.setId("modview-action-button");
+		
+		expandedDeleteButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("delete-icon.png"))));
+		expandedHideButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("hide-icon.png"))));
+		expandedLinkButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("link-icon.png"))));
 		
 		expandedRoot.setGridLinesVisible(true);
-		//expandedRoot.setHgap(25.0);
 		
 		expandedHeader.setLeft(expandedStatusText);
 		expandedHeader.setRight(expandedModVersion);
+		
 		
 		expandedButtons.getChildren().addAll(
 			expandedDeleteButton,
@@ -137,10 +143,9 @@ public class ModView implements Observer {
 	private void buildUnexpanded() {
 		
 		collapsedRoot = new GridPane();
-		//collapsedRoot.setGridLinesVisible(true);
 		collapsedRoot.setId("modview-container");
 		collapsedRoot.setMinHeight(44.0);
-		collapsedRoot.setPadding(new Insets(7, 21, 6, 16));
+		collapsedRoot.setPadding(new Insets(7, 11, 6, 16));
 		
 		collapsedDisplayName = new Text();
 		collapsedDisplayName.setId("modview-title");
@@ -163,10 +168,20 @@ public class ModView implements Observer {
 		
 		collapsedButtons = new HBox();
 		collapsedDeleteButton = new Button();
-		
+		collapsedDeleteButton.setId("modview-action-button");
 		collapsedHideButton = new Button();
+		collapsedHideButton.setId("modview-action-button");
 		collapsedLinkButton = new Button();
+		collapsedLinkButton.setId("modview-action-button");
 		
+		collapsedDeleteButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("delete-icon.png"))));
+		collapsedHideButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("hide-icon.png"))));
+		collapsedLinkButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("link-icon.png"))));
+		
+		collapsedButtons.setAlignment(Pos.CENTER);
+		collapsedButtons.setSpacing(15.0);
+		collapsedButtons.setMinHeight(25);
+		collapsedButtons.setPadding(new Insets(0, 0, 5, 0));
 		collapsedButtons.getChildren().addAll(
 			collapsedDeleteButton,
 			collapsedHideButton,
@@ -189,9 +204,11 @@ public class ModView implements Observer {
 		
 		GridPane.setHalignment(collapsedStatusText, HPos.RIGHT);
 		GridPane.setHalignment(collapsedModVersion, HPos.RIGHT);
-		GridPane.setMargin(collapsedStatusText, new Insets(0, 9, 0, 0));
+		GridPane.setMargin(collapsedStatusText, new Insets(0, 10, 0, 0));
 		GridPane.setMargin(collapsedModVersion, new Insets(1, 9, 0, 0));
-		GridPane.setMargin(collapsedInstallButton, new Insets(0, 21, 0, 0));
+		GridPane.setMargin(collapsedInstallButton, new Insets(0, 11, 0, 0));
+		GridPane.setMargin(collapsedExpandButton, new Insets(2, 0, 0, 0));
+		GridPane.setMargin(collapsedButtons, new Insets(5, 11, 0, 0));
 		
 	}
 	
@@ -290,32 +307,23 @@ public class ModView implements Observer {
 		expandedAuthor.setText(mod.getAuthor());
 		expandedDescription.setText(mod.getDescription());
 		
-		//TODO Replace with images
-		expandedExpandButton.setText("^");
-		expandedDeleteButton.setText("DEL");
-		expandedHideButton.setText("HID");
-		expandedLinkButton.setText("LNK");
-		
 		collapsedInstallButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
 		collapsedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled").toUpperCase());
 		collapsedDisplayName.setText(mod.getDisplayName());
 		collapsedModVersion.setText(mod.getModVersion().toUpperCase());
-		
-		//TODO Replace with images
-		collapsedDeleteButton.setText("DEL");
-		collapsedHideButton.setText("HID");
-		collapsedLinkButton.setText("LNK");
 		
 	}
 	
 	private void updateImages() {
 
 		if (showingMoreInfo) {
+			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow.png"))));
 			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow.png"))));
 		} else {
+			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow.png"))));
 			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow.png"))));
 		}
-		
+
 	}
 	
 	protected GridPane getContent() {
@@ -324,22 +332,7 @@ public class ModView implements Observer {
 	
 	protected void toggleMoreInfo() {
 		
-		if (!showingMoreInfo) {
-			
-			collapsedRoot.getChildren().remove(collapsedInstallButton);
-			collapsedRoot.getChildren().remove(collapsedModVersion);
-			collapsedRoot.getChildren().remove(collapsedStatusText);
-			
-			collapsedRoot.add(collapsedButtons, 2, 1);
-
-			expandedRoot.getChildren().remove(expandedExpandButton);
-			expandedRoot.add(expandedButtons, 3, 4);
-			expandedRoot.add(expandedExpandButton, 3, 5);
-			expandedRoot.add(expandedDescription, 1, 4);
-			
-			showingMoreInfo = true;
-			
-		} else {
+		if (showingMoreInfo) {
 
 			collapsedRoot.getChildren().remove(collapsedButtons);
 
@@ -353,6 +346,21 @@ public class ModView implements Observer {
 			expandedRoot.add(expandedExpandButton, 3, 2);
 			
 			showingMoreInfo = false;
+			
+		} else {
+			
+			collapsedRoot.getChildren().remove(collapsedInstallButton);
+			collapsedRoot.getChildren().remove(collapsedModVersion);
+			collapsedRoot.getChildren().remove(collapsedStatusText);
+			
+			collapsedRoot.add(collapsedButtons, 2, 1);
+
+			expandedRoot.getChildren().remove(expandedExpandButton);
+			expandedRoot.add(expandedButtons, 3, 4);
+			expandedRoot.add(expandedExpandButton, 3, 5);
+			expandedRoot.add(expandedDescription, 1, 4);
+			
+			showingMoreInfo = true;
 			
 		}
 		
@@ -382,6 +390,15 @@ public class ModView implements Observer {
 			collapsedModVersion.getStyleClass().add("modview-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-installed-button-color");
 			
+			ColorAdjust colorEffect = new ColorAdjust();
+			colorEffect.setHue(220);
+			colorEffect.setSaturation(0.01);
+			colorEffect.setBrightness(0.98);
+			
+			collapsedDeleteButton.getGraphic().setEffect(colorEffect);
+			collapsedHideButton.getGraphic().setEffect(colorEffect);
+			collapsedLinkButton.getGraphic().setEffect(colorEffect);
+			
 		} else {
 			
 			collapsedRoot.getStyleClass().add("modview-not-installed");
@@ -389,6 +406,15 @@ public class ModView implements Observer {
 			collapsedStatusText.getStyleClass().add("modview-not-installed-text-color");
 			collapsedModVersion.getStyleClass().add("modview-not-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-not-installed-button-color");
+			
+			ColorAdjust colorEffect = new ColorAdjust();
+			colorEffect.setHue(210);
+			colorEffect.setSaturation(0.02);
+			colorEffect.setBrightness(0.68);
+			
+			collapsedDeleteButton.getGraphic().setEffect(colorEffect);
+			collapsedHideButton.getGraphic().setEffect(colorEffect);
+			collapsedLinkButton.getGraphic().setEffect(colorEffect);
 			
 		}
 		
