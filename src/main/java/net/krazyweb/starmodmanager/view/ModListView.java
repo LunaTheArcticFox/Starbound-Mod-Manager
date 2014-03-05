@@ -5,15 +5,21 @@ import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
 import net.krazyweb.starmodmanager.data.Observable;
 import net.krazyweb.starmodmanager.data.Observer;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,8 +37,10 @@ public class ModListView implements Observer {
 	private ModListViewController controller;
 	
 	private LocalizerModelInterface localizer;
+	private SettingsModelInterface settings;
 	
 	protected ModListView(final ModList modList) {
+		settings = new SettingsFactory().getInstance();
 		localizer = new LocalizerFactory().getInstance();
 		localizer.addObserver(this);
 		this.controller = new ModListViewController(this, modList);
@@ -47,6 +55,11 @@ public class ModListView implements Observer {
 		modsBox.setSpacing(10.0);
 		
 		addModButton = new Button();
+		addModButton.prefWidthProperty().bind(root.widthProperty());
+		addModButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("add-mods-plus.png"))));
+		addModButton.setId("modlistview-add-mods-button");
+		addModButton.setGraphicTextGap(15);
+		FXHelper.setColor(addModButton.getGraphic(), CSSHelper.getColor("modlistview-add-mods-button-color", settings.getPropertyString("theme")));
 		
 		root.getChildren().addAll(
 			modsBox,

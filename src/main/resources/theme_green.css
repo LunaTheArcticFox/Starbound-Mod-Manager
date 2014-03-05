@@ -1,3 +1,7 @@
+/* modlistview-add-mods-button-color: #bfc5d8 */
+/* modview-installed-button-color: #f7f8fa */
+/* modview-not-installed-button-color: #aaacae */
+
 .root {
 	-fx-background-color: #f8faf5;
 	-fx-fill: #36383b;
@@ -79,4 +83,9 @@
 
 .modview-not-installed-button-color {
 	-fx-background-color: #84a93b;
+}
+
+#modlistview-add-mods-button {
+	-fx-background-color: #e7e9ee;
+	-fx-text-fill: #bfc5d8;
 }

@@ -7,7 +7,6 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -15,7 +14,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
@@ -23,6 +25,8 @@ import net.krazyweb.starmodmanager.data.Mod;
 import net.krazyweb.starmodmanager.data.ModList;
 import net.krazyweb.starmodmanager.data.Observable;
 import net.krazyweb.starmodmanager.data.Observer;
+import net.krazyweb.starmodmanager.data.SettingsFactory;
+import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,6 +71,7 @@ public class ModView implements Observer {
 	protected boolean showingMoreInfo;
 	protected boolean expanded;
 	
+	private SettingsModelInterface settings;
 	private LocalizerModelInterface localizer;
 	
 	protected ModView(final Mod mod, final ModList modList) {
@@ -74,6 +79,7 @@ public class ModView implements Observer {
 		this.mod.addObserver(this);
 		localizer = new LocalizerFactory().getInstance();
 		localizer.addObserver(this);
+		settings = new SettingsFactory().getInstance();
 		controller = new ModViewController(this, modList, localizer);
 	}
 	
@@ -390,14 +396,11 @@ public class ModView implements Observer {
 			collapsedModVersion.getStyleClass().add("modview-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-installed-button-color");
 			
-			ColorAdjust colorEffect = new ColorAdjust();
-			colorEffect.setHue(220);
-			colorEffect.setSaturation(0.01);
-			colorEffect.setBrightness(0.98);
+			Color color = CSSHelper.getColor("modview-installed-button-color", settings.getPropertyString("theme"));
 			
-			collapsedDeleteButton.getGraphic().setEffect(colorEffect);
-			collapsedHideButton.getGraphic().setEffect(colorEffect);
-			collapsedLinkButton.getGraphic().setEffect(colorEffect);
+			FXHelper.setColor(collapsedDeleteButton.getGraphic(), color);
+			FXHelper.setColor(collapsedHideButton.getGraphic(), color);
+			FXHelper.setColor(collapsedLinkButton.getGraphic(), color);
 			
 		} else {
 			
@@ -407,14 +410,11 @@ public class ModView implements Observer {
 			collapsedModVersion.getStyleClass().add("modview-not-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-not-installed-button-color");
 			
-			ColorAdjust colorEffect = new ColorAdjust();
-			colorEffect.setHue(210);
-			colorEffect.setSaturation(0.02);
-			colorEffect.setBrightness(0.68);
+			Color color = CSSHelper.getColor("modview-not-installed-button-color", settings.getPropertyString("theme"));
 			
-			collapsedDeleteButton.getGraphic().setEffect(colorEffect);
-			collapsedHideButton.getGraphic().setEffect(colorEffect);
-			collapsedLinkButton.getGraphic().setEffect(colorEffect);
+			FXHelper.setColor(collapsedDeleteButton.getGraphic(), color);
+			FXHelper.setColor(collapsedHideButton.getGraphic(), color);
+			FXHelper.setColor(collapsedLinkButton.getGraphic(), color);
 			
 		}
 		

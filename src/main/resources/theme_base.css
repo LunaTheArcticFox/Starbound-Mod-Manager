@@ -110,3 +110,12 @@
 	-fx-border-radius: 0;
 	-fx-padding: 0;
 }
+
+#modlistview-add-mods-button {
+	-fx-background-insets: 0;
+	-fx-background-radius: 4px;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 51px 0 50px 0;
+	-fx-font: 36px Lato-Regular;
+}
