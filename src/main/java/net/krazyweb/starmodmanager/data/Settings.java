@@ -17,8 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
-import com.sun.webpane.sg.prism.WCGraphicsPrismContext;
-
 public class Settings implements SettingsModelInterface {
 
 	private static final Logger log = LogManager.getLogger(Settings.class);
@@ -271,7 +269,7 @@ public class Settings implements SettingsModelInterface {
 		settings.put(key, property.toString());
 		notifyObservers("propertychanged:" + key);
 		database.setProperty(key, property);
-		log.debug("Property Changed: {} -- {}", key, property);
+		log.debug("Property Changed: {} -> {}", key, property);
 	}
 
 	@Override

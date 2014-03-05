@@ -85,12 +85,20 @@ public class ModListViewController implements Observer {
 	protected void addModButtonClicked() {
 
 		FileChooser fileChooser = new FileChooser();
+		
+		Path lastDirectory = settings.getPropertyPath("lastdirectory");
+		if (lastDirectory != null) {
+			fileChooser.setInitialDirectory(lastDirectory.toFile());
+		}
+		
 		fileChooser.setTitle(new LocalizerFactory().getInstance().getMessage("modlistview.modfilechoosertitle"));
 		
 		List<Path> paths = new ArrayList<>();
 		List<File> files = fileChooser.showOpenMultipleDialog(ModManager.getPrimaryStage());
 		
 		if (files != null && !files.isEmpty()) {
+			
+			settings.setProperty("lastdirectory", files.get(0).getParent());
 		
 			for (File file : files) {
 				paths.add(file.toPath());

@@ -107,7 +107,7 @@ public class ModList implements ModListModelInterface {
 								for (Path path : files) {
 									if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path)) {
 										toRemove.add(path);
-										log.debug("File is used by mod manager, will not delete: {} == {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+										log.debug("File is used by mod manager, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
 									} else {
 										
 										Path parent = path.getParent();
@@ -120,7 +120,7 @@ public class ModList implements ModListModelInterface {
 										}
 										
 										if (parent == null) {
-											log.debug("File is not in the mod manager's mod directory, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+											log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
 											toRemove.add(path);
 										}
 										
@@ -141,7 +141,7 @@ public class ModList implements ModListModelInterface {
 								}
 								
 								if (parent == null) {
-									log.debug("File is not in the mod manager's mod directory, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), file);
+									log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), file);
 									toRemove.add(file);
 								}
 								
@@ -156,7 +156,7 @@ public class ModList implements ModListModelInterface {
 				files.removeAll(toRemove);
 				
 				for (Path path : files) {
-					log.debug("Deleting file '{}' -- file is unused.", path);
+					log.debug("Deleting file '{}' - File is unused.", path);
 					FileHelper.deleteFile(path);
 				}
 				
