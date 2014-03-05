@@ -4,10 +4,18 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.Observable;
@@ -19,6 +27,7 @@ import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 public class AboutView implements Observer {
 	
 	private VBox root;
+	private AnchorPane browseRepoPane;
 	
 	private AboutViewController controller;
 
@@ -34,6 +43,7 @@ public class AboutView implements Observer {
 	private Text writtenIn;
 	private Text[] writtenUsing;
 	private Text browseRepo;
+	private ImageView browseRepoArrow;
 	
 	protected AboutView() {
 		settings = new SettingsFactory().getInstance();
@@ -45,15 +55,27 @@ public class AboutView implements Observer {
 	protected void build() {
 		
 		root = new VBox();
-
-		title = new Text();
-		versionName = new Text();
-		createdBy = new Text();
-		withContributionsFrom = new Text();
-		writtenIn = new Text();
-		browseRepo = new Text();
+		root.setPadding(new Insets(0, 0, 0, 18));
 		
+		title = new Text();
+		title.setId("about-view-title");
+		
+		versionName = new Text();
+		versionName.setId("about-view-version");
+		
+		createdBy = new Text();
+		createdBy.setId("about-view-sub-title");
 		createdByPerson = getLinkedText("KrazyTheFox", "https://github.com/KrazyTheFox");
+		createdByPerson.setId("about-view-sub-title-link");
+		
+		HBox createdByContainer = new HBox();
+		createdByContainer.getChildren().addAll(createdBy, createdByPerson);
+		
+		withContributionsFrom = new Text();
+		withContributionsFrom.setId("about-view-sub-title");
+		
+		writtenIn = new Text();
+		writtenIn.setId("about-view-sub-title");
 		
 		contributors = new Text[1];
 		
@@ -73,24 +95,36 @@ public class AboutView implements Observer {
 		root.getChildren().addAll(
 			title,
 			versionName,
-			createdBy,
-			createdByPerson,
+			new Text(),
+			createdByContainer,
+			new Text(),
 			withContributionsFrom
 		);
 		
 		for (Text t : contributors) {
+			t.setId("about-view-contributor");
 			root.getChildren().add(t);
 		}
 		
-		root.getChildren().add(writtenIn);
+		root.getChildren().addAll(new Text(), writtenIn);
 		
 		for (Text t : writtenUsing) {
+			t.setId("about-view-library");
 			root.getChildren().add(t);
 		}
+
+		browseRepoPane = new AnchorPane();
+		VBox.setVgrow(browseRepoPane, Priority.ALWAYS);
 		
-		root.getChildren().add(browseRepo);
+		browseRepoArrow = new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("browse-repo-arrow.png")));
+		browseRepoPane.getChildren().add(browseRepoArrow);
+		AnchorPane.setBottomAnchor(browseRepoArrow, 3.0);
+		AnchorPane.setLeftAnchor(browseRepoArrow, 0.0);
+		
+		root.getChildren().addAll(new Text(), browseRepoPane);
 		
 		updateStrings();
+		updateColors();
 		
 	}
 	
@@ -102,10 +136,17 @@ public class AboutView implements Observer {
 		withContributionsFrom.setText(localizer.getMessage("aboutview.contributions"));
 		writtenIn.setText(localizer.getMessage("aboutview.writtenin"));
 
-		root.getChildren().remove(browseRepo);
+		browseRepoPane.getChildren().remove(browseRepo);
 		browseRepo = getLinkedText(localizer.getMessage("aboutview.browserepo"), "https://github.com/KrazyTheFox/Starbound-Mod-Manager");
-		root.getChildren().add(browseRepo);
+		browseRepo.setId("about-view-browse-repo");
+		AnchorPane.setBottomAnchor(browseRepo, 0.0);
+		AnchorPane.setLeftAnchor(browseRepo, 22.0);
+		browseRepoPane.getChildren().add(browseRepo);
 		
+	}
+	
+	private void updateColors() {
+		FXHelper.setColor(browseRepoArrow, CSSHelper.getColor("browse-repo-arrow-color", settings.getPropertyString("theme")));
 	}
 	
 	protected Node getContent() {
@@ -115,6 +156,7 @@ public class AboutView implements Observer {
 	private Text getLinkedText(final String text, final String url) {
 		
 		Text output = new Text(text);
+		output.setId("about-view-linked-text");
 		
 		output.setOnMouseReleased(new EventHandler<MouseEvent>() {
 
@@ -140,6 +182,7 @@ public class AboutView implements Observer {
 	private Text getLicensedText(final String text, final LicenseView license) {
 		
 		Text output = new Text(text);
+		output.setId("about-view-linked-text");
 		
 		output.setOnMouseReleased(new EventHandler<MouseEvent>() {
 

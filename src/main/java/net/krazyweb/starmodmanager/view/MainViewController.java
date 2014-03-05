@@ -11,6 +11,7 @@ import javafx.concurrent.Task;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.data.DatabaseFactory;
@@ -79,6 +80,9 @@ public class MainViewController extends Observable {
 	
 	protected void aboutTabClicked() {
 		view.setContent(aboutView.getContent());
+		((VBox) aboutView.getContent()).prefHeightProperty().bind(view.getContent().heightProperty());
+		log.debug(view.getContent().heightProperty());
+		log.debug(((VBox) aboutView.getContent()).heightProperty());
 	}
 	
 	protected void backupButtonClicked() {

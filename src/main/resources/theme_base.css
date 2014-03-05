@@ -1,3 +1,10 @@
+/*
+ * The theme_base.css file contains all of the non-color information for the default theme.
+ * Colors are then specified in each theme file to save on re-writing code.
+ * To add a new theme, copy one of the other files and just change the color values.
+ * If you feel adventurous, you can always override styles.
+ */
+
 .root {
 	-fx-font-smoothing-type: lcd;
 	-fx-font: 12px Lato-Regular;
@@ -122,4 +129,40 @@
 
 #add-mods-overlay-text {
 	-fx-font: bold 36px Lato-Heavy;
+}
+
+#about-view-title {
+	-fx-font: 30px Lato-Regular;
+}
+
+#about-view-version {
+	-fx-font: 18px Lato-Regular;
+}
+
+#about-view-sub-title {
+	-fx-font: 18px Lato-Regular;
+}
+
+#about-view-sub-title-link {
+	-fx-font: 18px Lato-Regular;
+	-fx-cursor: hand;
+}
+
+#about-view-linked-text {
+	-fx-cursor: hand;
+}
+
+#about-view-contributor {
+	-fx-font: 18px Lato-Regular;
+	-fx-cursor: hand;
+}
+
+#about-view-library {
+	-fx-font: 14px Lato-Regular;
+	-fx-cursor: hand;
+}
+
+#about-view-browse-repo {
+	-fx-font: bold 14px Lato-Bold;
+	-fx-cursor: hand;
 }

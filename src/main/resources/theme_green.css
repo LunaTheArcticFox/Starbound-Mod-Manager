@@ -1,6 +1,13 @@
+/*
+ * Since the image editing tools built into JavaFX 2.x aren't capable of coloring images with a single color,
+ * the following values are parsed by the program for a more customized solution to use. These values are critical
+ * and will throw errors if you don't include them. Hopefully JavaFX 8 has a better way to do this.
+ */
+ 
 /* modlistview-add-mods-button-color: #bfc5d8 */
 /* modview-installed-button-color: #f7f8fa */
 /* modview-not-installed-button-color: #aaacae */
+/* browse-repo-arrow-color: #628dd3 */
 
 .root {
 	-fx-background-color: #f7f8fa;
@@ -92,4 +99,32 @@
 
 #add-mods-overlay-text {
 	-fx-fill: #f7f8fa;
+}
+
+#about-view-title {
+	-fx-fill: #2b4f84;
+}
+
+#about-view-version {
+	-fx-fill: #3e78cd;
+}
+
+#about-view-sub-title {
+	-fx-fill: #2b4f84;
+}
+
+#about-view-sub-title-link {
+	-fx-fill: #3e78cd;
+}
+
+#about-view-contributor {
+	-fx-fill: #3e78cd;
+}
+
+#about-view-library {
+	-fx-fill: #3e78cd;
+}
+
+#about-view-browse-repo {
+	-fx-fill: #3e78cd;
 }

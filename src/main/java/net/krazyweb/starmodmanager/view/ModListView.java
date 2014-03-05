@@ -8,6 +8,8 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import net.krazyweb.helpers.CSSHelper;
@@ -32,6 +34,7 @@ public class ModListView implements Observer {
 	private VBox root;
 	private VBox modsBox;
 	
+	private AnchorPane addModPane;
 	private Button addModButton;
 	
 	private ModListViewController controller;
@@ -59,15 +62,22 @@ public class ModListView implements Observer {
 		addModButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("add-mods-plus.png"))));
 		addModButton.setId("modlistview-add-mods-button");
 		addModButton.setGraphicTextGap(15);
-		FXHelper.setColor(addModButton.getGraphic(), CSSHelper.getColor("modlistview-add-mods-button-color", settings.getPropertyString("theme")));
+		
+		addModPane = new AnchorPane();
+		VBox.setVgrow(addModPane, Priority.ALWAYS);
+		addModPane.getChildren().add(addModButton);
+		addModButton.prefWidthProperty().bind(root.widthProperty().subtract(20));
+		AnchorPane.setBottomAnchor(addModButton, 0.0);
+		AnchorPane.setLeftAnchor(addModButton, 0.0);
 		
 		root.getChildren().addAll(
 			modsBox,
-			addModButton
+			addModPane
 		);
 		
 		createListeners();
 		updateStrings();
+		updateColors();
 		
 	}
 	
@@ -86,6 +96,10 @@ public class ModListView implements Observer {
 		
 		addModButton.setText(localizer.getMessage("modlistview.addmodsbutton"));
 				
+	}
+	
+	private void updateColors() {
+		FXHelper.setColor(addModButton.getGraphic(), CSSHelper.getColor("modlistview-add-mods-button-color", settings.getPropertyString("theme")));
 	}
 	
 	protected VBox getContent() {
