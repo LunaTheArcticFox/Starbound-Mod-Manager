@@ -65,23 +65,19 @@ public class MainViewController extends Observable {
 	
 	protected void modTabClicked() {
 		view.setContent(modListView.getContent());
-		//TODO Update highlight
 	}
 	
 	protected void backupsTabClicked() {
-		MessageDialogue m = new MessageDialogue("Test Message", "Test Title", MessageType.INFO, new LocalizerFactory());
+		MessageDialogue m = new MessageDialogue("This feature will be available in Version 2.1.0.", "Coming Soon!", MessageType.INFO, new LocalizerFactory());
 		log.debug(m.getResult());
-		//TODO Update highlight
 	}
 	
 	protected void settingsTabClicked() {
 		view.setContent(settingsView.getContent());
-		//TODO Update highlight
 	}
 	
 	protected void aboutTabClicked() {
 		view.setContent(aboutView.getContent());
-		//TODO Update highlight
 	}
 	
 	protected void backupButtonClicked() {

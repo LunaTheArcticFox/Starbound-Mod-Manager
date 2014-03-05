@@ -16,6 +16,8 @@ public class LicenseViewController {
 		}
 	}
 	
-	
+	protected void close() {
+		view.close();
+	}
 
 }

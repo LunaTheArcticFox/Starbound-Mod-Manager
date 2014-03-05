@@ -1,0 +1,103 @@
+.root {
+	-fx-font-smoothing-type: lcd;
+	-fx-font: 12px Lato-Regular;
+}
+
+#topbar {
+	-fx-border-width: 0 0 1px 0;
+	-fx-border-style: solid;
+}
+
+#topbar-title {
+	-fx-font: bold 15px Lato-Bold;
+}
+
+#topbar-version {
+	-fx-font: 15px Lato-Regular;
+}
+
+#tabsbar {
+	-fx-border-width: 0 0 1px 0;
+	-fx-border-style: solid;
+}
+
+#pagetab {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-font: 18px Lato-Regular;
+}
+
+#pagetab-selected {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-font: 18px Lato-Semibold;
+}
+
+.scroll-pane {
+	-fx-background-color: transparent;
+	-fx-padding: 0 10px 0 10px;
+	-fx-margin: 20px;
+}
+
+.scroll-bar .track, .scroll-bar .thumb {
+	-fx-background-radius: 0;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+	-fx-padding: 5px 3px 4px 3px;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+	-fx-shape: " ";
+}
+
+.progress-bar {
+	-fx-background-color: transparent;
+}
+
+.progress-bar .track {
+    -fx-background-insets: 0px;
+	-fx-background-radius: 10px;
+    -fx-padding: 23px;
+}
+
+.progress-bar .bar {
+    -fx-background-insets: 6px;
+	-fx-background-radius: 5px;
+}
+
+#progress-text {
+	-fx-font: 18px Lato-Regular;
+}
+
+#modview-container {
+	-fx-background-radius: 5px;
+}
+
+#modview-title {
+	-fx-font: bold 18px Lato-Bold;
+}
+
+#modview-small-info {
+	-fx-font: bold 10px Lato-Bold;
+}
+
+#modview-install-button {
+	-fx-background-radius: 3px;
+	-fx-background-insets: 0;
+	-fx-font: 12px Lato-Regular;
+}
+
+#modview-expand-button {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+}

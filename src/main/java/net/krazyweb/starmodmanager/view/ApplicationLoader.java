@@ -159,7 +159,7 @@ public class ApplicationLoader implements Observer {
 	}
 	
 	private void setProgressProperties(final ReadOnlyDoubleProperty progress, final ReadOnlyStringProperty message, final int step) {
-		view.getProgressBar().progressProperty().bind(progress.multiply(STEP_MULTIPLIER).add((double) (step - 1) * STEP_MULTIPLIER));
+		view.getProgressBar().bind(progress.multiply(STEP_MULTIPLIER).add((double) (step - 1) * STEP_MULTIPLIER), 1.0);
 		view.getText().setText("Loading");
 	}
 	

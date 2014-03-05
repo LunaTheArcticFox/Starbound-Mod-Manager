@@ -3,7 +3,12 @@ package net.krazyweb.starmodmanager.view;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -81,6 +86,8 @@ public class ModView implements Observer {
 		
 		createListeners();
 		updateStrings();
+		updateColors();
+		updateImages();
 		
 	}
 	
@@ -130,17 +137,33 @@ public class ModView implements Observer {
 	private void buildUnexpanded() {
 		
 		collapsedRoot = new GridPane();
-		collapsedRoot.setGridLinesVisible(true);
-		//collapsedRoot.setHgap(25.0);
+		//collapsedRoot.setGridLinesVisible(true);
+		collapsedRoot.setId("modview-container");
+		collapsedRoot.setMinHeight(44.0);
+		collapsedRoot.setPadding(new Insets(7, 21, 6, 16));
 		
 		collapsedDisplayName = new Text();
+		collapsedDisplayName.setId("modview-title");
+		
 		collapsedStatusText = new Text();
+		collapsedStatusText.setId("modview-small-info");
+		
 		collapsedModVersion = new Text();
+		collapsedModVersion.setId("modview-small-info");
+		
 		collapsedInstallButton = new Button();
+		collapsedInstallButton.setId("modview-install-button");
+		collapsedInstallButton.setFocusTraversable(false);
+		collapsedInstallButton.setPrefHeight(30.0);
+		collapsedInstallButton.setPrefWidth(73.0);
+		collapsedInstallButton.setAlignment(Pos.CENTER);
+		
 		collapsedExpandButton = new Button();
+		collapsedExpandButton.setId("modview-expand-button");
 		
 		collapsedButtons = new HBox();
 		collapsedDeleteButton = new Button();
+		
 		collapsedHideButton = new Button();
 		collapsedLinkButton = new Button();
 		
@@ -162,6 +185,13 @@ public class ModView implements Observer {
 		GridPane.setColumnSpan(collapsedButtons, 2);
 		GridPane.setRowSpan(collapsedExpandButton, 2);
 		GridPane.setHgrow(collapsedDisplayName, Priority.ALWAYS);
+		GridPane.setVgrow(collapsedDisplayName, Priority.ALWAYS);
+		
+		GridPane.setHalignment(collapsedStatusText, HPos.RIGHT);
+		GridPane.setHalignment(collapsedModVersion, HPos.RIGHT);
+		GridPane.setMargin(collapsedStatusText, new Insets(0, 9, 0, 0));
+		GridPane.setMargin(collapsedModVersion, new Insets(1, 9, 0, 0));
+		GridPane.setMargin(collapsedInstallButton, new Insets(0, 21, 0, 0));
 		
 	}
 	
@@ -267,15 +297,24 @@ public class ModView implements Observer {
 		expandedLinkButton.setText("LNK");
 		
 		collapsedInstallButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
-		collapsedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		collapsedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled").toUpperCase());
 		collapsedDisplayName.setText(mod.getDisplayName());
-		collapsedModVersion.setText(mod.getModVersion());
+		collapsedModVersion.setText(mod.getModVersion().toUpperCase());
 		
 		//TODO Replace with images
-		collapsedExpandButton.setText("^");
 		collapsedDeleteButton.setText("DEL");
 		collapsedHideButton.setText("HID");
 		collapsedLinkButton.setText("LNK");
+		
+	}
+	
+	private void updateImages() {
+
+		if (showingMoreInfo) {
+			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow.png"))));
+		} else {
+			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow.png"))));
+		}
 		
 	}
 	
@@ -317,10 +356,42 @@ public class ModView implements Observer {
 			
 		}
 		
+		updateImages();
+		
 	}
 	
 	public void expand(final boolean expand) {
 		expanded = expand;
+	}
+	
+	private void updateColors() {
+
+		collapsedRoot.getStyleClass().clear();
+		collapsedDisplayName.getStyleClass().clear();
+		collapsedStatusText.getStyleClass().clear();
+		collapsedModVersion.getStyleClass().clear();
+		
+		collapsedInstallButton.getStyleClass().remove("modview-installed-button-color");
+		collapsedInstallButton.getStyleClass().remove("modview-not-installed-button-color");
+		
+		if (mod.isInstalled()) {
+			
+			collapsedRoot.getStyleClass().add("modview-installed");
+			collapsedDisplayName.getStyleClass().add("modview-installed-text-color");
+			collapsedStatusText.getStyleClass().add("modview-installed-text-color");
+			collapsedModVersion.getStyleClass().add("modview-installed-text-color");
+			collapsedInstallButton.getStyleClass().add("modview-installed-button-color");
+			
+		} else {
+			
+			collapsedRoot.getStyleClass().add("modview-not-installed");
+			collapsedDisplayName.getStyleClass().add("modview-not-installed-text-color");
+			collapsedStatusText.getStyleClass().add("modview-not-installed-text-color");
+			collapsedModVersion.getStyleClass().add("modview-not-installed-text-color");
+			collapsedInstallButton.getStyleClass().add("modview-not-installed-button-color");
+			
+		}
+		
 	}
 	
 	@Override
@@ -334,6 +405,8 @@ public class ModView implements Observer {
 			
 			switch (msg) {
 				case "installstatuschanged":
+					updateImages();
+					updateColors();
 					updateStrings();
 					break;
 			}

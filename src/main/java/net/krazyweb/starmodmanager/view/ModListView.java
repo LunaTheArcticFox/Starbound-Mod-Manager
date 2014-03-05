@@ -44,7 +44,7 @@ public class ModListView implements Observer {
 		root.setSpacing(25.0);
 		
 		modsBox = new VBox();
-		modsBox.setSpacing(25.0);
+		modsBox.setSpacing(10.0);
 		
 		addModButton = new Button();
 		

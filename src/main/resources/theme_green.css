@@ -1,0 +1,82 @@
+.root {
+	-fx-background-color: #f8faf5;
+	-fx-fill: #36383b;
+}
+
+#topbar {
+	-fx-background-color: #9bc34d;
+	-fx-border-color: #759635;
+}
+
+#topbar-title {
+	-fx-fill: #fdfdfd;
+}
+
+#topbar-version {
+	-fx-fill: #fdfdfd;
+}
+
+.progress-bar > .track {
+	-fx-background-color: #8bbe26;
+}
+
+.progress-bar > .bar {
+	-fx-background-color: #cbf577;
+}
+
+#tabsbar {
+	-fx-background-color: #fdfdfd;
+	-fx-border-color: #c7cede;
+}
+
+#pagetab {
+	-fx-text-fill: #8a91a5;
+}
+
+#pagetab-selected {
+	-fx-text-fill: #99ce31;
+}
+
+.scroll-bar .track {
+	-fx-background-color: #d9e0ee;
+}
+
+.scroll-bar .thumb {
+	-fx-background-color: #7f94c3;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+	-fx-background-color: #b0b9cd;
+}
+
+#modview-container {
+	-fx-effect: dropshadow(gaussian, #c8ced9, 2, 0, 0, 1);
+}
+
+.modview-installed {
+	-fx-background-color: #9bc34d;
+}
+
+.modview-not-installed {
+	-fx-background-color: #484b4f;
+}
+
+.modview-installed-text-color {
+	-fx-fill: #f7f9f3;
+}
+
+.modview-not-installed-text-color {
+	-fx-fill: #babcbe;
+}
+
+#modview-install-button {
+	-fx-text-fill: #f7f8fa;
+}
+
+.modview-installed-button-color {
+	-fx-background-color: #6b9120;
+}
+
+.modview-not-installed-button-color {
+	-fx-background-color: #84a93b;
+}

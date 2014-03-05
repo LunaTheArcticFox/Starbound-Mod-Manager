@@ -63,12 +63,12 @@ public class AboutView implements Observer {
 		
 		writtenUsing[0] = getLicensedText("StarDB for Java", new LicenseView("StarDB for Java", "license_stardb4j.txt"));
 		writtenUsing[1] = getLicensedText("7-Zip-JBinding", new LicenseView("7-Zip-JBinding", "license_7zjb.txt"));
-		writtenUsing[2] = getLicensedText("hsqldb", new LicenseView("", "license_hsqldb.txt"));
-		writtenUsing[3] = getLicensedText("log4j2", new LicenseView("", "license_log4j2.txt"));
-		writtenUsing[4] = getLicensedText("icu4j", new LicenseView("", "license_icu4j.txt"));
-		writtenUsing[5] = getLicensedText("junit", new LicenseView("", "license_junit.txt"));
-		writtenUsing[6] = getLicensedText("commons-io", new LicenseView("", "license_commons-io.txt"));
-		writtenUsing[7] = getLicensedText("minimal-json", new LicenseView("", "license_minimal-json.txt"));
+		writtenUsing[2] = getLicensedText("hsqldb", new LicenseView("HyperSQL", "license_hsqldb.txt"));
+		writtenUsing[3] = getLicensedText("log4j2", new LicenseView("log4j2", "license_log4j2.txt"));
+		writtenUsing[4] = getLicensedText("icu4j", new LicenseView("International Components for Unicode", "license_icu4j.txt"));
+		writtenUsing[5] = getLicensedText("junit", new LicenseView("JUnit", "license_junit.txt"));
+		writtenUsing[6] = getLicensedText("commons-io", new LicenseView("Apache commons-io", "license_commons-io.txt"));
+		writtenUsing[7] = getLicensedText("minimal-json", new LicenseView("minimal-json", "license_minimal-json.txt"));
 		
 		root.getChildren().addAll(
 			title,
