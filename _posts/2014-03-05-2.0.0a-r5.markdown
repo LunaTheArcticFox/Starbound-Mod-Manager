@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "2.0.0a-r5"
+date:   2014-03-05 01:53:27
+prerelease: yes
+gameversion: Beta v. Enraged Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-alpha.5-windows/Starbound-Mod-Manager-2.0.0a-r5.zip
+windowssize: 64.0
+osxlink: none
+osxsize: 0.0
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-alpha.5-linux/Starbound-Mod-Manager-2.0.0a-r5.zip
+linuxsize: 67.7
+---
+<ul class="hyphen-list">
+	<li>Early release of 2.0.0 for testing purposes.</li>
+	<li>Created About page contents.</li>
+	<li>Styled a large portion of the program.</li>
+	<li>Updated StarDB to latest version.</li>
+	<li>Fixed a bug that deleted mods from their original locations when adding them to the mod manager.</li>
+	<li>"Add Mods" remembers last folder visited.</li>
+</ul>
