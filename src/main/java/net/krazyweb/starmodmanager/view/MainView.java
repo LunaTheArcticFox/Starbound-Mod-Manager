@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -370,11 +371,15 @@ public class MainView implements Observer {
 		
 	}
 	
-	protected void showOverlay(final String message) {
-		Text text = new Text(message);
-		text.setFill(Color.WHITE);
-		text.setFont(Font.font("Lato-Regular", 32));
-		stackPane.getChildren().addAll(new Rectangle(root.getWidth(), root.getHeight(), new Color(0.0, 0.0, 0.0, 0.8)), text);
+	protected void showOverlay(final String messageTitle, final String message) {
+		Text textTitle = new Text(messageTitle);
+		Text textMessage = new Text(message);
+		textTitle.setId("add-mods-overlay-text");
+		textMessage.setId("add-mods-overlay-text");
+		VBox box = new VBox();
+		box.setAlignment(Pos.CENTER);
+		box.getChildren().addAll(textTitle, textMessage);
+		stackPane.getChildren().addAll(new Rectangle(root.getWidth(), root.getHeight(), new Color(0.0, 0.0, 0.0, 0.8)), box);
 	}
 	
 	protected void hideOverlay() {

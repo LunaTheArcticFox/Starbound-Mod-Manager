@@ -47,7 +47,6 @@ public class MainViewController extends Observable {
 		
 		view = new MainView(this);
 		view.build();
-		view.show();
 		
 		settings = new SettingsFactory().getInstance();
 		database = new DatabaseFactory().getInstance();
@@ -58,6 +57,8 @@ public class MainViewController extends Observable {
 		aboutView = new AboutView();
 		
 		view.setContent(modListView.getContent());
+		
+		view.show();
 		
 		this.modList = modList;
 		
@@ -105,7 +106,7 @@ public class MainViewController extends Observable {
          if (db.hasFiles()) {
 
          	boolean filesAccepted = false;
-         	String fileName = "\n";
+         	String fileName = "";
          	
 				for (File file : db.getFiles()) {
 					if (FileHelper.isSupported(Paths.get(file.getPath()), dragOver)) {
@@ -117,8 +118,7 @@ public class MainViewController extends Observable {
 				if (filesAccepted) {
 					event.acceptTransferModes(TransferMode.COPY);
 					if (!dragOver) {
-						String message = localizer.formatMessage("mainview.addmods", db.getFiles().size(), fileName);
-						view.showOverlay(message);
+						view.showOverlay(localizer.formatMessage("mainview.addmods", db.getFiles().size()), fileName);
 						dragOver = true;
 					}
 				} else {

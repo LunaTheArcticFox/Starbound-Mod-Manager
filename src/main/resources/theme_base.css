@@ -119,3 +119,7 @@
 	-fx-padding: 51px 0 50px 0;
 	-fx-font: 36px Lato-Regular;
 }
+
+#add-mods-overlay-text {
+	-fx-font: bold 36px Lato-Heavy;
+}

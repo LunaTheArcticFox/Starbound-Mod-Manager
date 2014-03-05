@@ -107,14 +107,44 @@ public class ModList implements ModListModelInterface {
 								for (Path path : files) {
 									if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path)) {
 										toRemove.add(path);
+										log.debug("File is used by mod manager, will not delete: {} == {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
 									} else {
-										log.debug("File is used by mod manager, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+										
+										Path parent = path.getParent();
+										
+										while (parent != null) {
+											if (parent.equals(settings.getPropertyPath("modsdir"))) {
+												break;
+											}
+											parent = parent.getParent(); 
+										}
+										
+										if (parent == null) {
+											log.debug("File is not in the mod manager's mod directory, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+											toRemove.add(path);
+										}
+										
 									}
 								}
 								
 							} else {
 								//TODO Notify user of mod existence
 								log.debug("Mod already exists, skipping: {}", file);
+								
+								Path parent = file.getParent();
+								
+								while (parent != null) {
+									if (parent.equals(settings.getPropertyPath("modsdir"))) {
+										break;
+									}
+									parent = parent.getParent();
+								}
+								
+								if (parent == null) {
+									log.debug("File is not in the mod manager's mod directory, will not delete: {} = {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), file);
+									toRemove.add(file);
+								}
+								
 							}
 						}
 					}
