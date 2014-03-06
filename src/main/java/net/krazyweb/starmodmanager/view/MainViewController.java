@@ -11,7 +11,6 @@ import javafx.concurrent.Task;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.data.DatabaseFactory;
@@ -52,6 +51,9 @@ public class MainViewController extends Observable {
 		settings = new SettingsFactory().getInstance();
 		database = new DatabaseFactory().getInstance();
 		localizer = new LocalizerFactory().getInstance();
+
+		view.updateLockButton(settings.getPropertyBoolean("modlistlocked"));
+		view.updateExpandButton(settings.getPropertyBoolean("modviewexpanded"));
 		
 		modListView = new ModListView(modList);
 		settingsView = new SettingsView();
@@ -80,9 +82,6 @@ public class MainViewController extends Observable {
 	
 	protected void aboutTabClicked() {
 		view.setContent(aboutView.getContent());
-		((VBox) aboutView.getContent()).prefHeightProperty().bind(view.getContent().heightProperty());
-		log.debug(view.getContent().heightProperty());
-		log.debug(((VBox) aboutView.getContent()).heightProperty());
 	}
 	
 	protected void backupButtonClicked() {
@@ -91,7 +90,7 @@ public class MainViewController extends Observable {
 	
 	protected void lockButtonClicked() {
 		modListView.toggleLock();
-		//TODO Update lock image
+		view.updateLockButton(settings.getPropertyBoolean("modlistlocked"));
 	}
 	
 	protected void refreshButtonClicked() {
@@ -100,7 +99,7 @@ public class MainViewController extends Observable {
 	
 	protected void expandButtonClicked() {
 		modListView.toggleExpansion();
-		//TODO Update expand image
+		view.updateExpandButton(settings.getPropertyBoolean("modviewexpanded"));
 	}
 	
 	protected void filesDraggedOver(final DragEvent event) {

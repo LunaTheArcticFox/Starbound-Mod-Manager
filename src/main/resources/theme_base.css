@@ -50,6 +50,16 @@
 	-fx-cursor: hand;
 }
 
+#mainview-action-button {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-cursor: hand;
+}
+
 .scroll-pane {
 	-fx-background-color: transparent;
 	-fx-padding: 0 10px 0 10px;

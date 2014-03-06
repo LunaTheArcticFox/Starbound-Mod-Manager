@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -25,6 +27,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
@@ -156,8 +160,9 @@ public class MainView implements Observer {
 		
 		pageTabs.getColumnConstraints().addAll(col1, col2, col3, col4);
 		
+		buttons.setSpacing(25);
 		buttons.getChildren().addAll(
-			quickBackupButton,
+			//quickBackupButton, TODO Implement later
 			lockButton,
 			refreshButton,
 			expandButton
@@ -167,8 +172,8 @@ public class MainView implements Observer {
 		AnchorPane.setTopAnchor(pageTabs, 29.0);
 		AnchorPane.setBottomAnchor(pageTabs, 25.0);
 
-		AnchorPane.setTopAnchor(buttons, 26.0);
-		AnchorPane.setRightAnchor(buttons, 21.0);
+		AnchorPane.setTopAnchor(buttons, 29.0);
+		AnchorPane.setRightAnchor(buttons, 24.0);
 
 		AnchorPane tabsBar = new AnchorPane();
 		tabsBar.setId("tabsbar");
@@ -228,6 +233,7 @@ public class MainView implements Observer {
 		setStageEvents();
 		
 		updateStrings();
+		updateRefreshButton();
 		
 	}
 	
@@ -290,6 +296,8 @@ public class MainView implements Observer {
 	private void buildActionButtons() {
 		
 		quickBackupButton = new Button();
+		quickBackupButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("quick-backup-icon.png"))));
+		quickBackupButton.setId("mainview-action-button");
 		quickBackupButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -299,6 +307,8 @@ public class MainView implements Observer {
 		});
 		
 		lockButton = new Button();
+		lockButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("unlocked-list-icon.png"))));
+		lockButton.setId("mainview-action-button");
 		lockButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -308,6 +318,8 @@ public class MainView implements Observer {
 		});
 		
 		refreshButton = new Button();
+		refreshButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("refresh-list-icon.png"))));
+		refreshButton.setId("mainview-action-button");
 		refreshButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -317,6 +329,8 @@ public class MainView implements Observer {
 		});
 		
 		expandButton = new Button();
+		expandButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("expand-list-icon.png"))));
+		expandButton.setId("mainview-action-button");
 		expandButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent e) {
@@ -324,6 +338,46 @@ public class MainView implements Observer {
 				e.consume();
 			}
 		});
+		
+	}
+	
+	protected void updateLockButton(final boolean locked) {
+		
+		if (locked) {
+			
+			lockButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("locked-list-icon.png"))));
+			
+			Color color = CSSHelper.getColor("mod-list-locked-button-color", settings.getPropertyString("theme"));
+			FXHelper.setColor(lockButton.getGraphic(), color);
+			
+		} else {
+			
+			lockButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("unlocked-list-icon.png"))));
+			
+			Color color = CSSHelper.getColor("mod-list-button-color", settings.getPropertyString("theme"));
+			FXHelper.setColor(lockButton.getGraphic(), color);
+			
+		}
+		
+	}
+	
+	protected void updateRefreshButton() {
+		
+		Color color = CSSHelper.getColor("mod-list-button-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(refreshButton.getGraphic(), color);
+		
+	}
+	
+	protected void updateExpandButton(final boolean expanded) {
+		
+		if (expanded) {
+			expandButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("collapse-list-icon.png"))));
+		} else {
+			expandButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("expand-list-icon.png"))));
+		}
+		
+		Color color = CSSHelper.getColor("mod-list-button-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(expandButton.getGraphic(), color);
 		
 	}
 	
@@ -414,12 +468,6 @@ public class MainView implements Observer {
 		backupListButton.setText(localizer.getMessage("navbartabs.backups"));
 		settingsButton.setText(localizer.getMessage("navbartabs.settings"));
 		aboutButton.setText(localizer.getMessage("navbartabs.about"));
-		
-		//TODO Remove, these are for testing and will have no text later
-		quickBackupButton.setText("No Function");
-		lockButton.setText("LCK");
-		refreshButton.setText("REF");
-		expandButton.setText("EXP");
 		
 	}
 	
