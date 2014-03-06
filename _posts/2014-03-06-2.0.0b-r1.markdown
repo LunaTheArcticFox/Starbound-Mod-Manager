@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "2.0.0b-r1"
+date:   2014-03-05 02:56:47
+prerelease: yes
+gameversion: Beta v. Enraged Koala
+windowslink: hhttps://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-beta.1-windows/Starbound-Mod-Manager-2.0.0b-r1.zip
+windowssize: 64.1
+osxlink: none
+osxsize: 0.0
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.0-beta.1-linux/Starbound-Mod-Manager-2.0.0b-r1.zip
+linuxsize: 67.7
+---
+<ul class="hyphen-list">
+	<li>Early release of 2.0.0 for testing purposes.</li>
+	<li>Styled the rest of the program.</li>
+	<li>Added folder chooser.</li>
+	<li>Added all error messages.</li>
+	<li>Finalized features for initial release.</li>
+	<li>Minor bug fixes.</li>
+</ul>
