@@ -102,8 +102,32 @@
 	-fx-background-radius: 4px;
 }
 
+#modview-expanded-container {
+	-fx-background-radius: 4px;
+}
+
+#modview-expanded-header-installed {
+	-fx-background-radius: 4px 4px 0 0;
+}
+
+#modview-expanded-header-not-installed {
+	-fx-background-radius: 4px 4px 0 0;
+}
+
+#modview-expanded-header-text {
+	-fx-font: bold 10px Lato-Bold;
+}
+
 #modview-title {
 	-fx-font: bold 18px Lato-Bold;
+}
+
+#modview-expanded-title {
+	-fx-font: bold 22px Lato-Bold;
+}
+
+#modview-expanded-sub-text {
+	-fx-font: 14px Lato-Regular;
 }
 
 #modview-small-info {
@@ -255,4 +279,18 @@
 	-fx-background-color: transparent, transparent;
 	-fx-background-insets: 0px, 0px;
 	-fx-padding: 6px 5px 7px 11px;
+}
+
+#message-dialogue-button {
+	-fx-background-insets: 0;
+	-fx-background-radius: 8px;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-cursor: hand;
+	-fx-font: heavy 16px Lato-Heavy;
+}
+
+#message-dialogue-text {
+	-fx-font: 14px Lato-Regular;
 }

@@ -21,6 +21,8 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,6 +86,8 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			@Override
 			public void handle(final WorkerStateEvent event) {
 				log.error("", task.getException());
+				MessageDialogue dialogue = new MessageDialogue("An error occurred while connecting to the database. Please see the log for more information.", "Database Error", MessageType.ERROR, new NotLoadedLocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 		
@@ -382,7 +386,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 	}
 	
 	@Override
-	public Mod getModByName(final String modName) throws SQLException {
+	public Mod getModByName(final String modName) throws SQLException, IOException {
 		
 		Mod output = null;
 		
@@ -406,7 +410,7 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			
 			results.next();
 				
-			Mod mod = new Mod(new LocalizerFactory());
+			Mod mod = new Mod(new LocalizerFactory(), new SettingsFactory());
 			
 			mod.setInternalName(results.getString("internalName"));
 			mod.setArchiveName(results.getString("archiveName"));
@@ -455,20 +459,14 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			
 			Set<Mod> mods = null;
 			
-			try {
-				
-				long checksum = FileHelper.getChecksum(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()));
-				
-				if (mod.getChecksum() != checksum) {
-					log.debug("Mod file checksum mismatch: {} ({})", mod.getArchiveName(), mod.getChecksum());
-					mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
-				} else {
-					mods = new HashSet<>();
-					mods.add(mod);
-				}
-				
-			} catch (final IOException e) {
-				log.error("", e); //TODO Better error message
+			long checksum = FileHelper.getChecksum(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()));
+			
+			if (mod.getChecksum() != checksum) {
+				log.debug("Mod file checksum mismatch: {} ({})", mod.getArchiveName(), mod.getChecksum());
+				mods = Mod.load(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), mod.getOrder(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
+			} else {
+				mods = new HashSet<>();
+				mods.add(mod);
 			}
 			
 			output = mod;
@@ -552,7 +550,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		try {
 			result = getSettingsValue(property);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			log.error("", e);
 		}
 		
@@ -613,7 +610,6 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 			}
 		
 		} catch (final SQLException e) {
-			// TODO Auto-generated catch block
 			log.error("", e);
 		}
 		

@@ -6,13 +6,16 @@ import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -64,6 +67,9 @@ public class ModView implements Observer {
 	private Button expandedDeleteButton;
 	private Button expandedHideButton;
 	private Button expandedLinkButton;
+	
+	private RowConstraints descriptionConstraints;
+	private RowConstraints expandButtonConstraints;
 
 	private Mod mod;
 	private ModViewController controller;
@@ -100,17 +106,56 @@ public class ModView implements Observer {
 	private void buildExpanded() {
 		
 		expandedRoot = new GridPane();
+		//expandedRoot.setGridLinesVisible(true);
+		expandedRoot.setId("modview-expanded-container");
+		
+		if (mod.hasImage()) {
+			expandedRoot.setStyle(
+				"-fx-background-image: url(\"" + mod.getImageLocation() + "\");" +
+				"-fx-background-position: 29px 0px;"
+			);
+		} else {
+			expandedRoot.setStyle(
+				"-fx-background-color: " + CSSHelper.getColorHex("modview-expanded-not-installed-background-color", settings.getPropertyString("theme")) + ";" +
+				"-fx-background-position: 29px 0px;"
+			);
+		}
+		
 		expandedHeader = new BorderPane();
+		expandedHeader.setPrefHeight(29);
+		expandedHeader.setMinHeight(29);
 
 		expandedInstallButton = new Button();
+		expandedInstallButton.setId("modview-install-button");
+		expandedInstallButton.setFocusTraversable(false);
+		expandedInstallButton.setPrefHeight(30);
+		expandedInstallButton.setPrefWidth(73);
+		expandedInstallButton.setMinWidth(73);
+		expandedInstallButton.setMinHeight(30);
+		expandedInstallButton.setAlignment(Pos.CENTER);
+		
 		expandedExpandButton = new Button();
+		expandedExpandButton.setId("modview-expand-button");
+		
 		expandedStatusText = new Text();
+		expandedStatusText.setId("modview-expanded-header-text");
+		
 		expandedDisplayName = new Text();
+		expandedDisplayName.setId("modview-expanded-title");
+		
 		expandedModVersion = new Text();
+		expandedModVersion.setId("modview-expanded-header-text");
+		
 		expandedAuthor = new Text();
+		expandedAuthor.setId("modview-expanded-sub-text");
+		
 		expandedDescription = new Text();
+		expandedDescription.setId("modview-expanded-sub-text");
+		expandedDescription.wrappingWidthProperty().bind(expandedRoot.widthProperty().subtract(210));
 		
 		expandedButtons = new VBox();
+		expandedButtons.setAlignment(Pos.TOP_CENTER);
+		expandedButtons.setSpacing(12);
 		expandedDeleteButton = new Button();
 		expandedDeleteButton.setId("modview-action-button");
 		expandedHideButton = new Button();
@@ -118,15 +163,18 @@ public class ModView implements Observer {
 		expandedLinkButton = new Button();
 		expandedLinkButton.setId("modview-action-button");
 		
-		expandedDeleteButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("delete-icon.png"))));
-		expandedHideButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("hide-icon.png"))));
-		expandedLinkButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("link-icon.png"))));
+		expandedDeleteButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("delete-icon-large.png"))));
+		expandedHideButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("hide-icon-large.png"))));
+		expandedLinkButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("link-icon-large.png"))));
 		
-		expandedRoot.setGridLinesVisible(true);
+		Color color = CSSHelper.getColor("modview-not-installed-button-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(expandedDeleteButton.getGraphic(), color);
+		FXHelper.setColor(expandedHideButton.getGraphic(), color);
+		FXHelper.setColor(expandedLinkButton.getGraphic(), color);
 		
+		expandedHeader.setPadding(new Insets(8, 10, 0, 10));
 		expandedHeader.setLeft(expandedStatusText);
 		expandedHeader.setRight(expandedModVersion);
-		
 		
 		expandedButtons.getChildren().addAll(
 			expandedDeleteButton,
@@ -141,8 +189,33 @@ public class ModView implements Observer {
 		expandedRoot.add(expandedExpandButton, 3, 2);
 		
 		GridPane.setColumnSpan(expandedHeader, 3);
+		GridPane.setRowSpan(expandedExpandButton, 2);
+		GridPane.setRowSpan(expandedInstallButton, 2);
+		GridPane.setRowSpan(expandedButtons, 3);
 		
 		GridPane.setHgrow(expandedDisplayName, Priority.ALWAYS);
+		GridPane.setMargin(expandedDisplayName, new Insets(6, 0, 0, 15));
+		GridPane.setMargin(expandedAuthor, new Insets(2, 0, 9, 15));
+		GridPane.setMargin(expandedExpandButton, new Insets(1, 17, 0, 19));
+		GridPane.setMargin(expandedButtons, new Insets(23, 0, 0, 0));
+		GridPane.setMargin(expandedDescription, new Insets(10, 0, 0, 35));
+		
+		GridPane.setValignment(expandedDescription, VPos.TOP);
+		
+		RowConstraints fillerConstraints = new RowConstraints();
+		expandedRoot.getRowConstraints().add(fillerConstraints);
+		fillerConstraints = new RowConstraints();
+		expandedRoot.getRowConstraints().add(fillerConstraints);
+		fillerConstraints = new RowConstraints();
+		expandedRoot.getRowConstraints().add(fillerConstraints);
+		fillerConstraints = new RowConstraints();
+		expandedRoot.getRowConstraints().add(fillerConstraints);
+		
+		descriptionConstraints = new RowConstraints();
+		descriptionConstraints.setMinHeight(130);
+		
+		expandButtonConstraints = new RowConstraints();
+		expandButtonConstraints.setMinHeight(45);
 		
 	}
 	
@@ -307,9 +380,9 @@ public class ModView implements Observer {
 	private void updateStrings() {
 
 		expandedInstallButton.setText(localizer.getMessage(mod.isInstalled() ? "modview.uninstall" : "modview.install"));
-		expandedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled"));
+		expandedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled").toUpperCase());
 		expandedDisplayName.setText(mod.getDisplayName());
-		expandedModVersion.setText(mod.getModVersion());
+		expandedModVersion.setText(mod.getModVersion().toUpperCase());
 		expandedAuthor.setText(mod.getAuthor());
 		expandedDescription.setText(mod.getDescription());
 		
@@ -323,16 +396,25 @@ public class ModView implements Observer {
 	private void updateImages() {
 
 		if (showingMoreInfo) {
-			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow.png"))));
+			
+			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow-large.png"))));
 			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("collapse-arrow.png"))));
+			
 		} else {
-			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow.png"))));
+			
+			expandedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow-large.png"))));
 			collapsedExpandButton.setGraphic(new ImageView(new Image(ModView.class.getClassLoader().getResourceAsStream("expand-arrow.png"))));
+			
 		}
+
+		Color color = CSSHelper.getColor("modview-expand-button-color", settings.getPropertyString("theme"));
+		
+		FXHelper.setColor(expandedExpandButton.getGraphic(), color);
+		FXHelper.setColor(collapsedExpandButton.getGraphic(), color);
 
 	}
 	
-	protected GridPane getContent() {
+	protected Pane getContent() {
 		return expanded ? expandedRoot : collapsedRoot;
 	}
 	
@@ -351,6 +433,12 @@ public class ModView implements Observer {
 			expandedRoot.getChildren().remove(expandedDescription);
 			expandedRoot.add(expandedExpandButton, 3, 2);
 			
+			GridPane.setValignment(expandedExpandButton, VPos.CENTER);
+			
+			expandedRoot.getRowConstraints().remove(descriptionConstraints);
+			expandedRoot.getRowConstraints().remove(expandButtonConstraints);
+			GridPane.setRowSpan(expandedExpandButton, 2);
+			
 			showingMoreInfo = false;
 			
 		} else {
@@ -362,9 +450,17 @@ public class ModView implements Observer {
 			collapsedRoot.add(collapsedButtons, 2, 1);
 
 			expandedRoot.getChildren().remove(expandedExpandButton);
-			expandedRoot.add(expandedButtons, 3, 4);
+			expandedRoot.add(expandedButtons, 3, 2);
 			expandedRoot.add(expandedExpandButton, 3, 5);
 			expandedRoot.add(expandedDescription, 1, 4);
+			
+			GridPane.setHalignment(expandedButtons, HPos.CENTER);
+			GridPane.setValignment(expandedButtons, VPos.CENTER);
+			GridPane.setValignment(expandedExpandButton, VPos.TOP);
+			
+			expandedRoot.getRowConstraints().add(descriptionConstraints);
+			expandedRoot.getRowConstraints().add(expandButtonConstraints);
+			GridPane.setRowSpan(expandedExpandButton, 1);
 			
 			showingMoreInfo = true;
 			
@@ -387,6 +483,15 @@ public class ModView implements Observer {
 		
 		collapsedInstallButton.getStyleClass().remove("modview-installed-button-color");
 		collapsedInstallButton.getStyleClass().remove("modview-not-installed-button-color");
+
+		expandedStatusText.getStyleClass().clear();
+		expandedDisplayName.getStyleClass().clear();
+		expandedModVersion.getStyleClass().clear();
+		expandedAuthor.getStyleClass().clear();
+		expandedDescription.getStyleClass().clear();
+		
+		expandedInstallButton.getStyleClass().remove("modview-installed-button-color");
+		expandedInstallButton.getStyleClass().remove("modview-not-installed-button-color");
 		
 		if (mod.isInstalled()) {
 			
@@ -395,6 +500,14 @@ public class ModView implements Observer {
 			collapsedStatusText.getStyleClass().add("modview-installed-text-color");
 			collapsedModVersion.getStyleClass().add("modview-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-installed-button-color");
+			
+			expandedHeader.setId("modview-expanded-header-installed");
+			expandedStatusText.getStyleClass().add("modview-expanded-installed-header-color");
+			expandedDisplayName.getStyleClass().add("modview-expanded-installed-text-color");
+			expandedAuthor.getStyleClass().add("modview-expanded-installed-text-color");
+			expandedModVersion.getStyleClass().add("modview-expanded-installed-header-color");
+			expandedDescription.getStyleClass().add("modview-expanded-installed-description-text-color");
+			expandedInstallButton.getStyleClass().add("modview-installed-button-color");
 			
 			Color color = CSSHelper.getColor("modview-installed-button-color", settings.getPropertyString("theme"));
 			
@@ -409,6 +522,14 @@ public class ModView implements Observer {
 			collapsedStatusText.getStyleClass().add("modview-not-installed-text-color");
 			collapsedModVersion.getStyleClass().add("modview-not-installed-text-color");
 			collapsedInstallButton.getStyleClass().add("modview-not-installed-button-color");
+			
+			expandedHeader.setId("modview-expanded-header-not-installed");
+			expandedStatusText.getStyleClass().add("modview-expanded-not-installed-header-color");
+			expandedDisplayName.getStyleClass().add("modview-expanded-not-installed-text-color");
+			expandedModVersion.getStyleClass().add("modview-expanded-not-installed-header-color");
+			expandedAuthor.getStyleClass().add("modview-expanded-not-installed-text-color");
+			expandedDescription.getStyleClass().add("modview-expanded-not-installed-description-text-color");
+			expandedInstallButton.getStyleClass().add("modview-not-installed-button-color");
 			
 			Color color = CSSHelper.getColor("modview-not-installed-button-color", settings.getPropertyString("theme"));
 			

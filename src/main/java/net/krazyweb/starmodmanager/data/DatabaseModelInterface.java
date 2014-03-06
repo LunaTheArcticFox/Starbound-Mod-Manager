@@ -1,5 +1,6 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ public interface DatabaseModelInterface extends Observable {
 	public void deleteMod(final Mod mod) throws SQLException;
 	
 	public List<String> getModNames() throws SQLException;
-	public Mod getModByName(final String modName) throws SQLException;
+	public Mod getModByName(final String modName) throws SQLException, IOException;
 	
 	public Map<String, String> getProperties() throws SQLException;
 	public String getPropertyString(final String property, final String defaultValue);

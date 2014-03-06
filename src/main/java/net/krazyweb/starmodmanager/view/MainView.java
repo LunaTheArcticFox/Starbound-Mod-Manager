@@ -1,5 +1,9 @@
 package net.krazyweb.starmodmanager.view;
 
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -27,6 +31,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 import net.krazyweb.helpers.CSSHelper;
 import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.ModManager;
@@ -65,6 +70,8 @@ public class MainView implements Observer {
 	private Button lockButton;
 	private Button refreshButton;
 	private Button expandButton;
+	
+	private boolean firstRunComplete = false;
 
 	private SettingsModelInterface settings;
 	private LocalizerModelInterface localizer;
@@ -339,6 +346,9 @@ public class MainView implements Observer {
 			}
 		});
 		
+
+		
+		
 	}
 	
 	protected void updateLockButton(final boolean locked) {
@@ -365,6 +375,26 @@ public class MainView implements Observer {
 		
 		Color color = CSSHelper.getColor("mod-list-button-color", settings.getPropertyString("theme"));
 		FXHelper.setColor(refreshButton.getGraphic(), color);
+		
+		if (!firstRunComplete) {
+			firstRunComplete = true;
+			return;
+		}
+		
+		Timeline refreshAnimation = new Timeline();
+		refreshAnimation.setCycleCount(1);
+		
+		refreshAnimation.setOnFinished(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				refreshButton.setRotate(0);
+			}
+		});
+		
+		final KeyValue kv1 = new KeyValue(refreshButton.rotateProperty(), 1440, Interpolator.EASE_BOTH);
+		final KeyFrame kf1 = new KeyFrame(Duration.millis(4500), kv1);
+		refreshAnimation.getKeyFrames().addAll(kf1);
+		refreshAnimation.playFromStart();
 		
 	}
 	

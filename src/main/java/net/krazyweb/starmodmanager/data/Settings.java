@@ -11,6 +11,8 @@ import java.util.Set;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -28,7 +30,8 @@ public class Settings implements SettingsModelInterface {
 	private static final int VERSION_MAJOR = 2;
 	private static final int VERSION_MINOR = 0;
 	private static final int VERSION_PATCH = 0;
-	private static final String VERSION_EXTRA = "a-r5";
+	private static final String VERSION_EXTRA = "b-r1";
+	private static final String APPLE = "Golden Delicious";
 	private static final String VERSION_STRING = VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_PATCH + VERSION_EXTRA;
 	
 	private static OS operatingSystem;
@@ -157,6 +160,8 @@ public class Settings implements SettingsModelInterface {
 			@Override
 			public void handle(final WorkerStateEvent event) {
 				log.error("", task.getException());
+				MessageDialogue dialogue = new MessageDialogue("An error occurred while loading the settings. Please see the log for more information.", "Settings Error", MessageType.ERROR, new NotLoadedLocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 
@@ -275,6 +280,11 @@ public class Settings implements SettingsModelInterface {
 	@Override
 	public String getVersion() {
 		return VERSION_STRING;
+	}
+	
+	@Override
+	public String getApple() {
+		return APPLE;
 	}
 
 	@Override

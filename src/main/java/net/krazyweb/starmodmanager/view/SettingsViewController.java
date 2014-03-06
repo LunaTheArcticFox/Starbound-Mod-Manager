@@ -13,9 +13,13 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.ModManager;
+import net.krazyweb.starmodmanager.data.LocalizerFactory;
+import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface.Language;
 import net.krazyweb.starmodmanager.data.SettingsFactory;
 import net.krazyweb.starmodmanager.data.SettingsModelInterface;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -109,13 +113,16 @@ public class SettingsViewController {
 	
 	protected void openLog() {
 		
+		LocalizerModelInterface localizer = new LocalizerFactory().getInstance();
+		
 		log.info("Opening log file.");
 		
 		try {
 			Desktop.getDesktop().open(settings.getPropertyPath("logpath").toFile());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (final IOException e) {
 			log.error("", e);
+			MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("settingsviewcontroller.logerror"), localizer.getMessage("settingsviewcontroller.logerror.title"), MessageType.ERROR, new LocalizerFactory());
+			dialogue.getResult();
 		}
 		
 	}

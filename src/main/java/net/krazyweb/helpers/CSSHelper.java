@@ -36,11 +36,40 @@ public class CSSHelper {
 				    
 				    log.debug("Color code '{}' converted to rgb({}, {}, {}) for key '{}'", line, r, g, b, key);
 				    
+				    break;
+				    
 				}
 			}
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			log.error("", e);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
+		}
+		
+		if (c == null) {
+			throw new RuntimeException("Could not find color for key '" + key + "' in CSS file '" + file + "'");
+		}
+		
+		return c;
+		
+	}
+	
+	public static String getColorHex(final String key, final String file) {
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(CSSHelper.class.getClassLoader().getResourceAsStream(file)));
+		
+		String line;
+		String c = null;
+		
+		try {
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("/* " + key)) {
+					c = line.replace("/*", "").replace("*/", "").trim().split(":")[1].trim();
+					break;
+				}
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			log.error("", e);

@@ -18,6 +18,7 @@ public interface SettingsModelInterface extends Observable {
 	
 	public OS getOperatingSystem();
 	public String getVersion();
+	public String getApple();
 
 	public String getPropertyString(final String key);
 	public int getPropertyInt(final String key);

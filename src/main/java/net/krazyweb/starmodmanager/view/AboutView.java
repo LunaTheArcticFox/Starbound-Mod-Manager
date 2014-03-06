@@ -22,9 +22,16 @@ import net.krazyweb.starmodmanager.data.Observable;
 import net.krazyweb.starmodmanager.data.Observer;
 import net.krazyweb.starmodmanager.data.SettingsFactory;
 import net.krazyweb.starmodmanager.data.SettingsModelInterface;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class AboutView implements Observer {
+	
+	private static final Logger log = LogManager.getLogger(AboutView.class);
 	
 	private VBox root;
 	private AnchorPane browseRepoPane;
@@ -131,7 +138,7 @@ public class AboutView implements Observer {
 	private void updateStrings() {
 
 		title.setText(localizer.getMessage("appname"));
-		versionName.setText(localizer.formatMessage("version", settings.getVersion()));
+		versionName.setText(localizer.formatMessage("versionwithapple", settings.getVersion(), settings.getApple()));
 		createdBy.setText(localizer.getMessage("aboutview.createdby"));
 		withContributionsFrom.setText(localizer.getMessage("aboutview.contributions"));
 		writtenIn.setText(localizer.getMessage("aboutview.writtenin"));
@@ -164,12 +171,10 @@ public class AboutView implements Observer {
 			public void handle(MouseEvent event) {
 				try {
 					controller.openWebpage(url);
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (URISyntaxException | IOException e) {
+					log.error("", e);
+					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("aboutview.linkerror"), localizer.getMessage("aboutview.linkerror.title"), MessageType.ERROR, new LocalizerFactory());
+					dialogue.getResult();
 				}
 			}
 			

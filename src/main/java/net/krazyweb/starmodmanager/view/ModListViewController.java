@@ -129,8 +129,7 @@ public class ModListViewController implements Observer {
 			return;
 		}
 		
-		int nodeHeight = expanded ? 32 : 54;
-		int halfNodeHeight = nodeHeight / 2;
+		int nodeHeight = (int) modView.getContent().getHeight();
 
 		modView.getContent().setTranslateY((int) (y + event.getSceneY() - mouseY));
 		
@@ -149,11 +148,13 @@ public class ModListViewController implements Observer {
 			final ModView otherModView = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) - 1));
 			
 			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
+			int otherModViewHeight = (int) otherModView.getContent().getHeight();
+			int otherModViewHalfHeight = otherModViewHeight / 2;
 			
-			if (!otherModView.moving && otherModViewPos > position - halfNodeHeight) {
+			if (!otherModView.moving && otherModViewPos > position - otherModViewHalfHeight) {
 				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), 1);
-				view.animate(otherModView, nodeHeight);
+				view.animate(otherModView, nodeHeight + 10);
 			}
 			
 		}
@@ -163,11 +164,13 @@ public class ModListViewController implements Observer {
 			final ModView otherModView = getModViewByMod(modList.getMods().get(modList.getMods().indexOf(modView.getMod()) + 1));
 			
 			double otherModViewPos = otherModView.getContent().getTranslateY() + otherModView.getContent().getLayoutY();
+			int otherModViewHeight = (int) otherModView.getContent().getHeight();
+			int otherModViewHalfHeight = otherModViewHeight / 2;
 			
-			if (!otherModView.moving && otherModViewPos < position + modView.getContent().getHeight() - halfNodeHeight) {
+			if (!otherModView.moving && otherModViewPos < position + modView.getContent().getHeight() - otherModViewHalfHeight) {
 				otherModView.moving = true;
 				modList.moveMod(modView.getMod(), -1);
-				view.animate(otherModView, -nodeHeight);
+				view.animate(otherModView, -nodeHeight - 10);
 			}
 			
 		}

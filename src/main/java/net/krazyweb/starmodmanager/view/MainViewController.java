@@ -20,8 +20,6 @@ import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
 import net.krazyweb.starmodmanager.data.ModList;
 import net.krazyweb.starmodmanager.data.SettingsFactory;
 import net.krazyweb.starmodmanager.data.SettingsModelInterface;
-import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
-import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +30,7 @@ public class MainViewController extends Observable {
 
 	private MainView view;
 	private ModListView modListView;
+	private BackupListView backupListView;
 	private SettingsView settingsView;
 	private AboutView aboutView;
 	
@@ -58,8 +57,9 @@ public class MainViewController extends Observable {
 		modListView = new ModListView(modList);
 		settingsView = new SettingsView();
 		aboutView = new AboutView();
+		backupListView = new BackupListView();
 		
-		view.setContent(modListView.getContent());
+		modTabClicked();
 		
 		view.show();
 		
@@ -72,8 +72,7 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void backupsTabClicked() {
-		MessageDialogue m = new MessageDialogue("This feature will be available in Version 2.1.0.", "Coming Soon!", MessageType.INFO, new LocalizerFactory());
-		log.debug(m.getResult());
+		view.setContent(backupListView.getContent());
 	}
 	
 	protected void settingsTabClicked() {
@@ -94,6 +93,7 @@ public class MainViewController extends Observable {
 	}
 	
 	protected void refreshButtonClicked() {
+		view.updateRefreshButton();
 		modListView.getNewMods();
 	}
 	

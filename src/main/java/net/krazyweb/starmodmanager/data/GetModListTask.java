@@ -1,5 +1,6 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.data.Mod.ModOrderComparator;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,24 +27,39 @@ public class GetModListTask extends Task<Void> {
 	private List<Mod> mods;
 
 	private SettingsModelInterface settings;
+	private LocalizerModelInterface localizer;
 	private DatabaseModelInterface database;
+	
+	private boolean recoverableErrorOccurred = false;
 	
 	protected GetModListTask(final ModList modList) {
 
 		settings = new SettingsFactory().getInstance();
+		localizer = new LocalizerFactory().getInstance();
 		database = new DatabaseFactory().getInstance();
 		
 		setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
+				
+				log.debug("Task Succeeded");
+				
+				if (recoverableErrorOccurred) {
+					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlisttask.recoverableerror"), localizer.getMessage("modlisttask.recoverableerror.title"), MessageType.ERROR, new LocalizerFactory());
+					dialogue.getResult();
+				}
+				
 				modList.setModList(mods);
+				
 			}
 		});
 			
 		setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				log.error("", getException()); //TODO
+				log.error("", getException());
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlisttask.error"), localizer.getMessage("modlisttask.error.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 		
@@ -104,6 +122,7 @@ public class GetModListTask extends Task<Void> {
 			Set<Mod> tempMods = Mod.load(path, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 			
 			if (tempMods == null || tempMods.isEmpty()) {
+				recoverableErrorOccurred = true;
 				continue;
 			}
 			
@@ -130,7 +149,11 @@ public class GetModListTask extends Task<Void> {
 		
 		for (Path path : archives) {
 			log.debug("File is not used by mod manager, deleting: '{}'", path);
-			FileHelper.deleteFile(path);
+			try {
+				FileHelper.deleteFile(path);
+			} catch (final IOException e) {
+				log.error("", e);
+			}
 		}
 		
 		for (Mod mod : mods) {

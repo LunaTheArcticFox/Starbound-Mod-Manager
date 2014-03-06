@@ -1,6 +1,7 @@
 package net.krazyweb.jfx.controls;
 
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -22,6 +23,7 @@ public class ProgressIndicatorBar extends StackPane {
 	private Text text;
 	
 	private DoubleBinding workDone;
+	private ReadOnlyDoubleProperty workDoneReadOnly;
 	private double totalWork;
 
 	public ProgressIndicatorBar() {
@@ -38,12 +40,15 @@ public class ProgressIndicatorBar extends StackPane {
 
 	private void updateProgress() {
 		
-		if (workDone == null || totalWork == 0) {
+		if ((workDone == null && workDoneReadOnly == null) || totalWork == 0) {
 			text.setText("");
 			bar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
-		} else {
+		} else if (workDone != null) {
 			text.setText(Math.round(workDone.get() * 100.0) + "%");
 			bar.setProgress(workDone.get());
+		} else {
+			text.setText(Math.round(workDoneReadOnly.get() * 100.0) + "%");
+			bar.setProgress(workDoneReadOnly.get());
 		}
 		
 		bar.setMinHeight(text.getBoundsInLocal().getHeight() + DEFAULT_PADDING * 2);
@@ -58,6 +63,21 @@ public class ProgressIndicatorBar extends StackPane {
 
 		updateProgress();
 		workDone.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(final ObservableValue<? extends Number> observableValue, final Number oldValue, final Number newValue) {
+				updateProgress();
+			}
+		});
+		
+	}
+
+	public void bind(final ReadOnlyDoubleProperty progressProperty, final double totalWork) {
+		
+		this.workDoneReadOnly = progressProperty;
+		this.totalWork = totalWork;
+
+		updateProgress();
+		workDoneReadOnly.addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(final ObservableValue<? extends Number> observableValue, final Number oldValue, final Number newValue) {
 				updateProgress();

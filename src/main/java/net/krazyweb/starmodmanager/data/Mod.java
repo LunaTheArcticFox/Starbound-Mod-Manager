@@ -19,6 +19,8 @@ import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.helpers.JSONHelper;
 import net.krazyweb.stardb.databases.AssetDatabase;
 import net.krazyweb.stardb.exceptions.StarDBException;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +45,7 @@ public class Mod implements Observable {
 	private String description;
 	private String url;
 	private String archiveName;
+	private String imageName;
 	
 	private long checksum;
 	
@@ -50,11 +53,13 @@ public class Mod implements Observable {
 	
 	private boolean hidden = false;
 	private boolean installed = false;
+	private boolean hasImage = false;
 	
 	private Set<String> dependencies;
 	private Set<ModFile> files; //All files that the mod alters
 	
-	private LocalizerModelInterface localizer;
+	private SettingsModelInterface settings;
+	private static LocalizerModelInterface localizer;
 	
 	private Set<Observer> observers;
 	
@@ -67,9 +72,10 @@ public class Mod implements Observable {
 		
 	}
 	
-	protected Mod(final LocalizerModelFactory localizerFactory) {
+	protected Mod(final LocalizerModelFactory localizerFactory, final SettingsModelFactory settingsFactory) {
 		observers = new HashSet<>();
 		localizer = localizerFactory.getInstance();
+		settings = settingsFactory.getInstance();
 	}
 	
 	protected static Set<Mod> load(final Path path, final int order, final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
@@ -85,12 +91,13 @@ public class Mod implements Observable {
 		try {
 			archives = processModFile(path, settingsFactory);
 		} catch (IOException | StarDBException | ParseException e) {
-			log.error("", e); //TODO
+			log.error("", e);
+			return new HashSet<Mod>();
 		}
 		
 		for (Archive archive : archives) {
 			
-			Mod mod = new Mod(localizerFactory);
+			Mod mod = new Mod(localizerFactory, settingsFactory);
 			
 			mod.setOrder(order);
 			mod.files = new HashSet<>();
@@ -181,7 +188,10 @@ public class Mod implements Observable {
 			try {
 				databaseFactory.getInstance().updateMod(mod);
 			} catch (SQLException e) {
-				e.printStackTrace();
+				log.error("", e);
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("mod.dbconnectionerror"), localizer.getMessage("mod.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
+				return new HashSet<Mod>();
 			}
 			
 			mods.add(mod);
@@ -252,8 +262,7 @@ public class Mod implements Observable {
 		Archive originalArchive = new Archive(path);
 		
 		if (!originalArchive.extract()) {
-			//TODO Error messages
-			return;
+			throw new IOException("Could not extract archive.");
 		}
 		
 		Set<ArchiveFile> usedPaks = new HashSet<>();
@@ -528,6 +537,18 @@ public class Mod implements Observable {
 	protected void setInstalled(final boolean installed) {
 		this.installed = installed;
 		notifyObservers("installstatuschanged");
+	}
+	
+	public boolean hasImage() {
+		return hasImage;
+	}
+	
+	public String getImageLocation() {
+		return settings.getPropertyPath("modsdir").resolve(settings.getPropertyPath("modsimagedir")).resolve(Paths.get(imageName)).toAbsolutePath().toString();
+	}
+	
+	protected void setImage() {
+		//TODO
 	}
 
 	public Set<String> getDependencies() {

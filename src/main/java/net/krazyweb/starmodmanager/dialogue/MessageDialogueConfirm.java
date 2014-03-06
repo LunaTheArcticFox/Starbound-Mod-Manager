@@ -4,19 +4,24 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.data.LocalizerModelFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
-import net.krazyweb.starmodmanager.data.SettingsFactory;
-import net.krazyweb.starmodmanager.data.SettingsModelInterface;
 
 public class MessageDialogueConfirm extends MessageDialogue {
 
 	protected Button noButton;
-	protected SettingsModelInterface settings;
 	
 	public MessageDialogueConfirm(String message, String title, MessageType messageType, LocalizerModelInterface localizer) {
 		super(message, title, messageType, localizer);
@@ -29,16 +34,38 @@ public class MessageDialogueConfirm extends MessageDialogue {
 	@Override
 	protected void build(final String message, final String title, final MessageType messageType) {
 		
-		settings = new SettingsFactory().getInstance();
-		
 		this.title = title;
 		
 		root = new GridPane();
+		root.setPadding(new Insets(43, 50, 30, 20));
+		root.setHgap(25);
 		
-		iconPlaceholder = new Text("[PLACEHOLDER]"); //TODO Icon
+		if (messageType == MessageType.CONFIRM) {
+			icon = new ImageView(new Image(MessageDialogueConfirm.class.getClassLoader().getResourceAsStream("delete-file-icon.png")));
+		} else if (messageType == MessageType.ERROR) {
+			icon = new ImageView(new Image(MessageDialogueConfirm.class.getClassLoader().getResourceAsStream("error-icon.png")));
+		} else {
+			icon = new ImageView(new Image(MessageDialogueConfirm.class.getClassLoader().getResourceAsStream("delete-file-icon.png")));
+		}
+		
+		Color color = CSSHelper.getColor("message-dialogue-confirm-warning-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(icon, color);
+		
 		messageText = new Text(message);
+		messageText.setId("message-dialogue-text");
+		messageText.setWrappingWidth(285);
+		
+		HBox buttonBox = new HBox();
 		confirmButton = new Button(localizer.formatMessage("messagedialogueconfirm.yeswaiting", settings.getPropertyInt("confirmdelay")));
+		confirmButton.setId("message-dialogue-button");
+		confirmButton.setPrefWidth(120);
+		confirmButton.setPrefHeight(40);
+		confirmButton.setAlignment(Pos.CENTER);
 		noButton = new Button(localizer.getMessage("messagedialogueconfirm.no"));
+		noButton.setId("message-dialogue-button");
+		noButton.setPrefWidth(120);
+		noButton.setPrefHeight(40);
+		noButton.setAlignment(Pos.CENTER);
 		
 		confirmButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -58,10 +85,13 @@ public class MessageDialogueConfirm extends MessageDialogue {
 			}
 		});
 		
-		root.add(iconPlaceholder, 1, 1);
+		buttonBox.getChildren().addAll(confirmButton, noButton);
+		buttonBox.setSpacing(30);
+		buttonBox.setAlignment(Pos.CENTER);
+		
+		root.add(icon, 1, 1);
 		root.add(messageText, 2, 1);
-		root.add(confirmButton, 2, 2);
-		root.add(noButton, 3, 2);
+		root.add(buttonBox, 2, 2);
 		
 	}
 	

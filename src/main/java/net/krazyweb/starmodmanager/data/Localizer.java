@@ -56,9 +56,9 @@ public class Localizer implements LocalizerModelInterface, Observer {
 				
 				languages = new ArrayList<>();
 				Collections.addAll(languages,
-					new Language("en-US", "English"),
-					new Language("de-DE", "Deutsch"),
-					new Language("fl-SB", "Floran")
+					new Language("en-US", "English")
+					//new Language("de-DE", "Deutsch"),
+					//new Language("fl-SB", "Floran")
 				);
 				Collections.sort(languages);
 				

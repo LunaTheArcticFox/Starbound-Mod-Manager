@@ -10,6 +10,8 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import net.krazyweb.helpers.FileHelper;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +23,7 @@ public class GetNewModsTask extends Task<Void> {
 	private Set<Path> files;
 
 	private SettingsModelInterface settings;
+	private LocalizerModelInterface localizer;
 	
 	private ModList modList;
 	
@@ -29,6 +32,7 @@ public class GetNewModsTask extends Task<Void> {
 		this.modList = modList;
 
 		settings = new SettingsFactory().getInstance();
+		localizer = new LocalizerFactory().getInstance();
 		
 		setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -40,7 +44,9 @@ public class GetNewModsTask extends Task<Void> {
 		setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent event) {
-				log.error("", getException()); //TODO
+				log.error("", getException());
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("newmodstask.error"), localizer.getMessage("newmodstask.error.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 		

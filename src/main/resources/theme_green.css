@@ -5,6 +5,7 @@
  */
  
 /* modlistview-add-mods-button-color: #bfc5d8 */
+/* modview-expand-button-color: #ffffff */
 /* modview-installed-button-color: #f7f8fa */
 /* modview-not-installed-button-color: #aaacae */
 /* browse-repo-arrow-color: #628dd3 */
@@ -12,6 +13,11 @@
 /* log-icon-color: #fdfdfd */
 /* mod-list-locked-button-color: #912020 */
 /* mod-list-button-color: #bfc5d8 */
+/* modview-expanded-not-installed-background-color: #1b1b1b */
+/* modview-expanded-installed-background-color: #f1fed8 */
+/* message-dialogue-confirm-warning-color: #d4b400 */
+/* message-dialogue-confirm-error-color: #b70000 */
+/* message-dialogue-confirm-info-color: #1197dc */
 
 .root {
 	-fx-background-color: #f7f8fa;
@@ -96,6 +102,34 @@
 	-fx-background-color: #84a93b;
 }
 
+#modview-expanded-header-installed {
+	-fx-background-color: #9bc34d;
+}
+
+#modview-expanded-header-not-installed {
+	-fx-background-color: #626262;
+}
+
+.modview-expanded-not-installed-header-color {
+	-fx-fill: #bbbcbf;
+}
+
+.modview-expanded-not-installed-text-color {
+	-fx-fill: #babcbe;
+}
+
+.modview-expanded-installed-header-color {
+	-fx-fill: #ffffff;
+}
+
+.modview-expanded-installed-text-color {
+	-fx-fill: #abe241;
+}
+
+.modview-expanded-not-installed-description-text-color, .modview-expanded-installed-description-text-color {
+	-fx-fill: #ffffff;
+}
+
 #modlistview-add-mods-button {
 	-fx-background-color: #e7e9ee;
 	-fx-text-fill: #bfc5d8;
@@ -177,4 +211,14 @@
 .combo-box-popup .list-view .list-cell:hover, .combo-box-popup .list-view .list-cell:selected {
 	-fx-background-color: #7ca4e1;
 	-fx-text-fill: #ffffff;
+}
+
+#message-dialogue-button {
+	-fx-background-color: #8bbe26;
+	-fx-text-fill: #e6ffb5;
+}
+
+#message-dialogue-button:disabled {
+	-fx-background-color: #a9a9a9;
+	-fx-text-fill: #ebebeb;
 }

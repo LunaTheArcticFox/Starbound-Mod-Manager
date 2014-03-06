@@ -27,7 +27,9 @@ import net.krazyweb.helpers.Archive;
 import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.stardb.databases.AssetDatabase;
 import net.krazyweb.starmodmanager.data.Mod.ModOrderComparator;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
 import net.krazyweb.starmodmanager.dialogue.ProgressDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +37,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
 public class ModList implements ModListModelInterface {
+	
+	private static class DumbBoolContainer {
+		private boolean value;
+	}
 	
 	private static final Logger log = LogManager.getLogger(ModList.class);
 	
@@ -68,8 +74,7 @@ public class ModList implements ModListModelInterface {
 	@Override
 	public void addMods(final List<Path> files) {
 		
-		final ProgressDialogue progress = new ProgressDialogue();
-		progress.start(localizer.getMessage("modlist.addingmods"));
+		final ProgressDialogue progress = new ProgressDialogue(localizer.getMessage("modlist.addingmods"));
 		
 		final Set<String> currentMods = new HashSet<>();
 		for (Mod mod : mods) {
@@ -77,6 +82,9 @@ public class ModList implements ModListModelInterface {
 		}
 		
 		final List<Mod> newMods = new ArrayList<>();
+		
+		final DumbBoolContainer recoverableErrorOccurred = new DumbBoolContainer();
+		recoverableErrorOccurred.value = false;
 		
 		final Task<Integer> addModsTask = new Task<Integer>() {
 
@@ -97,55 +105,59 @@ public class ModList implements ModListModelInterface {
 					
 					Set<Mod> modsToAdd = Mod.load(file, mods.size(), new SettingsFactory(), new DatabaseFactory(), new LocalizerFactory());
 					
-					if (modsToAdd != null) {
-						for (Mod mod : modsToAdd) {
-							if (!currentMods.contains(mod.getInternalName())) {
-								
-								mods.add(mod);
-								newMods.add(mod);
-								
-								for (Path path : files) {
-									if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path)) {
+					if (modsToAdd == null || modsToAdd.isEmpty()) {
+						recoverableErrorOccurred.value = true;
+						continue;
+					}
+					
+					
+					for (Mod mod : modsToAdd) {
+						if (!currentMods.contains(mod.getInternalName())) {
+							
+							mods.add(mod);
+							newMods.add(mod);
+							
+							for (Path path : files) {
+								if (Files.isSameFile(settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path)) {
+									toRemove.add(path);
+									log.debug("File is used by mod manager, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
+								} else {
+									
+									Path parent = path.getParent();
+									
+									while (parent != null) {
+										if (parent.equals(settings.getPropertyPath("modsdir"))) {
+											break;
+										}
+										parent = parent.getParent(); 
+									}
+									
+									if (parent == null) {
+										log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
 										toRemove.add(path);
-										log.debug("File is used by mod manager, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
-									} else {
-										
-										Path parent = path.getParent();
-										
-										while (parent != null) {
-											if (parent.equals(settings.getPropertyPath("modsdir"))) {
-												break;
-											}
-											parent = parent.getParent(); 
-										}
-										
-										if (parent == null) {
-											log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), path);
-											toRemove.add(path);
-										}
-										
 									}
+									
 								}
-								
-							} else {
-								//TODO Notify user of mod existence
-								log.debug("Mod already exists, skipping: {}", file);
-								
-								Path parent = file.getParent();
-								
-								while (parent != null) {
-									if (parent.equals(settings.getPropertyPath("modsdir"))) {
-										break;
-									}
-									parent = parent.getParent();
-								}
-								
-								if (parent == null) {
-									log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), file);
-									toRemove.add(file);
-								}
-								
 							}
+							
+						} else {
+							//TODO Notify user of mod existence
+							log.debug("Mod already exists, skipping: {}", file);
+							
+							Path parent = file.getParent();
+							
+							while (parent != null) {
+								if (parent.equals(settings.getPropertyPath("modsdir"))) {
+									break;
+								}
+								parent = parent.getParent();
+							}
+							
+							if (parent == null) {
+								log.debug("File is not in the mod manager's mod directory, will not delete: {} - {}", settings.getPropertyPath("modsdir").resolve(mod.getArchiveName()), file);
+								toRemove.add(file);
+							}
+							
 						}
 					}
 					
@@ -157,7 +169,11 @@ public class ModList implements ModListModelInterface {
 				
 				for (Path path : files) {
 					log.debug("Deleting file '{}' - File is unused.", path);
-					FileHelper.deleteFile(path);
+					try {
+						FileHelper.deleteFile(path);
+					} catch (final IOException e) {
+						log.error("", e);
+					}
 				}
 				
 				return 1;
@@ -169,8 +185,9 @@ public class ModList implements ModListModelInterface {
 		addModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				//TODO Appropriate error messages.
 				log.error("Error occurred while getting mods!", addModsTask.getException());
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.addmoderror"), localizer.getMessage("modlist.addmoderror.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 				progress.close();
 			}
 		});
@@ -178,15 +195,24 @@ public class ModList implements ModListModelInterface {
 		addModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
+				
+				if (recoverableErrorOccurred.value) {
+					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlisttask.recoverableerror"), localizer.getMessage("modlisttask.recoverableerror.title"), MessageType.ERROR, new LocalizerFactory());
+					dialogue.getResult();
+				}
+				
 				progress.close();
+				
 				for (Mod mod : newMods) {
 					notifyObservers(new Object[] { "modadded", mod });
 				}
+				
 			}
 		});
 		
-		progress.bar.progressProperty().bind(addModsTask.progressProperty());
-		progress.text.textProperty().bind(addModsTask.messageProperty());
+		progress.getProgressBar().bind(addModsTask.progressProperty(), files.size());
+		progress.getText().textProperty().bind(addModsTask.messageProperty());
+		progress.start();
 		
 		Thread t = new Thread(addModsTask);
 		t.setName("Add Mods Thread");
@@ -205,15 +231,17 @@ public class ModList implements ModListModelInterface {
 		try {
 			database.deleteMod(mod);
 		} catch (SQLException e) {
-			//TODO
-			e.printStackTrace();
+			log.error("", e);
+			MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.deletemod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+			dialogue.getResult();
 		}
 		
 		try {
 			FileHelper.deleteFile(Paths.get(settings.getPropertyString("modsdir") + File.separator + mod.getArchiveName())); //TODO Better Path manipulation
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
+			MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.fileerror.deletemod"), localizer.getMessage("modlist.fileerror.deletemod.title"), MessageType.ERROR, new LocalizerFactory());
+			dialogue.getResult();
 		}
 		
 		removeMod(mod);
@@ -397,8 +425,9 @@ public class ModList implements ModListModelInterface {
 		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent t) {
-				//TODO Appropriate error messages.
 				log.error("Error occurred while installing mods!", installModsTask.getException());
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.installmoderror"), localizer.getMessage("modlist.installmoderror.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 		
@@ -408,17 +437,13 @@ public class ModList implements ModListModelInterface {
 				mod.setInstalled(true);
 				try {
 					database.updateMod(mod);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
+				} catch (final SQLException e) {
 					log.error("", e);
+					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.installmod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+					dialogue.getResult();
 				}
 			}
 		});
-		
-		/*Thread t = new Thread(installModsTask);
-		t.setName("Install Mods Thread");
-		t.setDaemon(true);
-		t.start();*/
 		
 		return installModsTask;
 		
@@ -427,7 +452,7 @@ public class ModList implements ModListModelInterface {
 	@Override
 	public void uninstallMod(final Mod mod) {
 		
-		final Task<Integer> installModsTask = new Task<Integer>() {
+		final Task<Integer> uninstallModsTask = new Task<Integer>() {
 
 			@Override
 			protected Integer call() throws Exception {
@@ -449,29 +474,30 @@ public class ModList implements ModListModelInterface {
 			
 		};
 		
-		installModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+		uninstallModsTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent t) {
-				//TODO Appropriate error messages.
-				log.error("Error occurred while uninstalling mods!", installModsTask.getException());
-				//updateView();
+				log.error("Error occurred while uninstalling mods!", uninstallModsTask.getException());
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.uninstallmoderror"), localizer.getMessage("modlist.uninstallmoderror.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 			}
 		});
 		
-		installModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+		uninstallModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent t) {
 				mod.setInstalled(false);
 				try {
 					database.updateMod(mod);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
+				} catch (final SQLException e) {
 					log.error("", e);
+					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.installmod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+					dialogue.getResult();
 				}
 			}
 		});
 		
-		Thread t = new Thread(installModsTask);
+		Thread t = new Thread(uninstallModsTask);
 		t.setName("Uninstall Mods Thread");
 		t.setDaemon(true);
 		t.start();
@@ -485,9 +511,10 @@ public class ModList implements ModListModelInterface {
 		
 		try {
 			database.updateMod(mod);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (final SQLException e) {
+			log.error("", e);
+			MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.installmod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+			dialogue.getResult();
 		}
 		
 		removeMod(mod);
@@ -542,7 +569,9 @@ public class ModList implements ModListModelInterface {
 			try {
 				database.updateMod(m);
 			} catch (SQLException e) {
-				e.printStackTrace();
+				log.error("", e);
+				MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.installmod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
+				dialogue.getResult();
 			}
 		}
 		

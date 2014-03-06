@@ -5,7 +5,12 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.view.ApplicationLoader;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ModManager extends Application {
+	
+	private static final Logger log = LogManager.getLogger(ModManager.class);
 	
 	private static Stage primary;
 	
@@ -14,7 +19,11 @@ public class ModManager extends Application {
 		primary = primaryStage;
 		primaryStage.initStyle(StageStyle.DECORATED);
 		primaryStage.centerOnScreen();
-		new ApplicationLoader();
+		try {
+			new ApplicationLoader();
+		} catch (final Exception e) {
+			log.fatal("Uncaught application error: {}", e);
+		}
 	}
 	
 	public static Stage getPrimaryStage() {
