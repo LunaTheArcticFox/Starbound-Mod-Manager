@@ -164,11 +164,11 @@ public class MainView implements Observer {
 		);
 		
 		AnchorPane.setLeftAnchor(pageTabs, 35.0);
-		AnchorPane.setTopAnchor(pageTabs, 26.0);
-		AnchorPane.setBottomAnchor(pageTabs, 21.0);
-		
-		AnchorPane.setRightAnchor(buttons, 21.0);
+		AnchorPane.setTopAnchor(pageTabs, 29.0);
+		AnchorPane.setBottomAnchor(pageTabs, 25.0);
+
 		AnchorPane.setTopAnchor(buttons, 26.0);
+		AnchorPane.setRightAnchor(buttons, 21.0);
 
 		AnchorPane tabsBar = new AnchorPane();
 		tabsBar.setId("tabsbar");

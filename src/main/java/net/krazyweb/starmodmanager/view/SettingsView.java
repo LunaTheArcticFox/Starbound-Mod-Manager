@@ -7,15 +7,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import net.krazyweb.helpers.CSSHelper;
+import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.jfx.controls.NumericTextField;
 import net.krazyweb.starmodmanager.data.Localizer;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
@@ -38,11 +45,11 @@ public class SettingsView implements Observer {
 
 	private VBox root;
 	
-	private Text gamePathTitle;
+	private Label gamePathTitle;
 	private TextField gamePathField;
 	private Button gamePathButton;
 	
-	private Text modsPathTitle;
+	private Label modsPathTitle;
 	private TextField modsPathField;
 	private Button modsPathButton;
 	
@@ -54,11 +61,11 @@ public class SettingsView implements Observer {
 	private Text backupSavesOnLaunchTitle;
 	private CheckBox backupSavesOnLaunchBox;
 	
-	private Text confirmButtonDelayTitle;
+	private Label confirmButtonDelayTitle;
 	private NumericTextField confirmButtonDelayField;
 	
 	private ComboBox<Level> loggerLevelSelector;
-	private Text loggerLevelTitle;
+	private Label loggerLevelTitle;
 	
 	private Button openLogButton;
 	
@@ -77,19 +84,40 @@ public class SettingsView implements Observer {
 	protected void build() {
 		
 		root = new VBox();
+		root.setSpacing(15);
 		
-		gamePathTitle = new Text();
+		gamePathTitle = new Label();
+		gamePathTitle.setId("settings-view-text-large");
+		gamePathTitle.setTranslateX(10);
+		gamePathTitle.setAlignment(Pos.TOP_LEFT);
+		gamePathTitle.setPrefHeight(25);
 		gamePathField = new TextField();
+		gamePathField.setPrefHeight(37);
+		gamePathField.prefWidthProperty().bind(root.widthProperty().subtract(56));
 		gamePathButton = new Button();
+		gamePathButton.setId("settings-path-button");
+		gamePathButton.setPrefHeight(37);
+		gamePathButton.setPrefWidth(36);
+		gamePathButton.setGraphic(new ImageView(new Image(SettingsView.class.getClassLoader().getResourceAsStream("folder-icon.png"))));
 
 		GridPane gamePathContainer = new GridPane();
 		gamePathContainer.add(gamePathTitle, 1, 1);
 		gamePathContainer.add(gamePathField, 1, 2);
 		gamePathContainer.add(gamePathButton, 2, 2);
 		
-		modsPathTitle = new Text();
+		modsPathTitle = new Label();
+		modsPathTitle.setId("settings-view-text-large");
+		modsPathTitle.setTranslateX(10);
+		modsPathTitle.setAlignment(Pos.TOP_LEFT);
+		modsPathTitle.setPrefHeight(25);
 		modsPathField = new TextField();
+		modsPathField.setPrefHeight(37);
+		modsPathField.prefWidthProperty().bind(root.widthProperty().subtract(56));
 		modsPathButton = new Button();
+		modsPathButton.setId("settings-path-button");
+		modsPathButton.setPrefHeight(37);
+		modsPathButton.setPrefWidth(36);
+		modsPathButton.setGraphic(new ImageView(new Image(SettingsView.class.getClassLoader().getResourceAsStream("folder-icon.png"))));
 
 		GridPane modInstallPathContainer = new GridPane();
 		modInstallPathContainer.add(modsPathTitle, 1, 1);
@@ -99,6 +127,17 @@ public class SettingsView implements Observer {
 		ObservableList<Language> languageOptions = FXCollections.observableArrayList(localizer.getLanguages());
 		languageSelector = new ComboBox<>(languageOptions);
 		languageSelector.setValue(localizer.getCurrentLanguage());
+		languageSelector.setFocusTraversable(false);
+		languageSelector.setPrefWidth(300);
+		languageSelector.setPrefHeight(37);
+
+		openLogButton = new Button();
+		openLogButton.setId("settings-standalone-button");
+		openLogButton.setGraphic(new ImageView(new Image(SettingsView.class.getClassLoader().getResourceAsStream("log-icon.png"))));
+		openLogButton.setPrefHeight(37);
+		openLogButton.setPrefWidth(115);
+		openLogButton.setGraphicTextGap(10);
+		openLogButton.setAlignment(Pos.CENTER);
 		
 		ObservableList<Level> loggerLevelOptions = FXCollections.observableArrayList(
 			Level.OFF,
@@ -110,12 +149,17 @@ public class SettingsView implements Observer {
 			Level.TRACE
 		);
 		HBox loggerLevelContainer = new HBox();
+		loggerLevelContainer.setAlignment(Pos.CENTER_LEFT);
+		loggerLevelContainer.setSpacing(15);
 		loggerLevelSelector = new ComboBox<>(loggerLevelOptions);
 		loggerLevelSelector.setValue(settings.getPropertyLevel("loggerlevel"));
-		loggerLevelTitle = new Text();
-		loggerLevelContainer.getChildren().addAll(loggerLevelTitle, loggerLevelSelector);
+		loggerLevelSelector.setPrefWidth(183);
+		loggerLevelSelector.setPrefHeight(37);
+		loggerLevelSelector.setFocusTraversable(false);
+		loggerLevelTitle = new Label();
+		loggerLevelTitle.setId("settings-view-text-large");
+		loggerLevelContainer.getChildren().addAll(loggerLevelTitle, loggerLevelSelector, openLogButton);
 		
-		openLogButton = new Button();
 		
 		HBox checkVersionContainer = new HBox();
 		checkVersionBox = new CheckBox();
@@ -128,8 +172,14 @@ public class SettingsView implements Observer {
 		backupSavesOnLaunchContainer.getChildren().addAll(backupSavesOnLaunchBox, backupSavesOnLaunchTitle);
 
 		HBox confirmButtonDelayContainer = new HBox();
+		confirmButtonDelayContainer.setAlignment(Pos.CENTER_LEFT);
+		confirmButtonDelayContainer.setSpacing(15);
 		confirmButtonDelayField = new NumericTextField();
-		confirmButtonDelayTitle = new Text();
+		confirmButtonDelayField.setId("fully-rounded-input");
+		confirmButtonDelayField.setPrefHeight(37);
+		confirmButtonDelayField.setPrefWidth(43);
+		confirmButtonDelayTitle = new Label();
+		confirmButtonDelayTitle.setId("settings-view-text-large");
 		confirmButtonDelayContainer.getChildren().addAll(confirmButtonDelayField, confirmButtonDelayTitle);
 		
 		root.getChildren().addAll(
@@ -137,14 +187,14 @@ public class SettingsView implements Observer {
 			modInstallPathContainer,
 			languageSelector,
 			loggerLevelContainer,
-			openLogButton,
-			checkVersionContainer,
-			backupSavesOnLaunchContainer,
+			//checkVersionContainer,
+			//backupSavesOnLaunchContainer,
 			confirmButtonDelayContainer
 		);
 		
 		createListeners();
 		updateStrings();
+		updateColors();
 		
 	}
 	
@@ -159,6 +209,13 @@ public class SettingsView implements Observer {
 				}
 			}
 		});
+		
+		gamePathButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent event) {
+				controller.openFileBrowser(gamePathField);
+			}
+		});
 
 		modsPathField.setText(settings.getPropertyPath("modsdir").toAbsolutePath().toString());
 		modsPathField.focusedProperty().addListener(new ChangeListener<Boolean>() {
@@ -167,6 +224,13 @@ public class SettingsView implements Observer {
 				if (!newValue) {
 					controller.modsPathChanged(modsPathField.getText());
 				}
+			}
+		});
+
+		modsPathButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent event) {
+				controller.openFileBrowser(modsPathField);
 			}
 		});
 		
@@ -229,10 +293,8 @@ public class SettingsView implements Observer {
 	private void updateStrings() {
 		
 		gamePathTitle.setText(localizer.getMessage("settings.starboundpath"));
-		gamePathButton.setText(">>"); //TODO Replace with image
 
 		modsPathTitle.setText(localizer.getMessage("settings.modspath"));
-		modsPathButton.setText(">>"); //TODO Replace with image
 		
 		loggerLevelTitle.setText(localizer.getMessage("settings.loggerlevel"));
 		
@@ -241,6 +303,18 @@ public class SettingsView implements Observer {
 		checkVersionTitle.setText(localizer.getMessage("settings.checkversion"));
 		backupSavesOnLaunchTitle.setText(localizer.getMessage("settings.backuponlaunch"));
 		confirmButtonDelayTitle.setText(localizer.getMessage("settings.confirmdelay"));
+		
+	}
+	
+	private void updateColors() {
+
+		Color color = CSSHelper.getColor("file-browser-icon-color", settings.getPropertyString("theme"));
+		
+		FXHelper.setColor(gamePathButton.getGraphic(), color);
+		FXHelper.setColor(modsPathButton.getGraphic(), color);
+		
+		color = CSSHelper.getColor("log-icon-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(openLogButton.getGraphic(), color);
 		
 	}
 	

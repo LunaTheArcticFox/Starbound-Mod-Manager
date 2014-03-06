@@ -8,6 +8,8 @@
 /* modview-installed-button-color: #f7f8fa */
 /* modview-not-installed-button-color: #aaacae */
 /* browse-repo-arrow-color: #628dd3 */
+/* file-browser-icon-color: #fdfdfd */
+/* log-icon-color: #fdfdfd */
 
 .root {
 	-fx-background-color: #f7f8fa;
@@ -127,4 +129,50 @@
 
 #about-view-browse-repo {
 	-fx-fill: #3e78cd;
+}
+
+.text-field {
+	-fx-border-color: #c7cede;
+	-fx-background-color: #ffffff;
+	-fx-text-fill: #5f7faf;
+}
+
+#settings-path-button {
+	-fx-background-color: #5079b7;
+}
+
+#settings-standalone-button {
+	-fx-background-color: #5079b7;
+	-fx-text-fill: #fdfdfd;
+}
+
+#settings-view-text-large {
+	-fx-fill: #5079b7;
+	-fx-text-fill: #5079b7;
+}
+
+.combo-box .list-cell {
+	-fx-background-color: #7ca4e1;
+	-fx-text-fill: #ffffff;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #ffffff;
+}
+
+.combo-box .arrow-button {
+	-fx-background-color: #5079b7;
+}
+
+.combo-box-popup .list-view {
+	-fx-background-color: #abb7d2, #ffffff;
+}
+
+.combo-box-popup .list-view .list-cell {
+	-fx-text-fill: #2b4f84;
+}
+
+.combo-box-popup .list-view .list-cell:hover, .combo-box-popup .list-view .list-cell:selected {
+	-fx-background-color: #7ca4e1;
+	-fx-text-fill: #ffffff;
 }

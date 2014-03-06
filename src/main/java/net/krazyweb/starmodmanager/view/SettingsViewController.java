@@ -1,12 +1,15 @@
 package net.krazyweb.starmodmanager.view;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.krazyweb.starmodmanager.ModManager;
@@ -53,10 +56,26 @@ public class SettingsViewController {
 		
 	}
 	
+	protected void openFileBrowser(final TextField target) {
+		
+		DirectoryChooser chooser = new DirectoryChooser();
+		chooser.setInitialDirectory(Paths.get(target.textProperty().get()).toFile());
+		
+		File output = chooser.showDialog(new Stage());
+		
+		if (output != null) {
+			target.setText(Paths.get(output.getAbsolutePath()).toAbsolutePath().toString());
+			target.requestFocus();
+			target.getParent().requestFocus();
+		}
+		
+	}
+	
 	protected void gamePathChanged(final String path) {
 		settings.setProperty("starboundpath", path);
 		//TODO Validate the path
 		log.debug(path);
+		//TODO copy installed mods to new folder
 	}
 	
 	protected void modsPathChanged(final String path) {
@@ -64,6 +83,7 @@ public class SettingsViewController {
 		settings.setProperty("modsdir", newPath);
 		//TODO Validate the path
 		log.debug(newPath);
+		//TODO Copy mods from old location to new on change
 	}
 	
 	protected void languageChanged(final Language language) {

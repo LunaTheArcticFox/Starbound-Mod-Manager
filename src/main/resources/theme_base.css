@@ -36,6 +36,7 @@
 	-fx-border-radius: 0;
 	-fx-padding: 0;
 	-fx-font: 18px Lato-Regular;
+	-fx-cursor: hand;
 }
 
 #pagetab-selected {
@@ -46,6 +47,7 @@
 	-fx-border-radius: 0;
 	-fx-padding: 0;
 	-fx-font: 18px Lato-Semibold;
+	-fx-cursor: hand;
 }
 
 .scroll-pane {
@@ -102,11 +104,13 @@
 	-fx-background-radius: 3px;
 	-fx-background-insets: 0;
 	-fx-font: 12px Lato-Regular;
+	-fx-cursor: hand;
 }
 
 #modview-expand-button {
 	-fx-background-color: transparent;
 	-fx-background-insets: 0;
+	-fx-cursor: hand;
 }
 
 #modview-action-button {
@@ -116,6 +120,7 @@
 	-fx-border-insets: 0;
 	-fx-border-radius: 0;
 	-fx-padding: 0;
+	-fx-cursor: hand;
 }
 
 #modlistview-add-mods-button {
@@ -125,6 +130,7 @@
 	-fx-border-radius: 0;
 	-fx-padding: 51px 0 50px 0;
 	-fx-font: 36px Lato-Regular;
+	-fx-cursor: hand;
 }
 
 #add-mods-overlay-text {
@@ -165,4 +171,78 @@
 #about-view-browse-repo {
 	-fx-font: bold 14px Lato-Bold;
 	-fx-cursor: hand;
+}
+
+.text-field {
+	-fx-font: 14px Lato-Regular;
+	-fx-border-radius: 3px 0 0 3px;
+	-fx-border-width: 1px 0px 1px 1px;
+	-fx-padding: 0 0 0 11px;
+}
+
+#fully-rounded-input {
+	-fx-border-radius: 3px;
+	-fx-border-width: 1px;
+}
+
+#settings-path-button {
+	-fx-background-insets: 0;
+	-fx-background-radius: 0px 3px 3px 0px;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-cursor: hand;
+}
+
+#settings-standalone-button {
+	-fx-background-insets: 0;
+	-fx-background-radius: 3px;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+	-fx-padding: 0;
+	-fx-cursor: hand;
+	-fx-font: heavy 14px Lato-Heavy;
+}
+
+#settings-view-text-large {
+	-fx-font: heavy 16px Lato-Heavy;
+}
+
+.combo-box {
+	-fx-cursor: hand;
+}
+
+.combo-box .arrow-button {
+	-fx-padding: 13px 14px 15px 14px;
+}
+
+.combo-box .arrow {
+	-fx-scale-x: 2;
+	-fx-scale-y: 2.2;
+	-fx-shape: "M53,23c0-1.657-1.343-3-3-3c-0.809,0-1.542,0.321-2.082,0.841l-0.001-0.001
+				L31.993,36.764L16.275,21.046C15.725,20.406,14.91,20,14,20c-1.657,0-3,1.343-3,3c0,0.805,0.318,1.536,0.835,2.075l-0.008,0.008
+				l18,18l0.001-0.001C30.374,43.648,31.139,44,31.987,44c0.002,0,0.004,0,0.007,0c0.002,0,0.004,0,0.007,0
+				c0.848,0,1.613-0.352,2.159-0.918l0.001,0.001l18-18l-0.001-0.001C52.679,24.543,53,23.809,53,23z";
+}
+
+.combo-box .list-cell {
+	-fx-padding: 0 0 0 12px;
+	-fx-background-radius: 3px;
+	-fx-font: heavy 16px "Lato-Heavy";
+}
+
+.combo-box-popup .list-view {
+	-fx-background-radius: 3px;
+	-fx-background-insets: 0px, 1px;
+	-fx-border-insets: 0px;
+	-fx-border-width: 0px;
+	-fx-font: heavy 16px "Lato-Heavy";
+	-fx-effect: dropshadow(gaussian, transparent, 7, 0, 0, -2) innershadow(gaussian, transparent, 0, 0, 0, 0); /* The drop shadow needs to be present, otherwise the positioning of the node is not correct. */
+	-fx-cursor: hand;
+}
+
+.combo-box-popup .list-view .list-cell {
+	-fx-background-color: transparent, transparent;
+	-fx-background-insets: 0px, 0px;
+	-fx-padding: 6px 5px 7px 11px;
 }

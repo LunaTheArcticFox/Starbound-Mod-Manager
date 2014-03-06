@@ -135,7 +135,7 @@ public class Localizer implements LocalizerModelInterface, Observer {
 		
 		try {
 			formatter = new MessageFormat(bundle.getString(key.toLowerCase()), locale);
-		} catch (final IllegalArgumentException e) {
+		} catch (final IllegalArgumentException | MissingResourceException e) {
 			if (!suppressLogging) {
 				log.error(new ParameterizedMessage("Could not parse pattern for '{}'", key.toLowerCase()), e);
 			}
