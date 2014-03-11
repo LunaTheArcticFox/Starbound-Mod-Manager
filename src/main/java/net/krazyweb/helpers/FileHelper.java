@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.file.DirectoryStream;
@@ -270,6 +272,29 @@ public class FileHelper {
 		String output = "";
 		
 		try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+
+			String line;
+
+			while ((line = in.readLine()) != null) {
+				output += line + "\r\n";
+			}
+			
+		} catch (IOException e) {
+			log.error(new ParameterizedMessage("Reading file '{}' to a string.", file), e);
+			return null;
+		}
+
+		return output;
+	
+	}
+	
+	public static String fileToString(final InputStream file) {
+		
+		// TODO update to use nio
+	
+		String output = "";
+		
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(file))) {
 
 			String line;
 

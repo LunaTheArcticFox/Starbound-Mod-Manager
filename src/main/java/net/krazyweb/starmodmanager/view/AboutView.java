@@ -45,7 +45,9 @@ public class AboutView implements Observer {
 	private Text versionName;
 	private Text createdBy;
 	private Text createdByPerson;
+	@SuppressWarnings("unused")
 	private Text withContributionsFrom;
+	@SuppressWarnings("unused")
 	private Text[] contributors;
 	private Text writtenIn;
 	private Text[] writtenUsing;
@@ -78,17 +80,17 @@ public class AboutView implements Observer {
 		HBox createdByContainer = new HBox();
 		createdByContainer.getChildren().addAll(createdBy, createdByPerson);
 		
-		withContributionsFrom = new Text();
-		withContributionsFrom.setId("about-view-sub-title");
+		//withContributionsFrom = new Text();
+		//withContributionsFrom.setId("about-view-sub-title");
 		
 		writtenIn = new Text();
 		writtenIn.setId("about-view-sub-title");
 		
-		contributors = new Text[1];
+		//contributors = new Text[1];
 		
-		contributors[0] = getLinkedText("Kyr", "https://github.com/kxy");
+		//contributors[0] = getLinkedText("Kyr (German Translation)", "https://github.com/kxy");
 		
-		writtenUsing = new Text[8];
+		writtenUsing = new Text[9];
 		
 		writtenUsing[0] = getLicensedText("StarDB for Java", new LicenseView("StarDB for Java", "license_stardb4j.txt"));
 		writtenUsing[1] = getLicensedText("7-Zip-JBinding", new LicenseView("7-Zip-JBinding", "license_7zjb.txt"));
@@ -98,20 +100,21 @@ public class AboutView implements Observer {
 		writtenUsing[5] = getLicensedText("junit", new LicenseView("JUnit", "license_junit.txt"));
 		writtenUsing[6] = getLicensedText("commons-io", new LicenseView("Apache commons-io", "license_commons-io.txt"));
 		writtenUsing[7] = getLicensedText("minimal-json", new LicenseView("minimal-json", "license_minimal-json.txt"));
+		writtenUsing[8] = getLicensedText("Lato", new LicenseView("Lato", "license_lato.txt"));
 		
 		root.getChildren().addAll(
 			title,
 			versionName,
 			new Text(),
-			createdByContainer,
-			new Text(),
-			withContributionsFrom
+			createdByContainer
+			//new Text()
+			//withContributionsFrom
 		);
 		
-		for (Text t : contributors) {
+		/*for (Text t : contributors) {
 			t.setId("about-view-contributor");
 			root.getChildren().add(t);
-		}
+		}*/
 		
 		root.getChildren().addAll(new Text(), writtenIn);
 		
@@ -140,7 +143,7 @@ public class AboutView implements Observer {
 		title.setText(localizer.getMessage("appname"));
 		versionName.setText(localizer.formatMessage("versionwithapple", settings.getVersion(), settings.getApple()));
 		createdBy.setText(localizer.getMessage("aboutview.createdby"));
-		withContributionsFrom.setText(localizer.getMessage("aboutview.contributions"));
+		//withContributionsFrom.setText(localizer.getMessage("aboutview.contributions"));
 		writtenIn.setText(localizer.getMessage("aboutview.writtenin"));
 
 		browseRepoPane.getChildren().remove(browseRepo);

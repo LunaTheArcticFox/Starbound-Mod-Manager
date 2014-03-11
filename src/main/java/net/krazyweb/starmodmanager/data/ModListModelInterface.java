@@ -17,8 +17,10 @@ public interface ModListModelInterface extends Observable {
 	public void uninstallMod(final Mod mod);
 	public void hideMod(final Mod mod);
 	public void moveMod(final Mod mod, final int amount);
+	public void reinstallConflictingMods(final List<Mod> oldOrder);
 	
 	public List<Mod> getMods();
+	public List<Mod> getInstalledMods();
 	public int indexOf(final Mod mod);
 	
 	public void setLocked(final boolean locked);

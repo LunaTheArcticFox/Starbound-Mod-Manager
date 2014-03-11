@@ -1,5 +1,8 @@
 package net.krazyweb.starmodmanager.view;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
@@ -12,6 +15,10 @@ import net.krazyweb.starmodmanager.data.Observable;
 import net.krazyweb.starmodmanager.data.Observer;
 import net.krazyweb.starmodmanager.data.SettingsFactory;
 import net.krazyweb.starmodmanager.data.SettingsModelInterface;
+import net.krazyweb.starmodmanager.dialogue.InputDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.DialogueAction;
+import net.krazyweb.starmodmanager.dialogue.MessageDialogue.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,12 +125,43 @@ public class ApplicationLoader implements Observer {
 	
 	private void completeLoading() {
 		
+		boolean continueLoading = true;
+		
+		if (!settings.getPropertyBoolean("firstruncomplete")) {
+			
+			InputDialogue input = new InputDialogue(localizer.getMessage("inputdialogue.starboundpath"), localizer.getMessage("inputdialogue.starboundpath.title"), MessageType.INFO, localizer);
+			
+			//TODO Verify game path
+			
+			if (input.getResult() == DialogueAction.CLOSED) {
+				
+				MessageDialogue message = new MessageDialogue(localizer.getMessage("applicationloader.mustinputpath"), localizer.getMessage("applicationloader.mustinputpath.title"), MessageType.INFO, localizer);
+				message.getResult();
+				continueLoading = false;
+				
+			} else {
+				
+				settings.setProperty("starboundpath", Paths.get(input.getInputData()));
+				settings.setProperty("firstruncomplete", true);
+				
+			}
+			
+		}
+		
+		if (!Files.isWritable(Paths.get(""))) {
+			MessageDialogue message = new MessageDialogue(localizer.getMessage("applicationloader.filenotwritable"), localizer.getMessage("applicationloader.filenotwritable.title"), MessageType.INFO, localizer);
+			message.getResult();
+			continueLoading = false;
+		}
+		
 		settings.removeObserver(this);
 		database.removeObserver(this);
 		localizer.removeObserver(this);
 		modList.removeObserver(this);
 		
-		new MainViewController(modList);
+		if (continueLoading) {
+			new MainViewController(modList);
+		}
 
 		view.close();
 		

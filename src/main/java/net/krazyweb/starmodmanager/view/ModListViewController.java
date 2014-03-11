@@ -35,6 +35,8 @@ public class ModListViewController implements Observer {
 	private List<ModView> modViews;
 	private ModListView view;
 	
+	private List<Mod> oldModOrder;
+	
 	private double y, lastY, mouseY;
 	
 	private SettingsModelInterface settings;
@@ -116,6 +118,8 @@ public class ModListViewController implements Observer {
 			return;
 		}
 		
+		oldModOrder = modList.getInstalledMods();
+		
 		y = modView.getContent().getTranslateY();
 		lastY = y + modView.getContent().getLayoutY();
 		mouseY = event.getSceneY();
@@ -184,6 +188,8 @@ public class ModListViewController implements Observer {
 		if (locked) {
 			return;
 		}
+		
+		modList.reinstallConflictingMods(oldModOrder);
 		
 		modView.getContent().setTranslateY(modList.getMods().indexOf(modView.getMod()) * 57 - modView.getContent().getLayoutY());
 		updateListView();

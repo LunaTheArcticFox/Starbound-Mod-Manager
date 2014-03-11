@@ -91,6 +91,7 @@ public class Mod implements Observable {
 		try {
 			archives = processModFile(path, settingsFactory);
 		} catch (IOException | StarDBException | ParseException e) {
+			//TODO Error Dialogue
 			log.error("", e);
 			return new HashSet<Mod>();
 		}
@@ -107,7 +108,12 @@ public class Mod implements Observable {
 			JsonObject obj = JsonObject.readFrom(new String(archive.getFile(".modinfo").getData()));
 			
 			mod.setInternalName(obj.get("name").asString());
-			mod.setGameVersion(obj.get("version").asString());
+			
+			if (obj.get("version") != null) {
+				mod.setGameVersion(obj.get("version").asString());
+			} else {
+				mod.setGameVersion("Field Empty");
+			}
 			
 			Set<String> dependencies = new HashSet<>();
 			Set<String> ignoredFileNames = new HashSet<>();

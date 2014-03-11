@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -261,11 +263,11 @@ public class ModList implements ModListModelInterface {
 				this.updateProgress(0, 1);
 				
 				//Get every installed mod, including the one to be installed
-				List<Mod> installedMods = installedMods();
+				List<Mod> installedMods = getInstalledMods();
 				installedMods.add(mod);
 				
 				//Then separate out those with conflicts
-				List<Mod> conflictingMods = conflictingMods(installedMods);
+				List<Mod> conflictingMods = getConflictingMods(installedMods);
 				
 				//No new conflicts were found, so just install the new mod normally
 				if (!conflictingMods.contains(mod)) {
@@ -458,7 +460,7 @@ public class ModList implements ModListModelInterface {
 			protected Integer call() throws Exception {
 				
 				log.info("Uninstalling mod: {}", mod.getInternalName());
-
+				
 				try {
 					log.debug("Deleting from: {}", settings.getPropertyPath("starboundpath").resolve("mods").resolve(mod.getInternalName()));
 					FileHelper.deleteFile(
@@ -486,7 +488,18 @@ public class ModList implements ModListModelInterface {
 		uninstallModsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(final WorkerStateEvent t) {
+				
 				mod.setInstalled(false);
+				
+				if (getConflictingMods(getInstalledMods()).contains(mod)) {
+					
+					List<Mod> conflictingMods = getConflictingMods(getInstalledMods());
+					conflictingMods.remove(mod);
+					Collections.reverse(conflictingMods);
+					reinstallConflictingMods(conflictingMods);
+					
+				}
+				
 				try {
 					database.updateMod(mod);
 				} catch (final SQLException e) {
@@ -494,6 +507,7 @@ public class ModList implements ModListModelInterface {
 					MessageDialogue dialogue = new MessageDialogue(localizer.getMessage("modlist.dbconnectionerror.installmod"), localizer.getMessage("modlist.dbconnectionerror.title"), MessageType.ERROR, new LocalizerFactory());
 					dialogue.getResult();
 				}
+				
 			}
 		});
 		
@@ -501,6 +515,47 @@ public class ModList implements ModListModelInterface {
 		t.setName("Uninstall Mods Thread");
 		t.setDaemon(true);
 		t.start();
+		
+	}
+	
+	@Override
+	public void reinstallConflictingMods(final List<Mod> oldMods) {
+		
+		List<Mod> oldConflictingMods = getConflictingMods(oldMods);
+		List<Mod> conflictingMods = getConflictingMods(getInstalledMods());
+		
+		for (int i = 0; i < oldConflictingMods.size(); i++) {
+			if (oldConflictingMods.get(i) != conflictingMods.get(i)) {
+				
+				Mod mod = conflictingMods.get(i);
+				
+				uninstallMod(mod);
+				
+				Task<Void> task = getInstallModTask(mod);
+				
+				final ProgressDialogue lview = new ProgressDialogue(localizer.formatMessage("modview.install.title"));
+				lview.getProgressBar().bind(task.progressProperty(), 1.0);
+				lview.getText().setText(localizer.formatMessage("modview.install.dialogue", mod.getDisplayName()));
+				
+				task.progressProperty().addListener(new ChangeListener<Number>() {
+					@Override
+					public void changed(final ObservableValue<? extends Number> observableValue, final Number oldValue, final Number newValue) {
+						if (newValue.doubleValue() >= 0.999) {
+							lview.close();
+						}
+					}
+				});
+				
+				Thread thread = new Thread(task);
+				thread.setDaemon(true);
+				thread.setName("Install Mod Thread");
+				lview.start();
+				thread.start();
+				
+				break;
+				
+			}
+		}
 		
 	}
 	
@@ -582,7 +637,7 @@ public class ModList implements ModListModelInterface {
 		List<Mod> modListCopy = new ArrayList<>(mods);
 		return modListCopy;
 	}
-
+	
 	@Override
 	public int indexOf(final Mod mod) {
 		return mods.indexOf(mod);
@@ -631,8 +686,9 @@ public class ModList implements ModListModelInterface {
 		
 	}
 	
-	private List<Mod> installedMods() {
-
+	@Override
+	public List<Mod> getInstalledMods() {
+		
 		List<Mod> installedMods = new ArrayList<>();
 		
 		for (Mod m : mods) {
@@ -645,7 +701,7 @@ public class ModList implements ModListModelInterface {
 		
 	}
 	
-	private List<Mod> conflictingMods(final List<Mod> modList) {
+	private List<Mod> getConflictingMods(final List<Mod> modList) {
 		
 		List<Mod> conflictingMods = new ArrayList<>();
 		

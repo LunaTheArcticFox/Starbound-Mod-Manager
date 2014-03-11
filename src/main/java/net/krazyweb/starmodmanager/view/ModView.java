@@ -7,6 +7,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -18,7 +19,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import net.krazyweb.helpers.CSSHelper;
 import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.starmodmanager.data.Localizer;
@@ -129,8 +132,8 @@ public class ModView implements Observer {
 		expandedInstallButton.setId("modview-install-button");
 		expandedInstallButton.setFocusTraversable(false);
 		expandedInstallButton.setPrefHeight(30);
-		expandedInstallButton.setPrefWidth(73);
-		expandedInstallButton.setMinWidth(73);
+		//expandedInstallButton.setPrefWidth(73);
+		//expandedInstallButton.setMinWidth(73);
 		expandedInstallButton.setMinHeight(30);
 		expandedInstallButton.setAlignment(Pos.CENTER);
 		
@@ -239,7 +242,7 @@ public class ModView implements Observer {
 		collapsedInstallButton.setId("modview-install-button");
 		collapsedInstallButton.setFocusTraversable(false);
 		collapsedInstallButton.setPrefHeight(30.0);
-		collapsedInstallButton.setPrefWidth(73.0);
+		//collapsedInstallButton.setPrefWidth(73.0);
 		collapsedInstallButton.setAlignment(Pos.CENTER);
 		
 		collapsedExpandButton = new Button();
@@ -390,6 +393,27 @@ public class ModView implements Observer {
 		collapsedStatusText.setText(localizer.getMessage(mod.isInstalled() ? "modview.installed" : "modview.notinstalled").toUpperCase());
 		collapsedDisplayName.setText(mod.getDisplayName());
 		collapsedModVersion.setText(mod.getModVersion().toUpperCase());
+
+		Text test = new Text();
+		test.setFont(Font.loadFont(ModView.class.getClassLoader().getResourceAsStream("Lato-Medium.ttf"), 12));
+		test.setId("modview-install-button");
+
+		VBox t = new VBox();
+		t.getChildren().add(test);
+		
+		Stage s = new Stage();
+		s.setOpacity(0);
+		s.setScene(new Scene(t, 500, 500));
+		s.show();
+
+		test.setText(localizer.getMessage("modview.uninstall"));
+		int width = (int) (test.getLayoutBounds().getWidth() + 24);
+		expandedInstallButton.setPrefWidth(width);
+		expandedInstallButton.setMinWidth(width);
+		collapsedInstallButton.setPrefWidth(width);
+		collapsedInstallButton.setMinWidth(width);
+		
+		s.close();
 		
 	}
 	

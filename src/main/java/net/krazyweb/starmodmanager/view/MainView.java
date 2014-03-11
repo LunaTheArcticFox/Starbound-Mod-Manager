@@ -60,7 +60,8 @@ public class MainView implements Observer {
 	
 	private Text appName;
 	private Text versionName;
-	
+
+	private GridPane pageTabs;
 	private Button modListButton;
 	private Button backupListButton;
 	private Button settingsButton;
@@ -103,7 +104,7 @@ public class MainView implements Observer {
 		root = new VBox();
 		root.getChildren().add(topBar);
 		
-		GridPane pageTabs = new GridPane();
+		pageTabs = new GridPane();
 		HBox buttons = new HBox();
 		
 		buildTabs();
@@ -122,50 +123,6 @@ public class MainView implements Observer {
 		GridPane.setHalignment(settingsButton, HPos.CENTER);
 		GridPane.setValignment(aboutButton, VPos.CENTER);
 		GridPane.setHalignment(aboutButton, HPos.CENTER);
-		
-		/*
-		 * JavaFX's GridPane pushes around elements when the size of a column changes.
-		 * When changing the styling of the text for highlighted buttons, this becomes
-		 * a problem, as the whole layout shifts every click. To get around this, it's
-		 * necessary to compute the pixel width of the text in each button, then
-		 * constrain the columns to be the maximum size of the text-no more, no less.
-		 * Accurate HGaps can then be applied and the elements will not move around.
-		 * 
-		 * To compute the actual size of the text in the scene, it's necessary to
-		 * create an invisible stage, add a Text node with the font and size
-		 * equivalent to the stylesheet's, then get the node's layout width.
-		 * 
-		 * TODO This must be done with every language change.
-		 */
-		ColumnConstraints col1 = new ColumnConstraints();
-		ColumnConstraints col2 = new ColumnConstraints();
-		ColumnConstraints col3 = new ColumnConstraints();
-		ColumnConstraints col4 = new ColumnConstraints();
-
-		Text test = new Text();
-		test.setFont(Font.loadFont(MainView.class.getClassLoader().getResourceAsStream("Lato-Medium.ttf"), 18));
-		test.setId("pagetab-selected");
-
-		VBox t = new VBox();
-		t.getChildren().add(test);
-		
-		Stage s = new Stage();
-		s.setOpacity(0);
-		s.setScene(new Scene(t, 500, 500));
-		s.show();
-
-		test.setText(localizer.getMessage("navbartabs.mods"));
-		col1.setPrefWidth(test.getLayoutBounds().getWidth());
-		test.setText(localizer.getMessage("navbartabs.backups"));
-		col2.setPrefWidth(test.getLayoutBounds().getWidth());
-		test.setText(localizer.getMessage("navbartabs.settings"));
-		col3.setPrefWidth(test.getLayoutBounds().getWidth());
-		test.setText(localizer.getMessage("navbartabs.about"));
-		col4.setPrefWidth(test.getLayoutBounds().getWidth());
-		
-		s.close();
-		
-		pageTabs.getColumnConstraints().addAll(col1, col2, col3, col4);
 		
 		buttons.setSpacing(25);
 		buttons.getChildren().addAll(
@@ -498,6 +455,54 @@ public class MainView implements Observer {
 		backupListButton.setText(localizer.getMessage("navbartabs.backups"));
 		settingsButton.setText(localizer.getMessage("navbartabs.settings"));
 		aboutButton.setText(localizer.getMessage("navbartabs.about"));
+
+		modListButton.setEllipsisString(localizer.getMessage("navbartabs.mods"));
+		backupListButton.setEllipsisString(localizer.getMessage("navbartabs.backups"));
+		settingsButton.setEllipsisString(localizer.getMessage("navbartabs.settings"));
+		aboutButton.setEllipsisString(localizer.getMessage("navbartabs.about"));
+		
+		/*
+		 * JavaFX's GridPane pushes around elements when the size of a column changes.
+		 * When changing the styling of the text for highlighted buttons, this becomes
+		 * a problem, as the whole layout shifts every click. To get around this, it's
+		 * necessary to compute the pixel width of the text in each button, then
+		 * constrain the columns to be the maximum size of the text-no more, no less.
+		 * Accurate HGaps can then be applied and the elements will not move around.
+		 * 
+		 * To compute the actual size of the text in the scene, it's necessary to
+		 * create an invisible stage, add a Text node with the font and size
+		 * equivalent to the stylesheet's, then get the node's layout width.
+		 */
+		ColumnConstraints col1 = new ColumnConstraints();
+		ColumnConstraints col2 = new ColumnConstraints();
+		ColumnConstraints col3 = new ColumnConstraints();
+		ColumnConstraints col4 = new ColumnConstraints();
+
+		Text test = new Text();
+		test.setFont(Font.loadFont(MainView.class.getClassLoader().getResourceAsStream("Lato-Medium.ttf"), 18));
+		test.setId("pagetab-selected");
+
+		VBox t = new VBox();
+		t.getChildren().add(test);
+		
+		Stage s = new Stage();
+		s.setOpacity(0);
+		s.setScene(new Scene(t, 500, 500));
+		s.show();
+
+		test.setText(localizer.getMessage("navbartabs.mods"));
+		col1.setPrefWidth(test.getLayoutBounds().getWidth());
+		test.setText(localizer.getMessage("navbartabs.backups"));
+		col2.setPrefWidth(test.getLayoutBounds().getWidth());
+		test.setText(localizer.getMessage("navbartabs.settings"));
+		col3.setPrefWidth(test.getLayoutBounds().getWidth());
+		test.setText(localizer.getMessage("navbartabs.about"));
+		col4.setPrefWidth(test.getLayoutBounds().getWidth());
+		
+		s.close();
+		
+		pageTabs.getColumnConstraints().clear();
+		pageTabs.getColumnConstraints().addAll(col1, col2, col3, col4);
 		
 	}
 	

@@ -1,0 +1,9 @@
+body {
+	padding: 15px;
+	font-family: 'Lato-Regular', sans-serif;
+	font-size: 14px;
+}
+
+pre {
+	word-wrap: break-word;
+}

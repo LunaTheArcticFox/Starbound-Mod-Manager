@@ -1,6 +1,11 @@
 package net.krazyweb.starmodmanager.data;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,6 +28,10 @@ import com.ibm.icu.text.MessageFormat;
 public class Localizer implements LocalizerModelInterface, Observer {
 	
 	private static final Logger log = LogManager.getLogger(Localizer.class);
+	
+	private static boolean overrideLanguage = false;
+	private static String languageFile = "";
+	private static String languageLocale = "";
 	
 	private List<Language> languages;
 	private Locale locale;
@@ -192,19 +201,52 @@ public class Localizer implements LocalizerModelInterface, Observer {
 
 	private void setLocale(final String loc) {
 		
-		String[] splitLocale = loc.split("-");
+		if (overrideLanguage) {
+			
+			log.debug("Language Overridden!");
+			
+			try {
+
+				File file = Paths.get(languageFile).toAbsolutePath().getParent().toFile();
+				URL[] urls = {file.toURI().toURL()};
+				ClassLoader loader = new URLClassLoader(urls);
+			
+				log.debug("{}", file);
+
+				String[] splitLocale = languageLocale.split("-");
+				locale = new Locale(splitLocale[0], splitLocale[1]);
+				
+				bundle = ResourceBundle.getBundle("strings", locale, loader);
+				
+				notifyObservers("localechanged");
+			
+			} catch (final MalformedURLException e) {
+				log.error("Could not load provided language file '{}'", languageFile);
+			}
+			
+		} else {
 		
-		Locale oldLocale = locale;
+			String[] splitLocale = loc.split("-");
+			
+			Locale oldLocale = locale;
+			
+			locale = new Locale(splitLocale[0], splitLocale[1]);
+			
+			//Don't reload the language if nothing changed
+			if (oldLocale == null || !oldLocale.equals(locale)) {
+				bundle = ResourceBundle.getBundle("strings", locale);
+				log.debug("Locale set to: {}", locale);
+				notifyObservers("localechanged");
+			}
 		
-		locale = new Locale(splitLocale[0], splitLocale[1]);
-		
-		//Don't reload the language if nothing changed
-		if (oldLocale == null || !oldLocale.equals(locale)) {
-			bundle = ResourceBundle.getBundle("strings", locale);
-			log.debug("Locale set to: {}", locale);
-			notifyObservers("localechanged");
 		}
 		
+	}
+	
+	public static void overrideLanguage(final String file, final String locale) {
+		overrideLanguage = true;
+		languageFile = file;
+		languageLocale = locale;
 	}
 	
 	@Override

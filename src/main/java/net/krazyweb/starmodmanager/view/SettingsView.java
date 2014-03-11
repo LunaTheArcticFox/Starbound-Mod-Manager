@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -20,7 +21,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import net.krazyweb.helpers.CSSHelper;
 import net.krazyweb.helpers.FXHelper;
 import net.krazyweb.jfx.controls.NumericTextField;
@@ -135,7 +138,6 @@ public class SettingsView implements Observer {
 		openLogButton.setId("settings-standalone-button");
 		openLogButton.setGraphic(new ImageView(new Image(SettingsView.class.getClassLoader().getResourceAsStream("log-icon.png"))));
 		openLogButton.setPrefHeight(37);
-		openLogButton.setPrefWidth(115);
 		openLogButton.setGraphicTextGap(10);
 		openLogButton.setAlignment(Pos.CENTER);
 		
@@ -303,6 +305,26 @@ public class SettingsView implements Observer {
 		checkVersionTitle.setText(localizer.getMessage("settings.checkversion"));
 		backupSavesOnLaunchTitle.setText(localizer.getMessage("settings.backuponlaunch"));
 		confirmButtonDelayTitle.setText(localizer.getMessage("settings.confirmdelay"));
+		
+		//TODO Move this to a utility class
+		Text test = new Text();
+		test.setFont(Font.loadFont(ModView.class.getClassLoader().getResourceAsStream("Lato-Medium.ttf"), 12));
+		test.setId("settings-standalone-button");
+
+		VBox t = new VBox();
+		t.getChildren().add(test);
+		
+		Stage s = new Stage();
+		s.setOpacity(0);
+		s.setScene(new Scene(t, 500, 500));
+		s.show();
+
+		test.setText(localizer.getMessage("settings.openlog"));
+		int width = (int) (test.getLayoutBounds().getWidth() + 64);
+		openLogButton.setPrefWidth(width);
+		openLogButton.setMinWidth(width);
+		
+		s.close();
 		
 	}
 	

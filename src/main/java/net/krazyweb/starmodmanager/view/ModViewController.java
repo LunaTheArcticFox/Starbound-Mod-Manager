@@ -49,7 +49,7 @@ public class ModViewController {
 		task.progressProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(final ObservableValue<? extends Number> observableValue, final Number oldValue, final Number newValue) {
-				if (newValue.doubleValue() >= 0.999) {
+				if (newValue.doubleValue() >= 0.99) {
 					lview.close();
 				}
 			}

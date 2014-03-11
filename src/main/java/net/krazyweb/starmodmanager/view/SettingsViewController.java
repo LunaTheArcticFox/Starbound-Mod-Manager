@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
@@ -12,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import net.krazyweb.helpers.FileHelper;
 import net.krazyweb.starmodmanager.ModManager;
 import net.krazyweb.starmodmanager.data.LocalizerFactory;
 import net.krazyweb.starmodmanager.data.LocalizerModelInterface;
@@ -83,11 +86,34 @@ public class SettingsViewController {
 	}
 	
 	protected void modsPathChanged(final String path) {
+
+		Set<Path> paths = new HashSet<>();
+		FileHelper.listFiles(settings.getPropertyPath("modsdir"), paths);
+		Path oldPath = settings.getPropertyPath("modsdir");
+		
 		Path newPath = Paths.get("").toAbsolutePath().relativize(Paths.get(path));
 		settings.setProperty("modsdir", newPath);
 		//TODO Validate the path
 		log.debug(newPath);
-		//TODO Copy mods from old location to new on change
+		
+		for (Path p : paths) {
+			
+			FileHelper.copyFile(p, settings.getPropertyPath("modsdir").resolve(p.getFileName()));
+			
+			try {
+				FileHelper.deleteFile(p);
+			} catch (final IOException e) {
+				log.error("", e);
+			}
+			
+		}
+			
+		try {
+			FileHelper.deleteFile(oldPath);
+		} catch (final IOException e) {
+			log.error("", e);
+		}
+		
 	}
 	
 	protected void languageChanged(final Language language) {
