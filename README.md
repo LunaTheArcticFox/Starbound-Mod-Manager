@@ -27,10 +27,17 @@ Building
 
 This project requires Maven.
 
-To run the project from the command line, use "mvn jfx:run".
+To run the project from the command line:
 
-To build the project into a runnable .jar file, use "mvn clean jfx:jar".
-To build the project into a native executable for your OS, use "mvn clean jfx:native"
+	mvn jfx:run
+
+To build the project into a runnable .jar file:
+
+	mvn clean jfx:jar
+
+To build the project into a native executable for your OS:
+
+	mvn clean jfx:native
 
 
 Issues
