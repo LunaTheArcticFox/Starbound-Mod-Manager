@@ -1,7 +1,29 @@
-Starbound-Mod-Manager
+Starbound Mod Manager
 =====================
 
-A mod manager for Starbound. This is the development branch for version 2.0 and most features are not yet implemented.
+Starbound Mod Manager is just that: a mod manager for Starbound. Go figure.
+It's designed to be lightweight (well, as lightweight as Java gets, really) and take care of all the dirty work with installing mods.
+The focus is on ease of use and simplicity with more powerful features underneath.
+
+
+Features
+========
+
+* Drag and drop mod management
+* Automatic merging of conflicting mods
+* Compatibility with nearly every Starbound mod
+* Localization as simple as selecting it in a dropdown menu
+
+
+Features to be Added
+====================
+
+* Theming and theme changing
+* Save data backups, including backups of mods used per save
+
+
+Building
+========
 
 This project requires Maven.
 
@@ -9,3 +31,19 @@ To run the project from the command line, use "mvn jfx:run".
 
 To build the project into a runnable .jar file, use "mvn clean jfx:jar".
 To build the project into a native executable for your OS, use "mvn clean jfx:native"
+
+
+Issues
+======
+
+If you find a bug or want a new feature, you can let me know in the following places:
+* [GitHub Issues](https://github.com/KrazyTheFox/Starbound-Mod-Manager/issues)
+* [Starbound Forum](http://community.playstarbound.com/index.php?threads/starbound-mod-manager.51639/)
+
+Or you can help out by...
+
+
+Contributing
+============
+
+If you'd like to fork the project and send a pull request my way with bug fixes or cool new features, feel free to! You'll get a spot on the contributors' list with a link to wherever you want.
