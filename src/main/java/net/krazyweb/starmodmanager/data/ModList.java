@@ -169,14 +169,16 @@ public class ModList implements ModListModelInterface {
 				
 				files.removeAll(toRemove);
 				
-				for (Path path : files) {
+				/*for (Path path : files) {
 					log.debug("Deleting file '{}' - File is unused.", path);
 					try {
 						FileHelper.deleteFile(path);
 					} catch (final IOException e) {
 						log.error("", e);
 					}
-				}
+				}*/
+				
+				//TODO FIX ^^^
 				
 				return 1;
 				

@@ -29,7 +29,7 @@ public class Settings implements SettingsModelInterface {
 	
 	private static final int VERSION_MAJOR = 2;
 	private static final int VERSION_MINOR = 0;
-	private static final int VERSION_PATCH = 0;
+	private static final int VERSION_PATCH = 1;
 	private static final String VERSION_EXTRA = "";
 	private static final String APPLE = "Golden Delicious";
 	private static final String VERSION_STRING = VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_PATCH + VERSION_EXTRA;
@@ -85,8 +85,8 @@ public class Settings implements SettingsModelInterface {
 					setLoggerLevel(Level.OFF, LoggerType.CONSOLE);
 					setLoggerLevel(Level.WARN, LoggerType.FILE);
 				} else {
-					setLoggerLevel(Level.DEBUG, LoggerType.CONSOLE);
-					setLoggerLevel(Level.OFF, LoggerType.FILE);
+					setLoggerLevel(Level.TRACE, LoggerType.CONSOLE);
+					setLoggerLevel(Level.TRACE, LoggerType.FILE);
 				}
 
 				this.updateProgress(4.0, 4.0);

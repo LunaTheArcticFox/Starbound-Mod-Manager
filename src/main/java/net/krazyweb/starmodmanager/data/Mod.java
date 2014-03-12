@@ -78,7 +78,7 @@ public class Mod implements Observable {
 		settings = settingsFactory.getInstance();
 	}
 	
-	protected static Set<Mod> load(final Path path, final int order, final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
+	public static Set<Mod> load(final Path path, final int order, final SettingsModelFactory settingsFactory, final DatabaseModelFactory databaseFactory, final LocalizerModelFactory localizerFactory) {
 		
 		log.debug("Loading mod: {}", path);
 		
@@ -232,6 +232,7 @@ public class Mod implements Observable {
 		String[] modinfoContents = new String(modinfoFile).split("\n");
 		
 		String modName = "";
+		String assetsPath = "";
 		
 		//TODO Use actual JSON parser
 		for (String line : modinfoContents) {
@@ -239,19 +240,49 @@ public class Mod implements Observable {
 				modName = line.trim().split(":")[1];
 				modName = modName.substring(modName.indexOf("\"") + 1, modName.lastIndexOf("\""));
 			}
+			if (line.contains("\"path\"")) {
+				assetsPath = line.trim().split(":")[1];
+				assetsPath = assetsPath.substring(assetsPath.indexOf("\"") + 1, assetsPath.lastIndexOf("\""));
+			}
 		}
 		
+		if (assetsPath.startsWith(".")) {
+			assetsPath = assetsPath.replace(".", "");
+		}
+		
+		if (assetsPath.startsWith("/")) {
+			assetsPath = assetsPath.replace("/", "");
+		}
+		
+		if (assetsPath.startsWith("./")) {
+			assetsPath = assetsPath.replace("./", "");
+		}
+
 		Archive modArchive = new Archive(settings.getPropertyPath("modsdir").resolve(modName + ".zip"));
 		
 		modArchive.addFile(new ArchiveFile(modinfoFile, Paths.get(modName + ".modinfo"), false));
 		
+		ArchiveFile modinfo = modArchive.getFile(".modinfo");
+		JsonObject o2 = JsonObject.readFrom(new String(modinfo.getData()));
+		o2.set("path", "assets");
+		
+		modinfo.setData(o2.toString().getBytes());
+		
+		log.debug("Assets path is '{}'", assetsPath);
+		
 		for (String file : database.getFileList()) {
+
+			log.trace("{} is in {}", file, path);
 			
 			if (file.endsWith(".modinfo") || file.endsWith("desktop.ini") || file.endsWith("thumbs.db")) {
 				continue;
 			}
 			
-			modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get(file.substring(1)), false));
+			if (assetsPath.isEmpty()) {
+				modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get("assets/" + file.substring(1)), false));
+			} else {
+				modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get("assets/" + file.substring(assetsPath.length())), false));
+			}
 			
 		}
 		
@@ -287,6 +318,10 @@ public class Mod implements Observable {
 				
 				if (preformattedPath.startsWith(".")) {
 					preformattedPath = preformattedPath.replace(".", "");
+				}
+				
+				if (preformattedPath.startsWith("/")) {
+					preformattedPath = preformattedPath.replace("/", "");
 				}
 				
 				Path modinfoPath = file.getPath();
@@ -357,27 +392,57 @@ public class Mod implements Observable {
 					log.debug("Assets for mod '{}' is a standard assets folder: {}", modinfoPath, assetsPath);
 					
 					for (ArchiveFile f2 : originalArchive.getFiles()) {
-						if (f2.getPath().startsWith(assetsPath) && !f2.isFolder() && !f2.getPath().toString().endsWith(".modinfo")) {
-							if (f2.getPath().getNameCount() == 1) {
+						
+						if ((assetsPath.toString().isEmpty() || f2.getPath().startsWith(assetsPath)) && !f2.isFolder() && !f2.getPath().toString().endsWith(".modinfo")) {
+							
+							if (modinfoPath.toString().isEmpty()) {
 								
-								if (!f2.getPath().startsWith(Paths.get("assets/"))) {
-									outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(f2.getPath()), false));
-									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(f2.getPath()));
+								if (f2.getPath().getNameCount() == 1) {
+									
+									if (!f2.getPath().startsWith(assetsPath)) {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(f2.getPath()).normalize(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(f2.getPath()).normalize());
+									} else {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), f2.getPath(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), f2.getPath());
+									}
+									
 								} else {
-									outputArchive.addFile(new ArchiveFile(f2.getData(), f2.getPath(), false));
-									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), f2.getPath());
+									
+									if (!f2.getPath().startsWith(assetsPath)) {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(f2.getPath()).normalize(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(f2.getPath()).normalize());
+									} else {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), f2.getPath(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), f2.getPath());
+									}
+										
 								}
 								
 							} else {
 								
-								if (!modinfoPath.relativize(f2.getPath()).normalize().startsWith(Paths.get("assets/"))) {
-									outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()), false));
-									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()));
-								} else {
-									outputArchive.addFile(new ArchiveFile(f2.getData(), modinfoPath.relativize(f2.getPath()).normalize(), false));
-									log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), modinfoPath.relativize(f2.getPath()).normalize());
-								}
+								if (f2.getPath().getNameCount() == 1) {
 									
+									if (!modinfoPath.relativize(f2.getPath()).startsWith("assets")) {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(f2.getPath()), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(f2.getPath()));
+									} else {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), f2.getPath(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), f2.getPath());
+									}
+									
+								} else {
+									
+									if (!modinfoPath.relativize(f2.getPath()).startsWith("assets")) {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), Paths.get("assets/").resolve(modinfoPath.relativize(f2.getPath()).normalize()));
+									} else {
+										outputArchive.addFile(new ArchiveFile(f2.getData(), modinfoPath.relativize(f2.getPath()).normalize(), false));
+										log.trace("'{}' -> '{}' relativized to '{}'", modinfoPath, f2.getPath(), modinfoPath.relativize(f2.getPath()).normalize());
+									}
+										
+								}
+							
 							}
 						}
 					}

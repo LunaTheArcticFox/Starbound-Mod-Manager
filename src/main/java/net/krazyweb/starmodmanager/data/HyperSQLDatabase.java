@@ -294,12 +294,13 @@ public class HyperSQLDatabase implements DatabaseModelInterface {
 		
 		StringBuilder query = new StringBuilder();
 		query.append("DELETE FROM ").append(MOD_TABLE_NAME);
-		query.append(" WHERE internalName = '").append(mod.getInternalName()).append("';");
-		
-		Statement delete = connection.createStatement();
-		delete.execute(query.toString());
+		query.append(" WHERE internalName = ?");
+
+		PreparedStatement deleteMod = connection.prepareStatement(query.toString());
+		deleteMod.setString(1, mod.getInternalName());
 		log.trace("Statement Executed: {}", query);
-		delete.closeOnCompletion();
+		deleteMod.execute();
+		deleteMod.closeOnCompletion();
 		
 	}
 	

@@ -178,7 +178,7 @@ public class Archive {
 			return true;
 		
 		} catch (IOException e) {
-			e.printStackTrace(); //TODO Better Log
+			log.error("", e);
 			return false;
 		}
 		
