@@ -1,0 +1,25 @@
+---
+layout: post
+title:  "2.0.1"
+date:   2014-03-11 23:49:08
+prerelease: no
+gameversion: Beta v. Enraged Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.1-windows/Starbound-Mod-Manager-2.0.1-Windows.zip
+windowssize: 64.1
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.1-osx/Starbound-Mod-Manager-2.0.1-OSX.zip
+osxsize: 18.5
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.1-linux/Starbound-Mod-Manager-2.0.1-Linux.zip
+linuxsize: 65.6
+---
+<ul class="hyphen-list">
+	<li>Added German translation</li>
+	<li>Removed version from executables, so be sure to delete the old one</li>
+	<li>Fixed SQL syntax error when deleting mods. This prevented the mod list from being loaded (and by extension, the program)</li>
+	<li>Fixed .pak mods not being parsed into the correct format</li>
+	<li>Fixed files and folders getting parsed out of mod archives</li>
+	<li>Fixed moving the mod storage folder deleting stuff it shouldn't and otherwise misbehaving</li>
+	<li>Fixed mods that already have an "assets" folder being given a second one, causing merging to fail</li>
+	<li>Fixed mods being deleted when the mod manager failed to add them</li>
+	<li>Fixed extra "assets" folders being added when merging mods</li>
+	<li>Fixed mod merging; non-conflicting files were getting overwritten as if they were conflicting</li>
+</ul>
