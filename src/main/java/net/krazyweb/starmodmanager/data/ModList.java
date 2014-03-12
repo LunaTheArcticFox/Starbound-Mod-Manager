@@ -296,14 +296,14 @@ public class ModList implements ModListModelInterface {
 				}
 				
 				//Find all the non-conflicting files in each of those mods
-				//Copy the non-conflicting files to a new patch folder (deleting the old one)
+				//Copy the non-conflicting files to a their own mods' folders
 				FileHelper.deleteFile(settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")));
 				
 				for (Mod m : conflictingMods) {
 					for (ModFile file : m.getFiles()) {
-						if (!modifiedFiles.contains(file.getPath()) && !file.isModinfo()) {
+						if (!modifiedFiles.contains(file.getPath())) {
 							log.debug("Path: {}", file.getPath());
-							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(m.getInternalName()));
 						}
 					}
 				}
@@ -321,7 +321,7 @@ public class ModList implements ModListModelInterface {
 				for (Mod m : conflictingMods) {
 					for (ModFile file : m.getFiles()) {
 						if (modifiedFiles.contains(file.getPath()) && !file.isJson()) {
-							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder").resolve("assets")));
+							modArchives.get(m).extractFileToFolder(file.getPath(), settings.getPropertyPath("starboundpath").resolve("mods").resolve(settings.getPropertyPath("patchfolder")));
 						}
 					}
 				}
@@ -653,15 +653,6 @@ public class ModList implements ModListModelInterface {
 	@Override
 	public boolean isLocked() {
 		return locked;
-	}
-
-	@Override
-	public void refreshMods() {
-		/*try {
-			Database.getModList();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}*/
 	}
 
 	@Override

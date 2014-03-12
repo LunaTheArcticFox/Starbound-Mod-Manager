@@ -3,6 +3,7 @@ package net.krazyweb.starmodmanager.view;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -92,6 +93,13 @@ public class SettingsViewController {
 		Path oldPath = settings.getPropertyPath("modsdir");
 		
 		Path newPath = Paths.get("").toAbsolutePath().relativize(Paths.get(path));
+		
+		try {
+			Files.createDirectories(newPath);
+		} catch (final IOException e) {
+			log.error("", e);
+		}
+		
 		settings.setProperty("modsdir", newPath);
 		//TODO Validate the path
 		log.debug(newPath);
@@ -107,11 +115,46 @@ public class SettingsViewController {
 			}
 			
 		}
-			
-		try {
-			FileHelper.deleteFile(oldPath);
-		} catch (final IOException e) {
-			log.error("", e);
+		
+		Set<Path> filesLeftInOldPath = new HashSet<>();
+		FileHelper.listFiles(oldPath, filesLeftInOldPath);
+		
+		Set<Path> toRemove = new HashSet<>();
+		
+		for (Path p : filesLeftInOldPath) {
+			log.trace("Checking path {} against {}", p, newPath);
+			try {
+				if (Files.isSameFile(p, newPath)) {
+					log.debug("Old path contains new path, will not delete.");
+					return;
+				}
+			} catch (final IOException e) {
+				log.error("", e);
+			}
+		}
+		
+		for (Path p : filesLeftInOldPath) {
+			if (Files.isDirectory(p)) {
+				toRemove.add(p);
+			}
+		}
+		
+		filesLeftInOldPath.removeAll(toRemove);
+		
+		for (Path p : filesLeftInOldPath) {
+			log.debug("File left in old path: {}", p);
+		}
+		
+		if (filesLeftInOldPath.size() == 0) {
+			try {
+				if (Files.exists(oldPath)) {
+					FileHelper.deleteFile(oldPath);
+				}
+			} catch (final IOException e) {
+				log.error("", e);
+			}
+		} else {
+			log.debug("Files are present in the old path. Will not delete.");
 		}
 		
 	}

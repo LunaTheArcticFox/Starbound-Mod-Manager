@@ -26,7 +26,6 @@ public interface ModListModelInterface extends Observable {
 	public void setLocked(final boolean locked);
 	public boolean isLocked();
 	
-	public void refreshMods();
 	public void setModList(final List<Mod> list) ;
 	
 }
