@@ -52,7 +52,8 @@ public class TestMod {
 		"testmod4.",
 		"testmod5.",
 		"testmod6.",
-		"testmod7."
+		"testmod7.",
+		"testmod8."
 	};
 	
 	@Before

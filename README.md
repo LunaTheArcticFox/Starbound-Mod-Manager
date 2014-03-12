@@ -22,6 +22,12 @@ Features to be Added
 * Save data backups, including backups of mods used per save
 
 
+Downloads
+=========
+
+[Can be found here!](http://krazythefox.github.io/Starbound-Mod-Manager)
+
+
 Building
 ========
 
