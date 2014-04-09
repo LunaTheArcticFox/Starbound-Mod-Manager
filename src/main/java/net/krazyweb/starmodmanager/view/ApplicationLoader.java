@@ -132,7 +132,6 @@ public class ApplicationLoader implements Observer {
 			InputDialogue input = new InputDialogue(localizer.getMessage("inputdialogue.starboundpath"), localizer.getMessage("inputdialogue.starboundpath.title"), MessageType.INFO, localizer);
 			
 			//TODO Verify game path
-			
 			if (input.getResult() == DialogueAction.CLOSED) {
 				
 				MessageDialogue message = new MessageDialogue(localizer.getMessage("applicationloader.mustinputpath"), localizer.getMessage("applicationloader.mustinputpath.title"), MessageType.INFO, localizer);

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.krazyweb</groupId>
 	<artifactId>Starbound-Mod-Manager</artifactId>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<name>Starbound Mod Manager</name>
 	<description>A mod manager for Starbound.</description>
 	<organization>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>net.krazyweb</groupId>
 			<artifactId>stardb4j</artifactId>
-			<version>1.1.1</version>
+			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>javafx</groupId>

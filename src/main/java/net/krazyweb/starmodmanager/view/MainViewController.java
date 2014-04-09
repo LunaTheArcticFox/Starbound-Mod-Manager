@@ -87,6 +87,10 @@ public class MainViewController extends Observable {
 		
 	}
 	
+	protected void addModsButtonClicked() {
+		modListView.searchForMods();
+	}
+	
 	protected void lockButtonClicked() {
 		modListView.toggleLock();
 		view.updateLockButton(settings.getPropertyBoolean("modlistlocked"));

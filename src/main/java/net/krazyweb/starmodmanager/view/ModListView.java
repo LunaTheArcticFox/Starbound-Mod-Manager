@@ -180,6 +180,10 @@ public class ModListView implements Observer {
 		controller.getNewMods();
 	}
 	
+	protected void searchForMods() {
+		controller.addModButtonClicked();
+	}
+	
 	@Override
 	public void update(final Observable observable, final Object message) {
 		

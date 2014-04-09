@@ -227,6 +227,7 @@ public class Mod implements Observable {
 		SettingsModelInterface settings = settingsFactory.getInstance();
 		
 		AssetDatabase database = AssetDatabase.open(path);
+		log.debug(database.getFileList());
 		
 		byte[] modinfoFile = database.getAsset("/pak.modinfo");
 		String[] modinfoContents = new String(modinfoFile).split("\n");
@@ -470,6 +471,7 @@ public class Mod implements Observable {
 				tempPakFile.close();
 				
 				AssetDatabase database = AssetDatabase.open(tempPath);
+				log.debug(database.getFileList());
 				
 				if (database.getAsset("/pak.modinfo") != null) {
 					log.debug("{} has a .modinfo file, parsing into mod.", file.getPath());

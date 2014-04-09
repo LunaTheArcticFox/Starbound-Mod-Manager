@@ -68,6 +68,7 @@ public class MainView implements Observer {
 	private Button aboutButton;
 	
 	private Button quickBackupButton;
+	private Button addModButton;
 	private Button lockButton;
 	private Button refreshButton;
 	private Button expandButton;
@@ -127,6 +128,7 @@ public class MainView implements Observer {
 		buttons.setSpacing(25);
 		buttons.getChildren().addAll(
 			//quickBackupButton, TODO Implement later
+			addModButton,
 			lockButton,
 			refreshButton,
 			expandButton
@@ -198,6 +200,7 @@ public class MainView implements Observer {
 		
 		updateStrings();
 		updateRefreshButton();
+		updateAddModButton();
 		
 	}
 	
@@ -270,6 +273,17 @@ public class MainView implements Observer {
 			}
 		});
 		
+		addModButton = new Button();
+		addModButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("add-mods-icon.png"))));
+		addModButton.setId("mainview-action-button");
+		addModButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+				controller.addModsButtonClicked();
+				e.consume();
+			}
+		});
+		
 		lockButton = new Button();
 		lockButton.setGraphic(new ImageView(new Image(MainView.class.getClassLoader().getResourceAsStream("unlocked-list-icon.png"))));
 		lockButton.setId("mainview-action-button");
@@ -303,8 +317,12 @@ public class MainView implements Observer {
 			}
 		});
 		
-
+	}
+	
+	protected void updateAddModButton() {
 		
+		Color color = CSSHelper.getColor("mod-list-button-color", settings.getPropertyString("theme"));
+		FXHelper.setColor(addModButton.getGraphic(), color);
 		
 	}
 	

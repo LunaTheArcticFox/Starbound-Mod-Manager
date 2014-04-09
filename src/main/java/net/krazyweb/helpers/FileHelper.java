@@ -127,7 +127,7 @@ public class FileHelper {
 			ByteChannel b = Files.newByteChannel(path, StandardOpenOption.READ);
 			ByteBuffer buffer = ByteBuffer.allocate(10);
 			b.read(buffer);
-			buffer.rewind();
+			buffer.position(0);
 			
 			for (char[] array : SIGNATURES) {
 				
@@ -137,13 +137,16 @@ public class FileHelper {
 				
 				for (int i = 0; i < signatureBytes.length; i++) {
 					
-					if (buffer.get() != (char) signatureBytes[i]) {
-						buffer.rewind();
+					byte get = buffer.get();
+					
+					if (get != (byte) signatureBytes[i]) {
+						buffer.position(0);
 						break;
 					}
 					
 					if (i == signatureBytes.length - 1) {
 						typeFound = true;
+						break;
 					}
 					
 				}
