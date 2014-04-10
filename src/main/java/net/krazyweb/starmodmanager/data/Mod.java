@@ -269,6 +269,7 @@ public class Mod implements Observable {
 		
 		modinfo.setData(o2.toString().getBytes());
 		
+		assetsPath = "/" + assetsPath + "/";
 		log.debug("Assets path is '{}'", assetsPath);
 		
 		for (String file : database.getFileList()) {
@@ -279,9 +280,10 @@ public class Mod implements Observable {
 				continue;
 			}
 			
-			if (assetsPath.isEmpty()) {
+			if (assetsPath.isEmpty() || !file.startsWith(assetsPath)) {
 				modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get("assets/" + file.substring(1)), false));
 			} else {
+				log.debug("{} --- {}", assetsPath, file.substring(assetsPath.length()));
 				modArchive.addFile(new ArchiveFile(database.getAsset(file), Paths.get("assets/" + file.substring(assetsPath.length())), false));
 			}
 			
