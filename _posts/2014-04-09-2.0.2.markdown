@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "2.0.2"
+date:   2014-04-09 21:26:09
+prerelease: no
+gameversion: Beta v. Enraged Koala
+windowslink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.2-windows/Starbound-Mod-Manager-2.0.2-Windows.zip
+windowssize: 64.6
+osxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.2-osx/Starbound-Mod-Manager-2.0.2-OSX.zip
+osxsize: 18.5
+linuxlink: https://github.com/KrazyTheFox/Starbound-Mod-Manager/releases/download/v2.0.2-linux/Starbound-Mod-Manager-2.0.2-Linux.zip
+linuxsize: 66.2
+---
+<ul class="hyphen-list">
+	<li>Fixed archives not working (.7z/.rar)</li>
+	<li>Fixed .pak/.modpak files not being completely extracted</li>
+	<li>Fixed additional .pak/.modpak bugs</li>
+	<li>Added add new mods button to the quick actions bar</li>
+</ul>
