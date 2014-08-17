@@ -4,9 +4,11 @@
 /bin
 /build
 /data
+/.idea
 /mods
 /target
 .classpath
+.iml
 .project
 .settings
 build.fxbuild
