@@ -60,3 +60,7 @@ Contributing
 ============
 
 If you'd like to fork the project and send a pull request my way with bug fixes or cool new features, feel free to! You'll get a spot on the contributors' list with a link to wherever you want.
+
+# License
+
+This project is now licensed under the MIT license.
