@@ -1,6 +1,8 @@
 Starbound Mod Manager
 =====================
 
+####This project is no longer being developed and will not work with any version of Starbound beyond Enraged Koala (late beta). It's an old project and there are likely bugs that could lead to unwanted behavior of the application. Use at your own risk.
+
 Starbound Mod Manager is just that: a mod manager for Starbound. Go figure.
 It's designed to be lightweight (well, as lightweight as Java gets, really) and take care of all the dirty work with installing mods.
 The focus is on ease of use and simplicity with more powerful features underneath.
